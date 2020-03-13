@@ -15,6 +15,11 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -22,9 +27,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Button map_button=(Button)findViewById(R.id.map_button);
+        map_button.setOnClickListener(new View.OnClickListener(){
 
-}
-
-
+        @Override
+            public void onClick(View v) {
+                Intent myintent =new Intent(MainActivity.this, MapActivity.class);
+                startActivity(myintent);
+            }
+        });
+    }
 
 }
