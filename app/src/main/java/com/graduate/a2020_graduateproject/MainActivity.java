@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -17,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         Button map_button=(Button)findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener(){
 
-            @Override
+        @Override
             public void onClick(View v) {
                 Intent myintent =new Intent(MainActivity.this, MapActivity.class);
                 startActivity(myintent);
