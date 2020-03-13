@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">2020_GraduateProject</string>
+    <string name="kakao_app_key">c0286b94d9c6a9a920c69cdfeebdc667</string>
 </resources>
