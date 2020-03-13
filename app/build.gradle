@@ -1,11 +1,12 @@
 apply plugin: 'com.android.application'
 
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.graduate.a2020_graduateproject"
-        minSdkVersion 29
+        minSdkVersion 28
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -19,6 +20,9 @@ android {
     }
 }
 
+// Add the following line to the bottom of the file:
+apply plugin: 'com.google.gms.google-services'  // Google Play services Gradle plugin
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.0.2'
@@ -28,4 +32,28 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+
+    // 카카오 로그인 sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'usermgmt', version: project.KAKAO_SDK_VERSION
+    // 카카오링크 sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'kakaolink', version: project.KAKAO_SDK_VERSION
+    // 카카오톡 sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'kakaotalk', version: project.KAKAO_SDK_VERSION
+    // 카카오내비 sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'kakaonavi', version: project.KAKAO_SDK_VERSION
+    // 카카오스토리 sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'kakaostory', version: project.KAKAO_SDK_VERSION
+    // push sdk를 사용하기 위해 필요.
+    implementation group: 'com.kakao.sdk', name: 'push', version: project.KAKAO_SDK_VERSION
+
+    // 파이어베이스
+    implementation 'com.google.firebase:firebase-core:17.0.0'
+    implementation 'com.google.firebase:firebase-database:18.0.0'
+
+
+
+
+
+
+
 }

@@ -4,13 +4,18 @@ buildscript {
     repositories {
         google()
         jcenter()
+
         
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.3'
+        // Add the following line:
+        classpath 'com.google.gms:google-services:4.2.0'  // Google Services plugin
+
         
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+
     }
 }
 
@@ -18,9 +23,19 @@ allprojects {
     repositories {
         google()
         jcenter()
-        
+
+
+        /* 카카오톡 sdk 최신버전*/
+        mavenCentral()
+        maven { url 'http://devrepo.kakao.com:8088/nexus/content/groups/public/' }
+
+
     }
 }
+
+
+
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir
