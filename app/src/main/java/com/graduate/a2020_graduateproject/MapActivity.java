@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,13 +15,20 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.List;
 
+import noman.googleplaces.NRPlaces;
+import noman.googleplaces.Place;
+import noman.googleplaces.PlaceType;
+import noman.googleplaces.PlacesException;
+import noman.googleplaces.PlacesListener;
+
 public class MapActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+        implements OnMapReadyCallback, PlacesListener {
 
     private GoogleMap gMap;
     private Geocoder geocoder;
@@ -79,6 +87,7 @@ public class MapActivity extends AppCompatActivity
 
             @Override
             public void onClick(View v) {
+
                 String place=place_Text.getText().toString();
                 List<Address> addressList=null;
                 try {
@@ -106,12 +115,59 @@ public class MapActivity extends AppCompatActivity
                 markerOptions3.position(latLng);
                 gMap.addMarker(markerOptions3);
                 gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                showPlaces(xpos, ypos);
+            }
+        });
 
-                //커스텀 마커 추가->입력한 위치 주변 장소 띄우기
-                //선택하면 색깔 변하도록->데이터베이스에 저장.....할 예정
+    }
+
+    public void showPlaces(double xpos, double ypos){
+        //gMap.clear();
+        Log.d("a","showPlaces 호출됨");
+        new NRPlaces.Builder()
+                .listener(MapActivity.this)
+                .key("AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg")
+                .latlng(xpos, ypos)
+                .radius(500)
+                .type(PlaceType.RESTAURANT)
+                .build()
+                .execute();
+
+
+    }
+
+    //커스텀 마커 추가->입력한 위치 주변 장소 띄우기
+    //선택하면 색깔 변하도록->데이터베이스에 저장.....할 예정
+    public void onPlacesSuccess(final List<Place> places){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for(Place place : places){
+                    LatLng latLng=new LatLng(place.getLatitude(), place.getLongitude());
+
+                    MarkerOptions markerPOptions=new MarkerOptions();
+                    markerPOptions.position(latLng);
+                    markerPOptions.title(place.getName());
+                    Marker item=gMap.addMarker(markerPOptions);
+
+                }
             }
         });
     }
 
+    @Override
+    public void onPlacesFinished() {
+
+    }
+
+    @Override
+    public void onPlacesFailure(PlacesException e) {
+
+    }
+
+    @Override
+    public void onPlacesStart() {
+
+    }
 
 }
