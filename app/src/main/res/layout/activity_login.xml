@@ -17,17 +17,5 @@
         android:layout_marginBottom="30dp"
         android:layout_weight="1" />
 
-    <Button
-        android:id="@+id/kakao_logout_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="카카오 로그아웃" />
 
-    <Button
-        android:id="@+id/delete_session_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="세션해제" />
 </LinearLayout>
