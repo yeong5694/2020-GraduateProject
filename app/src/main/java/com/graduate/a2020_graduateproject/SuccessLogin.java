@@ -22,12 +22,14 @@ public class SuccessLogin extends AppCompatActivity {
     private Button kakao_logout_btn;
     private Button redirect_login_btn;
     private Button delete_session_btn;
+    private Button redirect_mypage_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_success_login);
 
+        // 카카오 로그아웃
         kakao_logout_btn = (Button)findViewById(R.id.kakao_logout_btn);
         kakao_logout_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,7 +37,7 @@ public class SuccessLogin extends AppCompatActivity {
                 onClickLogout();
             }
         });
-
+        // 이 앱 탈퇴
         delete_session_btn = (Button)findViewById(R.id.delete_session_btn);
         delete_session_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,12 +46,20 @@ public class SuccessLogin extends AppCompatActivity {
                 onClickUnlink();
             }
         });
-
+        // LoginActivity 로 돌아감
         redirect_login_btn = (Button)findViewById(R.id.redirect_login_btn);
         redirect_login_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 redirectLoginActivity();
+            }
+        });
+        // 로그인 정보
+        redirect_mypage_btn = (Button)findViewById(R.id.redirect_mypage_btn);
+        redirect_mypage_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                redirectKakaoTalkMainActivity();
             }
         });
 
@@ -58,6 +68,12 @@ public class SuccessLogin extends AppCompatActivity {
 
     protected void redirectLoginActivity(){
         final Intent intent = new Intent(SuccessLogin.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    protected void redirectKakaoTalkMainActivity(){
+        final Intent intent = new Intent(SuccessLogin.this, KakaoTalkMainActivity.class);
         startActivity(intent);
         finish();
     }

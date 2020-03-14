@@ -138,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e("SessionCallback :: ", "onFailure : " + errorResult.getErrorMessage());
             }
 
+            /* */
             @Override
             public void onSuccess(MeV2Response response) {
                 Log.e("SessionCallback :: ", "onSuccess");
@@ -165,6 +166,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e("KakaoLogin","thumbnail image : " + profile.getThumbnailImageUrl());
                     } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
                         // 동의 요청 후 프로필 정보 획득 가능
+
                     } else {
                         // 프로필 획득 불가
                     }
