@@ -56,14 +56,6 @@ public class LoginActivity extends AppCompatActivity {
         //getAppKeyHash();
 
 
-        delete_session_btn = (Button)findViewById(R.id.delete_session_btn);
-        delete_session_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("KakaoSessionDelete ::", "앱 탈퇴하기");
-                onClickUnlink();
-            }
-        });
 
     }
 
