@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item android:title="여행 방"
+            android:id="@+id/trips"
+            android:icon="@drawable/baseline_bookmark_black_18dp"/>
+        <item android:title="친구"
+            android:id="@+id/friends"
+            android:icon="@drawable/baseline_people_black_18dp"/>
+    </group>
+
+    <item android:title="APP">
+        <menu>
+            <item android:title="설정"
+                android:id="@+id/settings"
+                android:icon="@drawable/baseline_settings_black_18dp"/>
+            <item android:title="로그아웃"
+                android:id="@+id/logout"
+                android:icon="@drawable/baseline_power_settings_new_black_18dp"/>
+        </menu>
+    </item>
+
+</menu>

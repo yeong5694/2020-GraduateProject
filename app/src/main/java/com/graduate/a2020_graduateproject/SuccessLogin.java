@@ -14,6 +14,7 @@ import com.kakao.usermgmt.callback.LogoutResponseCallback;
 public class SuccessLogin extends AppCompatActivity {
 
     private Button kakao_logout_btn;
+    private Button mainButton;  // 메인화면으로 가는 버튼     // 예원
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +26,17 @@ public class SuccessLogin extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 onClickLogout();
+            }
+        });
+
+        // 예원
+        // 메인화면으로 가는 버튼
+        mainButton = findViewById(R.id.go_to_main);
+        mainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SuccessLogin.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -42,3 +54,4 @@ public class SuccessLogin extends AppCompatActivity {
         });
     }
 }
+
