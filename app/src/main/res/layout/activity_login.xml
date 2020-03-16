@@ -26,6 +26,7 @@
         android:layout_marginBottom="30dp"
         android:layout_weight="1" />
 
+
     <Button
         android:id="@+id/kakao_logout_btn"
         android:layout_width="match_parent"
@@ -45,4 +46,5 @@
         android:textColor="#FF161616"
         android:textSize="15dp"
         style="@style/Widget.MaterialComponents.Button.TextButton" />
+
 </LinearLayout>

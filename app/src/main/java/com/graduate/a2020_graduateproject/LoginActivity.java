@@ -41,9 +41,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private SessionCallback callback;
 
-    private LoginButton btn_kakao_login; // 카카오 로그인 버튼
-    private Button kakao_logout_btn;
-    private Button delete_session_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,16 +50,11 @@ public class LoginActivity extends AppCompatActivity {
         //카카오 로그인 콜백받기
         callback = new SessionCallback();
         Session.getCurrentSession().addCallback(callback);
-        //키값 알아내기(알아냈으면 등록하고 지워도 상관없다)
-        getAppKeyHash();
+        Session.getCurrentSession().checkAndImplicitOpen();
 
-        kakao_logout_btn = (Button)findViewById(R.id.kakao_logout_btn);
-        kakao_logout_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickLogout();
-            }
-        });
+        //키값 알아내기(알아냈으면 등록하고 지워도 상관없다)
+        //getAppKeyHash();
+
 
         delete_session_btn = (Button)findViewById(R.id.delete_session_btn);
         delete_session_btn.setOnClickListener(new View.OnClickListener() {
@@ -72,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
                 onClickUnlink();
             }
         });
+
     }
 
     @Override
@@ -102,16 +95,7 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
-    /* 로그아웃 */
-    private void onClickLogout() {
-        UserManagement.getInstance().requestLogout(new LogoutResponseCallback() {
-            @Override
-            public void onCompleteLogout() {
-                Log.e("KakaoLogout ::", "로그아웃 합니다..");
-                redirectLoginActivity();
-            }
-        });
-    }
+
 
     /* 회원가입 */
     private class SessionCallback implements ISessionCallback {
@@ -156,6 +140,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.e("SessionCallback :: ", "onFailure : " + errorResult.getErrorMessage());
             }
 
+            /* */
             @Override
             public void onSuccess(MeV2Response response) {
                 Log.e("SessionCallback :: ", "onSuccess");
@@ -171,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
                         // 동의 요청 후 이메일 획득 가능
                         // 단, 선택 동의로 설정되어 있다면 서비스 이용 시나리오 상에서 반드시 필요한 경우에만 요청해야 합니다.
-                        ///// 이메일 따로 획득해야함!!!
+                        ///// 이메일 따로 획득해야한다.
                     } else {
                         // 이메일 획득 불가
                     }
@@ -183,6 +168,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e("KakaoLogin","thumbnail image : " + profile.getThumbnailImageUrl());
                     } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
                         // 동의 요청 후 프로필 정보 획득 가능
+
                     } else {
                         // 프로필 획득 불가
                     }
@@ -194,49 +180,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    /* 앱 연결 해제 */
-    private void onClickUnlink() {
-        final String appendMessage = getString(R.string.com_kakao_confirm_unlink);
-        new AlertDialog.Builder(this)
-                .setMessage(appendMessage)
-                .setPositiveButton(getString(R.string.com_kakao_ok_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                UserManagement.getInstance().requestUnlink(new UnLinkResponseCallback() {
-                                    @Override
-                                    public void onFailure(ErrorResult errorResult) {
-                                        Logger.e(errorResult.toString());
-                                    }
-
-                                    @Override
-                                    public void onSessionClosed(ErrorResult errorResult) {
-                                        redirectLoginActivity();
-                                    }
-
-                                    @Override
-                                    public void onNotSignedUp() {
-                                        redirectSignupActivity();
-                                    }
-
-                                    @Override
-                                    public void onSuccess(Long userId) {
-                                        redirectLoginActivity();
-                                    }
-                                });
-                                dialog.dismiss();
-                            }
-                        })
-                .setNegativeButton(getString(R.string.com_kakao_cancel_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).show();
-
-    }
-
+    /* 해쉬키 구하는 함수 (구했으면 지워도됨)*/
     private void getAppKeyHash() {
         try {
             PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNATURES);

@@ -17,12 +17,40 @@
         android:text="메인으로 가기"
         style="@style/Widget.MaterialComponents.Button" />
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="로그인 성공했을 때 화면" />
+
     <Button
         android:id="@+id/kakao_logout_btn"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:textColor="#FF161616"
-        android:text="카카오 로그아웃"
-        style="@style/Widget.MaterialComponents.Button" />
+        android:layout_weight="1"
+        android:text="카카오 로그아웃" />
+
+    <Button
+        android:id="@+id/delete_session_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="앱 탈퇴하기" />
+
+
+    <Button
+        android:id="@+id/redirect_mypage_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="로그인 정보" />
+
+    <Button
+        android:id="@+id/redirect_login_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="로그인 액티비티로 돌아가기" />
+
 </LinearLayout>
