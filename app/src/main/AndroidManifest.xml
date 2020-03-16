@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.graduate.a2020_graduateproject">
-
     <!-- 인터넷 사용 권한 -->
     <uses-permission android:name="android.permission.INTERNET" />
-
 
     <application
         android:name=".GlobalApplication"
@@ -14,13 +12,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".SuccessLogin"></activity>
-        <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".TripRoomActivity"></activity>
+        <activity android:name=".SuccessLogin" /> <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="@string/kakao_app_key" />
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />
@@ -32,7 +28,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,7 +35,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity android:name=".MapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

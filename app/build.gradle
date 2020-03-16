@@ -51,10 +51,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.0.0'
     implementation 'com.google.firebase:firebase-database:18.0.0'
 
-
-
-
-
-
-
+    // material design
+    implementation 'com.google.android.material:material:1.2.0-alpha03'
+    // CircleImageView - 프로필 이미지 동그랗게
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }

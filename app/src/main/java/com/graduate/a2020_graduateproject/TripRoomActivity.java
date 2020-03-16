@@ -13,7 +13,7 @@ import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class TripRoomActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
 
@@ -23,8 +23,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        setTitle("나의 여행");
+        setContentView(R.layout.activity_trip_room);
+        setTitle("○○ 여행");
 
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -43,29 +43,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-
-        // 선영이 지도 연결 버튼
-        /*
-        Button map_button = (Button)findViewById(R.id.map_button);
-        map_button.setOnClickListener(new View.OnClickListener() {
-        @Override
-            public void onClick(View v) {
-                Intent myintent =new Intent(MainActivity.this, MapActivity.class);
-                startActivity(myintent);
-            }
-        });
-        */
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.trips) {
-            Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
+        if(id == R.id.home) {
+            Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
             startActivity(intent);
         }
-        else if(id == R.id.friends) {
+        else if(id == R.id.trip_mates) {
+
+        }
+        else if(id == R.id.chat) {
+
+        }
+        else if(id == R.id.calendar) {
+
+        }
+        else if(id == R.id.plan) {
+
+        }
+        else if(id == R.id.map) {
+            Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
+            startActivity(intent);
+        }
+        else if(id == R.id.memo) {
+
+        }
+        else if(id == R.id.gallery) {
 
         }
         else if(id == R.id.settings) {
