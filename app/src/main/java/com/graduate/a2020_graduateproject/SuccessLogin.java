@@ -20,15 +20,30 @@ import com.kakao.util.helper.log.Logger;
 public class SuccessLogin extends AppCompatActivity {
 
     private Button kakao_logout_btn;
+
     private Button redirect_login_btn;
     private Button delete_session_btn;
     private Button redirect_mypage_btn;
+
+  private Button mainButton;  // 메인화면으로 가는 버튼     // 예원
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_success_login);
 
+      // 예원
+        // 메인화면으로 가는 버튼
+        mainButton = findViewById(R.id.go_to_main);
+        mainButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SuccessLogin.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+      
+      
         // 카카오 로그아웃
         kakao_logout_btn = (Button)findViewById(R.id.kakao_logout_btn);
         kakao_logout_btn.setOnClickListener(new View.OnClickListener() {
@@ -37,6 +52,7 @@ public class SuccessLogin extends AppCompatActivity {
                 onClickLogout();
             }
         });
+
         // 이 앱 탈퇴
         delete_session_btn = (Button)findViewById(R.id.delete_session_btn);
         delete_session_btn.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +92,7 @@ public class SuccessLogin extends AppCompatActivity {
         final Intent intent = new Intent(SuccessLogin.this, KakaoTalkMainActivity.class);
         startActivity(intent);
         finish();
+
     }
 
     /* 로그아웃 */
@@ -140,3 +157,4 @@ public class SuccessLogin extends AppCompatActivity {
 
     }
 }
+

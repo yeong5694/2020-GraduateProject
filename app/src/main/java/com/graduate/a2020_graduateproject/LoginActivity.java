@@ -56,9 +56,16 @@ public class LoginActivity extends AppCompatActivity {
         //getAppKeyHash();
 
 
+        delete_session_btn = (Button)findViewById(R.id.delete_session_btn);
+        delete_session_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e("KakaoSessionDelete ::", "앱 탈퇴하기");
+                onClickUnlink();
+            }
+        });
 
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -75,9 +82,8 @@ public class LoginActivity extends AppCompatActivity {
         Session.getCurrentSession().removeCallback(callback);
     }
 
-
-
     protected void redirectSignupActivity() {
+        //final Intent intent = new Intent(this, SuccessLogin.class);
         final Intent intent = new Intent(this, SuccessLogin.class);
         startActivity(intent);
         finish();
@@ -111,8 +117,6 @@ public class LoginActivity extends AppCompatActivity {
             }
             redirectLoginActivity();
         }
-
-
     }
 
     /* 사용자 정보 수집*/
@@ -130,8 +134,6 @@ public class LoginActivity extends AppCompatActivity {
             public void onSessionClosed(ErrorResult errorResult) {
                 Log.e("KakaoSessionCallback :: ", "onSessionClosed : " + errorResult.getErrorMessage());
             }
-
-
 
             @Override
             public void onFailure(ErrorResult errorResult){
@@ -175,10 +177,6 @@ public class LoginActivity extends AppCompatActivity {
                 redirectSignupActivity(); // SuccessLogin 으로 이동
             }
 
-
-
-
-
         });
     }
 
@@ -198,7 +196,4 @@ public class LoginActivity extends AppCompatActivity {
             Log.e("name not found", e.toString());
         }
     }
-
-
-
 }
