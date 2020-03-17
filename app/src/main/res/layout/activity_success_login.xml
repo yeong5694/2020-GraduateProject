@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".SuccessLogin">
+    tools:context=".SuccessLoginActivity">
 
     <Button
         android:id="@+id/go_to_main"
@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="로그인 성공했을 때 화면" />
+        android:text="로그인 성공했을 때 화면(테스트)" />
 
     <Button
         android:id="@+id/kakao_logout_btn"
@@ -45,6 +45,13 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="로그인 정보" />
+
+    <Button
+        android:id="@+id/redirect_friends_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="친구초대" />
 
     <Button
         android:id="@+id/redirect_login_btn"

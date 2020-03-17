@@ -33,9 +33,11 @@ public class KakaoTalkMainActivity extends AppCompatActivity {
 
         requestProfile();
 
-        // 테스트
-        Glide.with(this).load("http://th-p.talk.kakao.co.kr/th/talkp/wlAvDlYuxv/aVB09m4qm7fcs4g6hLQD71/tm82pt_110x110_c.jpg")
+        /*
+        Glide.with(this).load("http://th-p.talk.kakao.co.kr/th/talkp/wlBoIs5StI/j5WeBXAuhnhSVz5RqbUHVK/fozflp_110x110_c.jpg")
                 .error(R.drawable.error_img).into(profile_image);
+
+         */
 
     }
 
@@ -76,6 +78,9 @@ public class KakaoTalkMainActivity extends AppCompatActivity {
                 Log.e("KakaoTalkProfile ::", "countryISO = " + countryISO);
 
                 Log.e("KakaoTalkResponseCallback ::", "프로필 가져오기 종료");
+
+                Glide.with(getApplicationContext()).load(thumbnailURL).error(R.drawable.error_img).into(profile_image);
+
             }
         });
     }

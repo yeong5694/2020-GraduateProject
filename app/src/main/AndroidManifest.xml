@@ -14,16 +14,22 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
-       <activity android:name=".KakaoTalkMainActivity"></activity>
-       <activity android:name=".SuccessLogin" />
-       <activity android:name=".TripRoomActivity"></activity>
-       
-      <!-- 카카오톡 메타데이터 -->
+
+        <activity android:name=".KakaoFriendsInviteActivity">
+            <intent-filter>
+                <data android:scheme="@string/kakao_scheme"
+                    android:host="@string/kakaolink_host" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".KakaoTalkMainActivity" />
+        <activity android:name=".SuccessLoginActivity" />
+        <activity android:name=".TripRoomActivity" />
+
+        <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="@string/kakao_app_key" />
-      
-      <!-- 구글 메타데이터 -->
+        <!-- 구글 메타데이터 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />
