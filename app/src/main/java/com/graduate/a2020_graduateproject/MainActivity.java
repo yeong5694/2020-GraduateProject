@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //지도화면으로 넘어가는 버튼 하나 만들어놓음
-        Button map_button=(Button)findViewById(R.id.map_button);
+       Button map_button=(Button)findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener(){
 
         @Override
@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(myintent);
             }
         });
+
     }
 
 }

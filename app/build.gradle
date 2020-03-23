@@ -18,6 +18,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+
 }
 
 // Add the following line to the bottom of the file:
@@ -51,10 +53,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:17.0.0'
     implementation 'com.google.firebase:firebase-database:18.0.0'
 
+    // Glide 라이브러리 (이미지 로딩/캐싱)
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
 
-
-
-
-
-
+    // material design
+    implementation 'com.google.android.material:material:1.2.0-alpha03'
+    // CircleImageView - 프로필 이미지 동그랗게
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
