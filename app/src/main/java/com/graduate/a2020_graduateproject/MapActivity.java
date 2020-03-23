@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import noman.googleplaces.NRPlaces;
 import noman.googleplaces.Place;
@@ -35,6 +36,9 @@ public class MapActivity extends AppCompatActivity
     private EditText place_Text;
     private Button go_Btn; //직선거리 보여주는 화면으로 이동 //나중에 바꿀예정
 
+    //private ArrayList<MarkerInfo> markerList;
+    private ArrayList<LatLng> markerList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +48,10 @@ public class MapActivity extends AppCompatActivity
         place_Btn=(Button)findViewById(R.id.place_Btn);//장소 찾기 버튼
 
         go_Btn=findViewById(R.id.go_button);
+
+//        markerList=new ArrayList<MarkerInfo>();
+        markerList=new ArrayList<LatLng>();
+
 
         ////지도
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -56,6 +64,9 @@ public class MapActivity extends AppCompatActivity
             public void onClick(View v) {
                 Intent intent =new Intent(getApplicationContext(), MapDistanceActivity.class);
                 Log.d("a","MapActivity에서 MapDistanceActivity로 ");
+             //   intent.putParcelableArrayListExtra("markerList", markerList);
+                intent.putExtra("markerList", markerList);
+
                 startActivity(intent);
             }
         });
@@ -69,6 +80,8 @@ public class MapActivity extends AppCompatActivity
 
                 String place=place_Text.getText().toString();
                 List<Address> addressList=null;
+
+
                 try {
                     addressList=geocoder.getFromLocationName(
                             place, 10 //장소, 최대 검색 결과 개수
@@ -99,6 +112,8 @@ public class MapActivity extends AppCompatActivity
                 //   HUE_MAGENTA, HUE_VioLet, HUE_ORANGE, HUE_RED, HUE_BLUE, HUE_GREEN, HUE_AZURE, HUE_ROSE, HUE_CYAN, HUE_YELLOW
 
                 Marker marker=gMap.addMarker(markerOptions);
+//                markerList.add(new MarkerInfo(latLng.latitude, latLng.longitude, place));
+                markerList.add(latLng);
 
                 marker.showInfoWindow(); //장소 정보 보여주기
 
@@ -153,6 +168,8 @@ public class MapActivity extends AppCompatActivity
                 markerOptions2.snippet(xpos.toString()+", "+ypos.toString());
                 markerOptions2.position(new LatLng(xpos, ypos));
                 googleMap.addMarker(markerOptions2);
+
+
             }
         });
 

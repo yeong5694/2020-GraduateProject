@@ -1,5 +1,6 @@
 package com.graduate.a2020_graduateproject;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -21,13 +22,19 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
     private GoogleMap gMap;
     private Geocoder geocoder;
     private PolylineOptions polylineOptions;
-    private ArrayList<LatLng> latList; //위도, 경도 정보 넣어두는 ArrayList
+    private ArrayList<LatLng> markerList; //위도, 경도 정보 넣어두는 ArrayList
 
-    
+   // private ArrayList<MarkerInfo> markerList;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_distance_layout);
+
+        Intent intent=getIntent();
+//        markerList=intent.getParcelableArrayListExtra("markerList");
+        markerList=intent.getParcelableArrayListExtra("markerList");
 
         ////지도
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -43,7 +50,10 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
         gMap=googleMap;
         geocoder=new Geocoder(this);
-        latList=new ArrayList<LatLng>();
+
+        LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
+        
+        /*latList=new ArrayList<LatLng>();
         //한성대학교 위치 찍기
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
         MarkerOptions markerOptions = new MarkerOptions();
@@ -60,11 +70,17 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
         markerOptions2.snippet("Hansung University2");
         gMap.addMarker(markerOptions2);
         latList.add(Hansung2);
+*/
+
+
+
 
         polylineOptions=new PolylineOptions();
         polylineOptions.color(Color.RED);
         polylineOptions.width(5);
-        polylineOptions.addAll(latList);
+
+        polylineOptions.addAll(markerList);
+
         gMap.addPolyline(polylineOptions);
 
         //지도 위치를 Hansung으로 맞춤
