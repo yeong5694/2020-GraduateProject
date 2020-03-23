@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.kakao.network.ErrorResult;
 import com.kakao.usermgmt.UserManagement;
@@ -17,33 +16,34 @@ import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.kakao.usermgmt.callback.UnLinkResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
-public class SuccessLogin extends AppCompatActivity {
+public class SuccessLoginActivity extends AppCompatActivity {
 
     private Button kakao_logout_btn;
 
     private Button redirect_login_btn;
     private Button delete_session_btn;
     private Button redirect_mypage_btn;
+    private Button redirect_friends_btn;
 
-    private Button mainButton;  // 메인화면으로 가는 버튼     // 예원
+  private Button mainButton;  // 메인화면으로 가는 버튼     // 예원
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_success_login);
 
-        // 예원
+      // 예원
         // 메인화면으로 가는 버튼
         mainButton = findViewById(R.id.go_to_main);
         mainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(SuccessLogin.this, MainActivity.class);
+                Intent intent = new Intent(SuccessLoginActivity.this, MainActivity.class);
                 startActivity(intent);
             }
         });
-
-
+      
+      
         // 카카오 로그아웃
         kakao_logout_btn = (Button)findViewById(R.id.kakao_logout_btn);
         kakao_logout_btn.setOnClickListener(new View.OnClickListener() {
@@ -78,22 +78,34 @@ public class SuccessLogin extends AppCompatActivity {
                 redirectKakaoTalkMainActivity();
             }
         });
+        // 친구목록 조회
+        redirect_friends_btn = (Button)findViewById(R.id.redirect_friends_btn);
+        redirect_friends_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                redirectKakaoFriendsInviteActivity();
+            }
+        });
 
-        Toast.makeText(getApplicationContext(),"로그인 성공!",Toast.LENGTH_LONG).show();
+
     }
 
     protected void redirectLoginActivity(){
-        final Intent intent = new Intent(SuccessLogin.this, LoginActivity.class);
+        final Intent intent = new Intent(SuccessLoginActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
     }
-
     protected void redirectKakaoTalkMainActivity(){
-        final Intent intent = new Intent(SuccessLogin.this, KakaoTalkMainActivity.class);
+        final Intent intent = new Intent(SuccessLoginActivity.this, KakaoTalkMainActivity.class);
         startActivity(intent);
         finish();
-
     }
+    protected  void redirectKakaoFriendsInviteActivity(){
+        final Intent intent = new Intent(SuccessLoginActivity.this, KakaoFriendsInviteActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
 
     /* 로그아웃 */
     private void onClickLogout() {
@@ -101,7 +113,7 @@ public class SuccessLogin extends AppCompatActivity {
             @Override
             public void onCompleteLogout() {
                 Log.e("KakaoLogout ::", "로그아웃 합니다..");
-                final Intent intent = new Intent(SuccessLogin.this, LoginActivity.class);
+                final Intent intent = new Intent(SuccessLoginActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }
