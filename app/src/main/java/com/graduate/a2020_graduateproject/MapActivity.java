@@ -127,6 +127,7 @@ public class MapActivity extends AppCompatActivity
 
         gMap = googleMap;
         geocoder=new Geocoder(this);
+        // 내부적인 좌표값에 대한 정보 얻기 위한 객체
 
         //한성대학교 위치 찍기
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
