@@ -18,9 +18,15 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import noman.googleplaces.NRPlaces;
 import noman.googleplaces.Place;
 import noman.googleplaces.PlaceType;
@@ -36,8 +42,13 @@ public class MapActivity extends AppCompatActivity
     private EditText place_Text;
     private Button go_Btn; //직선거리 보여주는 화면으로 이동 //나중에 바꿀예정
 
-    //private ArrayList<MarkerInfo> markerList;
+    private ArrayList<LatLng> clickList;
     private ArrayList<LatLng> markerList;
+
+    //내가 사용할 데이터베이스 인스턴스 불러오기
+    private FirebaseDatabase database= null;
+    private DatabaseReference databaseReference=null;
+    private Map<String, Object> info;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +61,13 @@ public class MapActivity extends AppCompatActivity
         go_Btn=findViewById(R.id.go_button);
 
 //        markerList=new ArrayList<MarkerInfo>();
-        markerList=new ArrayList<LatLng>();
+        markerList=new ArrayList<>(); //장소찾기 버튼을 통한 저장
+        clickList=new ArrayList<>(); //클릭한 장소 저장
 
+        database= FirebaseDatabase.getInstance();
+        databaseReference=database.getReference("SharingTrips");
 
-        ////지도
+        ////지도 띄우기
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -66,7 +80,7 @@ public class MapActivity extends AppCompatActivity
                 Log.d("a","MapActivity에서 MapDistanceActivity로 ");
              //   intent.putParcelableArrayListExtra("markerList", markerList);
                 intent.putExtra("markerList", markerList);
-
+                intent.putExtra("clickList", clickList);
                 startActivity(intent);
             }
         });
@@ -94,6 +108,7 @@ public class MapActivity extends AppCompatActivity
                 Address[addressLines=[0:"대한민국 서울특별시 한성대입구역"],feature=한성대입구역,admin=서울특별시,
                  sub-admin=null,locality=null,thoroughfare=null,postalCode=null,countryCode=KR,countryName=대한민국,
                  hasLatitude=true,latitude=37.588374,hasLongitude=true,longitude=127.005907,phone=null,url=null,extras=null]*/
+
                 //10, 12
                 System.out.println(addressList.get(0).toString());
                 String []Places=addressList.get(0).toString().split(",");
@@ -113,6 +128,11 @@ public class MapActivity extends AppCompatActivity
 
                 Marker marker=gMap.addMarker(markerOptions);
 //                markerList.add(new MarkerInfo(latLng.latitude, latLng.longitude, place));
+
+                //firebase에 추가하기
+                info=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
+                databaseReference.child("MapInfo").push().setValue(info);
+
                 markerList.add(latLng);
 
                 marker.showInfoWindow(); //장소 정보 보여주기
@@ -163,12 +183,13 @@ public class MapActivity extends AppCompatActivity
             public void onMapClick(LatLng latLng) {
                 MarkerOptions markerOptions2=new MarkerOptions();
                 markerOptions2.title("좌표");
-                Double xpos=latLng.latitude; //위도
-                Double ypos=latLng.longitude; //경도
-                markerOptions2.snippet(xpos.toString()+", "+ypos.toString());
-                markerOptions2.position(new LatLng(xpos, ypos));
+               // Double xpos=latLng.latitude; //위도
+                //Double ypos=latLng.longitude; //경도
+                markerOptions2.snippet(latLng.latitude+", "+latLng.longitude);
+                markerOptions2.position(latLng);
                 googleMap.addMarker(markerOptions2);
 
+                clickList.add(latLng);
 
             }
         });

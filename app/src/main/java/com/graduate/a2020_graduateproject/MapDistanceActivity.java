@@ -12,7 +12,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -21,9 +20,12 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
     private GoogleMap gMap;
     private Geocoder geocoder;
-    private PolylineOptions polylineOptions;
-    private ArrayList<LatLng> markerList; //위도, 경도 정보 넣어두는 ArrayList
 
+    private PolylineOptions polylineOptions;
+    private PolylineOptions polylineOptionsClick;
+
+    private ArrayList<LatLng> markerList; //위도, 경도 정보 넣어두는 ArrayList
+    private ArrayList<LatLng> clickList; // 클릭한 장소 넣어두는 ArrayList
    // private ArrayList<MarkerInfo> markerList;
 
 
@@ -35,6 +37,7 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
         Intent intent=getIntent();
 //        markerList=intent.getParcelableArrayListExtra("markerList");
         markerList=intent.getParcelableArrayListExtra("markerList");
+        clickList=intent.getParcelableArrayListExtra("clickList");
 
         ////지도
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -52,7 +55,7 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
         geocoder=new Geocoder(this);
 
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
-        
+
         /*latList=new ArrayList<LatLng>();
         //한성대학교 위치 찍기
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
@@ -77,11 +80,21 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
         polylineOptions=new PolylineOptions();
         polylineOptions.color(Color.RED);
-        polylineOptions.width(5);
+        polylineOptions.width(8);
 
         polylineOptions.addAll(markerList);
 
         gMap.addPolyline(polylineOptions);
+
+
+        polylineOptionsClick=new PolylineOptions();
+        polylineOptionsClick.color(Color.GREEN);
+        polylineOptionsClick.width(8);
+
+        polylineOptionsClick.addAll(clickList);
+
+        gMap.addPolyline(polylineOptionsClick);
+
 
         //지도 위치를 Hansung으로 맞춤
         gMap.moveCamera(CameraUpdateFactory.newLatLng(Hansung));
