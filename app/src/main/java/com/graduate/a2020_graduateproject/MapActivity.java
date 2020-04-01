@@ -3,13 +3,22 @@ package com.graduate.a2020_graduateproject;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -22,6 +31,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +44,7 @@ import noman.googleplaces.PlacesException;
 import noman.googleplaces.PlacesListener;
 
 public class MapActivity extends AppCompatActivity
-        implements OnMapReadyCallback, PlacesListener {
+        implements OnMapReadyCallback, PlacesListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap gMap;
     private Geocoder geocoder;
@@ -49,6 +59,10 @@ public class MapActivity extends AppCompatActivity
     private FirebaseDatabase database= null;
     private DatabaseReference databaseReference=null;
     private Map<String, Object> info;
+    private Map<String, Object> clickinfo;
+
+    protected Location location;
+    private AddressResultReceiver resultReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +145,8 @@ public class MapActivity extends AppCompatActivity
 
                 //firebase에 추가하기
                 info=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
-                databaseReference.child("MapInfo").push().setValue(info);
+
+                databaseReference.child("MapInfo").child("find").push().setValue(info);
 
                 markerList.add(latLng);
 
@@ -187,15 +202,30 @@ public class MapActivity extends AppCompatActivity
                 //Double ypos=latLng.longitude; //경도
                 markerOptions2.snippet(latLng.latitude+", "+latLng.longitude);
                 markerOptions2.position(latLng);
+
+                        startIntentService(latLng);
+
                 googleMap.addMarker(markerOptions2);
 
                 clickList.add(latLng);
+
+             //   clickinfo=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
+               // databaseReference.child("MapInfo").child("click").push().setValue(info);
 
             }
         });
 
     }
 
+
+    //ResultReceiver->주소조회 결과를 처리하기 위한 인스턴스
+    public void startIntentService(LatLng latLng){ //역지오코딩 실행
+        resultReceiver=new AddressResultReceiver(new android.os.Handler());
+        Intent intent=new Intent(this, MapFetchAddressIntentService.class);
+        intent.putExtra(MapConstants.RECEIVER, resultReceiver);
+        intent.putExtra(MapConstants.LOCATION_DATA_EXTRA,latLng);
+        startService(intent);
+    }
 
     //커스텀 마커 추가->입력한 위치 주변 장소 띄우기
     //선택하면 색깔 변하도록->데이터베이스에 저장.....할 예정
@@ -224,6 +254,7 @@ public class MapActivity extends AppCompatActivity
         });
     }
 
+
     @Override
     public void onPlacesFinished() {
 
@@ -239,4 +270,36 @@ public class MapActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    //FetchAddressIntentService의 응답을 처리하기 위해 ResultReceiver를 확장하는 AddressResultReceiver정의
+    class AddressResultReceiver extends ResultReceiver{
+
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            /*if (resultData == null) {
+                return;
+           */
+
+
+        }
+    }
 }

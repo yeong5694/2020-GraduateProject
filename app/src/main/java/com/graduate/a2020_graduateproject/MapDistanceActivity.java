@@ -76,8 +76,6 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 */
 
 
-
-
         polylineOptions=new PolylineOptions();
         polylineOptions.color(Color.RED);
         polylineOptions.width(8);
