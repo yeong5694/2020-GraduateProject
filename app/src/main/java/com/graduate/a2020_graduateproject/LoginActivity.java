@@ -69,6 +69,13 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 
+    protected void redirectMainActivity() {
+        //final Intent intent = new Intent(this, SuccessLoginActivity.class);
+        final Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     protected void redirectLoginActivity(){
         final Intent intent = new Intent(LoginActivity.this, LoginActivity.class);
         startActivity(intent);
@@ -148,13 +155,16 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e("KakaoLogin","thumbnail image : " + profile.getThumbnailImageUrl());
                     } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
                         // 동의 요청 후 프로필 정보 획득 가능
+                        Log.e("KakaoLogin","동의 요청 후 프로필 정보 획득 가능");
 
                     } else {
                         // 프로필 획득 불가
+                        Log.e("KakaoLogin","프로필 획득 불가");
                     }
                 }
 
-                redirectSignupActivity(); // SuccessLoginActivity 으로 이동
+                //redirectSignupActivity(); // SuccessLoginActivity 으로 이동
+                redirectMainActivity();
             }
 
         });
