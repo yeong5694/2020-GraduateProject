@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         // 선영이 지도 연결 버튼
-
+/*
         Button map_button = (Button)findViewById(R.id.map_button);
         map_button.setOnClickListener(new View.OnClickListener() {
         @Override
@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(myintent);
             }
         });
-
+*/
     }
 
     @Override

@@ -64,6 +64,8 @@ public class MapActivity extends AppCompatActivity
     protected Location location;
     private AddressResultReceiver resultReceiver;
 
+    private String addressOutput="";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,7 +136,7 @@ public class MapActivity extends AppCompatActivity
 
                 LatLng latLng=new LatLng(xpos, ypos);
                 MarkerOptions markerOptions=new MarkerOptions();
-                markerOptions.title(place);
+                 markerOptions.title(place);
                 markerOptions.snippet(address);
                 markerOptions.position(latLng);
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)); //마커 색깔 파란색으로
@@ -196,14 +198,13 @@ public class MapActivity extends AppCompatActivity
         gMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                MarkerOptions markerOptions2=new MarkerOptions();
-                markerOptions2.title("좌표");
-               // Double xpos=latLng.latitude; //위도
-                //Double ypos=latLng.longitude; //경도
-                markerOptions2.snippet(latLng.latitude+", "+latLng.longitude);
-                markerOptions2.position(latLng);
 
-                        startIntentService(latLng);
+                startIntentService(latLng);
+
+                MarkerOptions markerOptions2=new MarkerOptions();
+                markerOptions2.position(latLng);
+                markerOptions2.title(addressOutput);
+                markerOptions2.snippet(latLng.latitude+", "+latLng.longitude);
 
                 googleMap.addMarker(markerOptions2);
 
@@ -295,9 +296,8 @@ public class MapActivity extends AppCompatActivity
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            /*if (resultData == null) {
-                return;
-           */
+            addressOutput=resultData.getString(MapConstants.RESULT_DATA_KEY);
+            System.out.println("MapActivity RESULT_DATA_KEY:: "+MapConstants.RESULT_DATA_KEY);
 
 
         }
