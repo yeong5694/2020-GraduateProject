@@ -41,7 +41,7 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
         ////지도
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map_distance);
+                .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
 
     }
