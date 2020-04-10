@@ -17,8 +17,6 @@
         android:usesCleartextTraffic="true">
         <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
 
-        <activity android:name=".KakaoTalkMainActivity"></activity>
-        <activity android:name=".SuccessLoginActivity" />
         <activity android:name=".TripRoomActivity"></activity>
 
         <!-- 카카오톡 메타데이터 -->
