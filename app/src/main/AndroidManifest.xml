@@ -6,6 +6,11 @@
     <!--정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!-- 읽기 권한 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- 저장 권한 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:name=".GlobalApplication"
         android:allowBackup="false"
@@ -15,8 +20,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+        <activity android:name=".ShareGalleryActivity"></activity>
         <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
 
+        <activity android:name=".KakaoFriendsInviteActivity">
+            <intent-filter>
+                <data
+                    android:host="@string/kakaolink_host"
+                    android:scheme="@string/kakao_scheme" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".KakaoTalkMainActivity" />
+        <activity android:name=".SuccessLoginActivity" />
+  
         <activity android:name=".TripRoomActivity"></activity>
 
         <!-- 카카오톡 메타데이터 -->
@@ -25,6 +41,7 @@
             android:value="@string/kakao_app_key" />
 
         <!-- 구글 메타데이터 -->
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />
@@ -50,6 +67,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity android:name=".MapDistanceActivity"></activity>
 
         <!--주소 검색-->

@@ -64,6 +64,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         int id = item.getItemId();
 
         if(id == R.id.home) {
+            // 뒤로 돌아가도록(홈화면 MainActivity로) 고쳐야 함
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
             startActivity(intent);
         }
@@ -118,7 +119,8 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
 
         }
         else if(id == R.id.gallery) {
-
+            Intent intent = new Intent(TripRoomActivity.this, ShareGalleryActivity.class);
+            startActivity(intent);
         }
         else if(id == R.id.settings) {
 
