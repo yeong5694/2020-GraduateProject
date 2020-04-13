@@ -30,10 +30,8 @@
                     android:scheme="@string/kakao_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".KakaoTalkMainActivity" />
-        <activity android:name=".SuccessLoginActivity" />
 
-        <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".TripRoomActivity"></activity>
 
         <!-- 카카오톡 메타데이터 -->
         <meta-data
@@ -66,6 +64,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity android:name=".MapDistanceActivity"></activity>
 
         <!--주소 검색-->
@@ -78,9 +77,5 @@
             android:name="org.apache.http.legacy"
             android:required="false"/>
 
-
-
-
     </application>
-
 </manifest>
