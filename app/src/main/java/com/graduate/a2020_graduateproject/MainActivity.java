@@ -19,12 +19,11 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.kakao.auth.ApiResponseCallback;
 import com.kakao.auth.AuthService;
 import com.kakao.auth.network.response.AccessTokenInfoResponse;
-import com.kakao.kakaotalk.callback.TalkResponseCallback;
-import com.kakao.kakaotalk.response.KakaoTalkProfile;
-import com.kakao.kakaotalk.v2.KakaoTalkService;
 import com.kakao.network.ErrorResult;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
@@ -36,6 +35,9 @@ import com.kakao.usermgmt.response.model.UserAccount;
 import com.kakao.util.OptionalBoolean;
 import com.kakao.util.helper.log.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
@@ -45,8 +47,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     View nav_header_view;
     private ImageView profile_image;
-    private TextView name;
+    private TextView kakao_name;
     private TextView kakaoEmail;
+    private Long kakao_id;
+
+    DatabaseReference mDBReference = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,23 +81,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         nav_header_view = navigationView.getHeaderView(0);
         profile_image = nav_header_view.findViewById(R.id.profile_image);
-        name = (TextView)nav_header_view.findViewById(R.id.name);
+        kakao_name = (TextView)nav_header_view.findViewById(R.id.name);
         kakaoEmail = (TextView)nav_header_view.findViewById(R.id.email);
         requestUserInfo();
 
-        // 선영이 지도 연결 버튼
 
-//        Button map_button = (Button)findViewById(R.id.map_button);
-//        map_button.setOnClickListener(new View.OnClickListener() {
-//        @Override
-//            public void onClick(View v) {
-//                Intent myintent =new Intent(MainActivity.this, MapActivity.class);
-//                startActivity(myintent);
-//            }
-//        });
-
-        /* 카카오 sdk 토큰 정보 가져오기*/
-        requestTokenInfo();
 
 
     }
@@ -112,9 +106,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else if(id == R.id.settings) {
 
         }
-        else if(id == R.id.logout) {
-            // 카카오 로그아웃
+        else if(id == R.id.logout) { // 카카오 로그아웃
+
            onClickLogout();
+
+        }
+        else if(id == R.id.withdraw){ // 앱 탈퇴
+
+            onClickUnlink();
+
 
         }
 
@@ -138,16 +138,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         startActivity(intent);
         finish();
     }
-    protected void redirectKakaoTalkMainActivity(){
-        final Intent intent = new Intent(MainActivity.this, KakaoTalkMainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-    protected  void redirectKakaoFriendsInviteActivity(){
-        final Intent intent = new Intent(MainActivity.this, KakaoFriendsInviteActivity.class);
-        startActivity(intent);
-        finish();
-    }
+
 
     /* 로그아웃 */
     private void onClickLogout() {
@@ -195,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     public void onSuccess(Long userId) {
 
                                         Log.e("KakaoSession","앱연결해제 성공" );
+                                        deleteUser(kakao_id);
                                         redirectLoginActivity();
                                     }
                                 });
@@ -211,49 +203,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    private abstract class KakaoTalkResponseCallback<T> extends TalkResponseCallback<T> {
-        @Override
-        public void onNotKakaoTalkUser() {
-            Log.e("KakaoTalkResponseCallback ::", "카카오톡 사용자가 아니다");
-        }
 
-        @Override
-        public void onFailure(ErrorResult errorResult) {
-            Log.e("KakaoTalkResponseCallback ::", "이외 다른 이유");
-            Logger.e("failure : " + errorResult);
-        }
-
-        @Override
-        public void onSessionClosed(ErrorResult errorResult) {
-            Log.e("KakaoTalkResponseCallback ::", "세션이 닫혀 실패한경우");
-            redirectLoginActivity();
-        }
-    }
-
-    public void requestProfile() {
-        KakaoTalkService.getInstance().requestProfile(new KakaoTalkResponseCallback<KakaoTalkProfile>() {
-            @Override
-            public void onSuccess(KakaoTalkProfile talkProfile) { // 실시간 톡 프로필 정보
-                Log.e("KakaoTalkResponseCallback ::", "프로필 가져오기 시작");
-
-                final String nickName = talkProfile.getNickName(); // 카톡 별명
-                final String profileImageURL = talkProfile.getProfileImageUrl(); // 카톡 프로필 이미지
-                final String thumbnailURL = talkProfile.getThumbnailUrl(); // 카톡 썸네일 이미지
-                final String countryISO = talkProfile.getCountryISO(); // 카톡 국가
-
-                Log.e("KakaoTalkProfile ::", "nickname = " + nickName);
-                Log.e("KakaoTalkProfile ::", "profileImageURL = " + profileImageURL);
-                Log.e("KakaoTalkProfile ::", "thumbnailURL = " + thumbnailURL);
-                Log.e("KakaoTalkProfile ::", "countryISO = " + countryISO);
-
-                Log.e("KakaoTalkResponseCallback ::", "프로필 가져오기 종료");
-
-               Glide.with(getApplicationContext()).load(thumbnailURL).error(R.drawable.error_img).into(profile_image);
-                name.setText(nickName);
-
-            }
-        });
-    }
 
     public void requestTokenInfo(){
         AuthService.getInstance()
@@ -291,6 +241,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     @Override
                     public void onSuccess(MeV2Response result) {
+
+                        kakao_id = result.getId();
                         Log.i("KAKAO_API", "사용자 아이디: " + result.getId());
 
                         UserAccount kakaoAccount = result.getKakaoAccount();
@@ -326,10 +278,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             }
 
                             Glide.with(getApplicationContext()).load( profile.getThumbnailImageUrl()).error(R.drawable.kakao_default_profile_image).into(profile_image);
-                            name.setText(profile.getNickname());
+                            kakao_name.setText(profile.getNickname());
                             kakaoEmail.setText(email);
+                            writeNewUser(kakao_id, profile.getNickname(),email, profile.getThumbnailImageUrl());
                         }
                     }
                 });
+    }
+
+    public void deleteUser(Long kakao_id){
+
+        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
+        Map<String, Object> childUpdates = new HashMap<>();
+        Map<String, Object> postValues = null;
+
+        childUpdates.put("/user_list/" + kakao_id, postValues);
+        mPostReference.updateChildren(childUpdates);
+    }
+
+    public void writeNewUser(Long id, String name, String email, String thumbnail){
+
+        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
+        Map<String, Object> childUpdates = new HashMap<>();
+        Map<String, Object> postValues = null;
+
+        User post = new User(id, name, email, thumbnail);
+        postValues = post.toMap();
+
+        childUpdates.put("/user_list/" + id, postValues);
+        mPostReference.updateChildren(childUpdates);
     }
 }
