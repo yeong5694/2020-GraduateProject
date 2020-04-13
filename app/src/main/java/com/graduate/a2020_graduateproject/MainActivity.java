@@ -2,16 +2,41 @@ package com.graduate.a2020_graduateproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.kakao.auth.ApiResponseCallback;
+import com.kakao.auth.AuthService;
+import com.kakao.auth.network.response.AccessTokenInfoResponse;
+import com.kakao.network.ErrorResult;
+import com.kakao.usermgmt.UserManagement;
+import com.kakao.usermgmt.callback.LogoutResponseCallback;
+import com.kakao.usermgmt.callback.MeV2ResponseCallback;
+import com.kakao.usermgmt.callback.UnLinkResponseCallback;
+import com.kakao.usermgmt.response.MeV2Response;
+import com.kakao.usermgmt.response.model.Profile;
+import com.kakao.usermgmt.response.model.UserAccount;
+import com.kakao.util.OptionalBoolean;
+import com.kakao.util.helper.log.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -19,6 +44,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+
+    View nav_header_view;
+    private ImageView profile_image;
+    private TextView kakao_name;
+    private TextView kakaoEmail;
+    private Long kakao_id;
+
+    DatabaseReference mDBReference = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
 
+
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
@@ -44,22 +79,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        // 선영이 지도 연결 버튼
-        /*
-        Button map_button = (Button)findViewById(R.id.map_button);
-        map_button.setOnClickListener(new View.OnClickListener() {
-        @Override
-            public void onClick(View v) {
-                Intent myintent =new Intent(MainActivity.this, MapActivity.class);
-                startActivity(myintent);
-            }
-        });
-        */
+        nav_header_view = navigationView.getHeaderView(0);
+        profile_image = nav_header_view.findViewById(R.id.profile_image);
+        kakao_name = (TextView)nav_header_view.findViewById(R.id.name);
+        kakaoEmail = (TextView)nav_header_view.findViewById(R.id.email);
+        requestUserInfo();
+
+
+
+
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
+
+
 
         if(id == R.id.trips) {
             Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
@@ -71,7 +106,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         else if(id == R.id.settings) {
 
         }
-        else if(id == R.id.logout) {
+        else if(id == R.id.logout) { // 카카오 로그아웃
+
+           onClickLogout();
+
+        }
+        else if(id == R.id.withdraw){ // 앱 탈퇴
+
+            onClickUnlink();
+
 
         }
 
@@ -88,5 +131,181 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
+    }
+
+    protected void redirectLoginActivity(){
+        final Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+
+    /* 로그아웃 */
+    private void onClickLogout() {
+        UserManagement.getInstance().requestLogout(new LogoutResponseCallback() {
+            @Override
+            public void onCompleteLogout() {
+                Log.e("KakaoLogout ::", "로그아웃 합니다..");
+                final Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+    }
+
+    /* 앱 연결 해제 */
+    private void onClickUnlink() {
+        final String appendMessage = getString(R.string.com_kakao_confirm_unlink);
+        new AlertDialog.Builder(this)
+                .setMessage(appendMessage)
+                .setPositiveButton(getString(R.string.com_kakao_ok_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                UserManagement.getInstance().requestUnlink(new UnLinkResponseCallback() {
+                                    @Override
+                                    public void onFailure(ErrorResult errorResult) {
+                                        Log.e("KakaoSession","앱연결해제 실패" );
+                                        Logger.e(errorResult.toString());
+                                    }
+
+                                    @Override
+                                    public void onSessionClosed(ErrorResult errorResult) {
+                                        Log.e("KakaoSession","앱연결해제 세션이 이미 닫힌경우" );
+                                        redirectLoginActivity();
+                                    }
+
+                                    @Override
+                                    public void onNotSignedUp() {
+
+                                        Log.e("KakaoSession","앱연결해제 미가입" );
+                                        redirectLoginActivity();
+                                    }
+
+                                    @Override
+                                    public void onSuccess(Long userId) {
+
+                                        Log.e("KakaoSession","앱연결해제 성공" );
+                                        deleteUser(kakao_id);
+                                        redirectLoginActivity();
+                                    }
+                                });
+                                dialog.dismiss();
+                            }
+                        })
+                .setNegativeButton(getString(R.string.com_kakao_cancel_button),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).show();
+
+    }
+
+
+
+    public void requestTokenInfo(){
+        AuthService.getInstance()
+                .requestAccessTokenInfo(new ApiResponseCallback<AccessTokenInfoResponse>() {
+                    @Override
+                    public void onSessionClosed(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "세션이 닫혀 있음: " + errorResult);
+                    }
+
+                    @Override
+                    public void onFailure(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "토큰 정보 요청 실패: " + errorResult);
+                    }
+
+                    @Override
+                    public void onSuccess(AccessTokenInfoResponse result) {
+                        Log.i("KAKAO_API", "사용자 아이디: " + result.getUserId());
+                        Log.i("KAKAO_API", "남은 시간 (ms): " + result.getExpiresInMillis());
+                    }
+                });
+    }
+
+    public void requestUserInfo(){
+        UserManagement.getInstance()
+                .me(new MeV2ResponseCallback() {
+                    @Override
+                    public void onSessionClosed(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "세션이 닫혀 있음: " + errorResult);
+                    }
+
+                    @Override
+                    public void onFailure(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "사용자 정보 요청 실패: " + errorResult);
+                    }
+
+                    @Override
+                    public void onSuccess(MeV2Response result) {
+
+                        kakao_id = result.getId();
+                        Log.i("KAKAO_API", "사용자 아이디: " + result.getId());
+
+                        UserAccount kakaoAccount = result.getKakaoAccount();
+                        if (kakaoAccount != null) {
+
+                            // 이메일
+                            String email = kakaoAccount.getEmail();
+
+                            if (email != null) {
+                                Log.i("KAKAO_API", "email: " + email);
+
+                            } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
+                                // 동의 요청 후 이메일 획득 가능
+                                // 단, 선택 동의로 설정되어 있다면 서비스 이용 시나리오 상에서 반드시 필요한 경우에만 요청해야 합니다.
+
+                            } else {
+                                // 이메일 획득 불가
+                            }
+
+                            // 프로필
+                            Profile profile = kakaoAccount.getProfile();
+
+                            if (profile != null) {
+                                Log.d("KAKAO_API", "nickname: " + profile.getNickname());
+                                Log.d("KAKAO_API", "profile image: " + profile.getProfileImageUrl());
+                                Log.d("KAKAO_API", "thumbnail image: " + profile.getThumbnailImageUrl());
+
+                            } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
+                                // 동의 요청 후 프로필 정보 획득 가능
+
+                            } else {
+                                // 프로필 획득 불가
+                            }
+
+                            Glide.with(getApplicationContext()).load( profile.getThumbnailImageUrl()).error(R.drawable.kakao_default_profile_image).into(profile_image);
+                            kakao_name.setText(profile.getNickname());
+                            kakaoEmail.setText(email);
+                            writeNewUser(kakao_id, profile.getNickname(),email, profile.getThumbnailImageUrl());
+                        }
+                    }
+                });
+    }
+
+    public void deleteUser(Long kakao_id){
+
+        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
+        Map<String, Object> childUpdates = new HashMap<>();
+        Map<String, Object> postValues = null;
+
+        childUpdates.put("/user_list/" + kakao_id, postValues);
+        mPostReference.updateChildren(childUpdates);
+    }
+
+    public void writeNewUser(Long id, String name, String email, String thumbnail){
+
+        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
+        Map<String, Object> childUpdates = new HashMap<>();
+        Map<String, Object> postValues = null;
+
+        User post = new User(id, name, email, thumbnail);
+        postValues = post.toMap();
+
+        childUpdates.put("/user_list/" + id, postValues);
+        mPostReference.updateChildren(childUpdates);
     }
 }

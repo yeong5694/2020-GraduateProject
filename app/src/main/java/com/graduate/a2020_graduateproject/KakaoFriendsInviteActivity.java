@@ -37,7 +37,7 @@ public class KakaoFriendsInviteActivity extends AppCompatActivity {
         redirect_successLogin_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final Intent intent = new Intent(KakaoFriendsInviteActivity.this, SuccessLoginActivity.class);
+                final Intent intent = new Intent(KakaoFriendsInviteActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             }
