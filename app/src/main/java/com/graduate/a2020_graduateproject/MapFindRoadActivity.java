@@ -1,8 +1,5 @@
 package com.graduate.a2020_graduateproject;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Geocoder;
 import android.os.AsyncTask;
@@ -10,11 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,8 +33,6 @@ import java.util.List;
 public class MapFindRoadActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap gMap;
-    private Geocoder geocoder;
-    private static final int LOCATION_REQUEST=500;
     private Polyline polyline;
     ArrayList<LatLng> listPoints;
 
@@ -55,21 +46,31 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
+
         listPoints=new ArrayList<>();
 
-//        findRoad_Btn=findViewById(R.id.map_findroad);
-     /*   findRoad_Btn.setOnClickListener(new View.OnClickListener(){
+        findRoad_Btn=findViewById(R.id.findroad_button);
+        findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                String url=getRequestUrl()
+                String mode="transit"; //driving
+
+                for(int i=0;i<listPoints.size()-1;i++){
+                    String polyUrl=getUrl(listPoints.get(i), listPoints.get(i+1), mode);
+                    System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
+                    DownloadTask downloadTask=new DownloadTask();
+                    downloadTask.execute(polyUrl);
+                }
             }
-        });*/
+        });
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap=googleMap;
-   /*     gMap.getUiSettings().setZoomControlsEnabled(true);
+   /*  권한 -> Map Activity로 옮기기
+      gMap.getUiSettings().setZoomControlsEnabled(true);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // Check Permissions Now
@@ -82,7 +83,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 */
 
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
-
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(Hansung);
         markerOptions.title("Hansung University");
@@ -92,99 +92,90 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         gMap.moveCamera(CameraUpdateFactory.newLatLng(Hansung));
         gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
-
-
-        gMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+        gMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
-            public void onMapLongClick(LatLng latLng) {
-                if(listPoints.size()==2){
-                    listPoints.clear();
-                    gMap.clear();
-                }
+            public void onMapClick(LatLng latLng) {
 
                 listPoints.add(latLng);
 
                 MarkerOptions markerOptions=new MarkerOptions();
                 markerOptions.position(latLng);
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-                if(listPoints.size()==1){
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                }
-                else{
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
-                }
                 gMap.addMarker(markerOptions);
 
-                if(listPoints.size()==2){
-                    String url=getRequestUrl(listPoints.get(0), listPoints.get(1));
-                    DownloadTask downloadTask=new DownloadTask();
-                    downloadTask.execute();
-                }
             }
         });
 
-
-
-
+        gMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                listPoints.clear();
+                gMap.clear();
+            }
+        });
     }
 
-    private String getRequestUrl(LatLng origin, LatLng dest){
+    private String getUrl(LatLng origin, LatLng dest, String mode){
 
-        String str_origin="origin="+origin.latitude+","+origin.longitude;
-        String str_dest="destination="+dest.latitude+","+dest.longitude;
+        //출발지
+        String originUrl="origin="+origin.latitude+","+origin.longitude;
+        //도착지
+        String destUrl="destination="+dest.latitude+","+dest.longitude;
+        //센서
         String sensor="sensor=false";
-        String mode="mode=transit";
-        String param=str_origin+"&"+str_dest+"&"+sensor+"&"+mode;
+        //모드
+        String modeURL="mode="+mode;
+
+        String urlParameter=originUrl+"&"+destUrl+"&"+sensor+"&"+modeURL;
+
+       //json파일
         String output="json";
-        System.out.println("param : "+param);
-//        String url="http://maps.googleapis.com/maps/api/directions/"+output+"?"+param+"&key="+getString(R.string.google_api_key);
-        String url="https://maps.googleapis.com/maps/api/directions/"+output+"?"+param+"&key="+"AIzaSyANE7MTnzzpaQ08SsN9quflkstM-cC1tIw";
-        System.out.println("url : "+url);
-        return url;
+        System.out.println("param : "+urlParameter);
+
+        String fullUrl="https://maps.googleapis.com/maps/api/directions/"+output+"?"+urlParameter+"&key="+"AIzaSyANE7MTnzzpaQ08SsN9quflkstM-cC1tIw";
+        System.out.println("Fullurl : "+fullUrl);
+
+        return fullUrl;
     }
 
-////requestDirections
-    private String downloadURL(String downurl) throws IOException {
-        String data="";
-        InputStream inputStream =null;
-        HttpURLConnection urlConnection=null;
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream inputStream = null;
+        HttpURLConnection httpURLConnection = null;
+        try{
+            URL downloadUrl = new URL(strUrl);
 
-        try {
-            URL url = new URL(downurl);
+            // Creating an http connection to communicate with url
+            httpURLConnection = (HttpURLConnection) downloadUrl.openConnection();
 
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.connect();
+            // Connecting to url
+            httpURLConnection.connect();
 
-            //데이터 받아오기
-            inputStream = urlConnection.getInputStream();
-            InputStreamReader inputStreamReader=new InputStreamReader(inputStream);
+            // Reading data from url
+            inputStream = httpURLConnection.getInputStream();
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-            StringBuffer stringBuffer = new StringBuffer();
+            StringBuffer sb  = new StringBuffer();
 
             String line = "";
-
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuffer.append(line);
+            while( ( line = br.readLine())  != null){
+                sb.append(line);
             }
 
-            data=stringBuffer.toString();
-            bufferedReader.close();
-            inputStreamReader.close();
+            data = sb.toString();
 
-        } catch (Exception e) {
-            //    e.printStackTrace();
-        }finally {
-            if(inputStream!=null) {
-                inputStream.close();
+            br.close();
 
-            }
-            urlConnection.disconnect();
+        }catch(Exception e){
+
+        }finally{
+            inputStream.close();
+            httpURLConnection.disconnect();
         }
+        System.out.println("downloadURL data : "+data);
         return data;
-
     }
 
 /*    @SuppressLint("MissingPermission")
@@ -199,31 +190,40 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         }
     }
 */
-    ////TaskRequestDirections
-    public class DownloadTask extends AsyncTask<String, Void, String>{
+    /** A class to download data from Google Directions URL */
+    private class DownloadTask extends AsyncTask<String, Void, String> {
 
+        // Downloading data in non-ui thread
         @Override
-        protected String doInBackground(String... strings) {
-            String data="";
-            try {
-                data=downloadURL(strings[0]);
-            } catch (IOException e) {
-                //e.printStackTrace();
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try{
+                // Fetching the data from web service
+                System.out.println("DownloadTask url[0] : "+url[0]);
+                data = downloadUrl(url[0]);
+
+            }catch(Exception e){
+
             }
             return data;
         }
 
+        // Executes in UI thread, after the execution of
+        // doInBackground()
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
 
-            ParserTask parserTask=new ParserTask();
-            parserTask.execute();
-            //parse json
+            ParserTask parserTask = new ParserTask();
+
+            parserTask.execute(result);
         }
     }
 
-    /** A class to parse the Google Directions in JSON format */
+
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
         // Parsing the data in non-ui thread
@@ -234,11 +234,15 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             List<List<HashMap<String, String>>> routes = null;
 
             try{
+                System.out.println("ParserTask jsonData[0] : "+jsonData[0]);
+
                 jObject = new JSONObject(jsonData[0]);
+
                 MapDirectionsJSONParser parser = new MapDirectionsJSONParser();
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
+
             }catch(Exception e){
                 e.printStackTrace();
             }
@@ -248,12 +252,12 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
+            ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
 
             // Traversing through all the routes
             for(int i=0;i<result.size();i++){
-                points = new ArrayList<LatLng>();
+                points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
@@ -270,25 +274,16 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                     points.add(position);
                 }
 
-                // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(8);
-                lineOptions.color(Color.RED);
+                lineOptions.width(12);
+                lineOptions.color(Color.YELLOW);
             }
 
-            // Drawing polyline in the Google Map for the i-th route
             if(lineOptions != null) {
-                if(polyline != null){
-                    polyline.remove();
-                }
                 polyline = gMap.addPolyline(lineOptions);
-
             }else
-                Toast.makeText(getApplicationContext(),"No route is found", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"zero route", Toast.LENGTH_LONG).show();
         }
     }
 
-
-
 }
-
