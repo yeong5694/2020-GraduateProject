@@ -6,8 +6,8 @@
     <color name="colorAccent">#3f51b5</color>
 </resources>-->
 <resources>
-    <color name="colorPrimary">#fedbd0</color>
-    <color name="colorPrimaryDark">#fbb8ac</color>
+    <color name="colorPrimary">#FEDBD0</color>
+    <color name="colorPrimaryDark">#FBB8AC</color>
     <color name="colorAccent">#FEDBD0</color>
     <color name="colorSecondary">#feeae6</color>
     <color name="colorSurface">#fffbfa</color>
