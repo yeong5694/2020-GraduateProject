@@ -58,6 +58,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
 
     private String invited_room_name;
     private String invited_room_id;
+    private String invited_room_master_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,9 +197,10 @@ public class MyTripRoomListActivity extends AppCompatActivity {
 
                             if(invited_room_id.equals(key)){
                                 invited_room_name = snapshot.child("name").getValue().toString();
+                                invited_room_master_id = snapshot.child("master_id").getValue().toString();
                                 Log.e("MyTripRoomListActivity INVITED_ROOM_ID 2", invited_room_id);
                                 Log.e("MyTripRoomListActivity INVITED_ROOM_NAME 2", invited_room_name);
-                                updateMyRoomList(kakao_id, invited_room_id, invited_room_name);
+                                updateMyRoomList(kakao_id, invited_room_id, invited_room_name, invited_room_master_id);
                                 Toast.makeText(getApplicationContext(), "초대받은 방 생성 완료", Toast.LENGTH_LONG).show();
 
 
@@ -261,7 +263,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     }
 
 
-    public void updateMyRoomList(Long kakao_id, String invited_room_id, String invited_room_name){
+    public void updateMyRoomList(Long kakao_id, String invited_room_id, String invited_room_name, String invited_room_master_id){
 
         // 내 방 목록에 추가
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString())
@@ -270,7 +272,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         Map<String, Object> myRoomUpdate = new HashMap<>();
 
         myRoomUpdate.put("name", invited_room_name);
-        myRoomUpdate.put("master_id", kakao_id);
+        myRoomUpdate.put("master_id", invited_room_master_id);
 
         userRef.updateChildren(myRoomUpdate);
     }
