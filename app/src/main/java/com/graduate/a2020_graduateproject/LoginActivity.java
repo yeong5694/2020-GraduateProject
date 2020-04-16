@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.kakao.network.ErrorResult;
@@ -90,8 +91,7 @@ public class LoginActivity extends AppCompatActivity {
         public void onSessionOpened() {
 
             Log.e("KakaoLogin ::", "로그인 성공");
-            requestMe();
-
+            requestUserInfo();
         }
 
         @Override
@@ -133,97 +133,82 @@ public class LoginActivity extends AppCompatActivity {
         };
     }
 
-    /* 사용자 정보 수집*/
-    public void requestMe(){
-        List<String> keys = new ArrayList<>();
-        keys.add("properties.nickname");
-        keys.add("properties.profile_image");
-        keys.add("kakao_account.email");
-
-        // 사용자정보 요청 결과에 대한 Callback
-        UserManagement.getInstance().me(keys, new MeV2ResponseCallback() {
-
-            // 세션 오픈 실패. 세션이 삭제된 경우
-            @Override
-            public void onSessionClosed(ErrorResult errorResult) {
-                Log.e("KakaoSessionCallback :: ", "onSessionClosed : " + errorResult.getErrorMessage());
-            }
-
-            @Override
-            public void onFailure(ErrorResult errorResult){
-                Log.e("SessionCallback :: ", "onFailure : " + errorResult.getErrorMessage());
-            }
 
 
-            @Override
-            public void onSuccess(MeV2Response response) {
-
-                Long id;
-                String name = null;
-                String email = null;
-                String thumbnail = null;
-
-                Log.e("SessionCallback :: ", "onSuccess");
-                Log.e("kakaoLogin ::  ", "카카오 로그인 정보 가져오기");
-                Log.e("KakaoLogin","user id : " + response.getId());
-                /*사용자 아이디(ID)의 경우 앱 연결 과정에서 발급하는 앱별 사용자의 고유 아이디입니다. 해당 아이디를 통해 사용자를 앱에서 식별 가능하며, 앱 연결 해제를 하더라도 같은 값으로 계속 유지됩니다.*/
-
-                id = response.getId();
-
-                UserAccount kakaoAccount = response.getKakaoAccount();
-
-                if (kakaoAccount != null) {
-
-                    email = kakaoAccount.getEmail();
-
-                    if (email != null) {
-                        Log.e("KakaoLogin","email : " + email);
-                    } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
-                        // 동의 요청 후 이메일 획득 가능
-                        // 단, 선택 동의로 설정되어 있다면 서비스 이용 시나리오 상에서 반드시 필요한 경우에만 요청해야 합니다.
-                        ///// 이메일 따로 획득해야한다.
-                    } else {
-                        // 이메일 획득 불가
+    public void requestUserInfo(){
+        UserManagement.getInstance()
+                .me(new MeV2ResponseCallback() {
+                    @Override
+                    public void onSessionClosed(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "세션이 닫혀 있음: " + errorResult);
                     }
 
-                    Profile profile = kakaoAccount.getProfile();
-
-                    if (profile != null) {
-                        Log.e("KakaoLogin","nickname : " + profile.getNickname());
-                        Log.e("KakaoLogin","profile image : " + profile.getProfileImageUrl());
-                        Log.e("KakaoLogin","thumbnail image : " + profile.getThumbnailImageUrl());
-
-                        name = profile.getNickname();
-                        thumbnail = profile.getThumbnailImageUrl();
-
-                    } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
-                        // 동의 요청 후 프로필 정보 획득 가능
-                        Log.e("KakaoLogin","동의 요청 후 프로필 정보 획득 가능");
-
-                    } else {
-                        // 프로필 획득 불가
-                        Log.e("KakaoLogin","프로필 획득 불가");
+                    @Override
+                    public void onFailure(ErrorResult errorResult) {
+                        Log.e("KAKAO_API", "사용자 정보 요청 실패: " + errorResult);
                     }
-                }
 
-                writeNewUser(id, name, email, thumbnail); // 파이어베이스에 저장
-                redirectMainActivity();
-            }
+                    @Override
+                    public void onSuccess(MeV2Response result) {
 
-        });
+                        //kakao_id = result.getId();
+                        Log.i("KAKAO_API", "사용자 아이디: " + result.getId());
+
+                        UserAccount kakaoAccount = result.getKakaoAccount();
+                        if (kakaoAccount != null) {
+
+                            // 이메일
+                            String email = kakaoAccount.getEmail();
+
+                            if (email != null) {
+                                Log.i("KAKAO_API", "email: " + email);
+
+                            } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
+                                // 동의 요청 후 이메일 획득 가능
+                                // 단, 선택 동의로 설정되어 있다면 서비스 이용 시나리오 상에서 반드시 필요한 경우에만 요청해야 합니다.
+
+                            } else {
+                                // 이메일 획득 불가
+                            }
+
+                            // 프로필
+                            Profile profile = kakaoAccount.getProfile();
+
+                            if (profile != null) {
+                                Log.d("KAKAO_API", "nickname: " + profile.getNickname());
+                                Log.d("KAKAO_API", "profile image: " + profile.getProfileImageUrl());
+                                Log.d("KAKAO_API", "thumbnail image: " + profile.getThumbnailImageUrl());
+
+                            } else if (kakaoAccount.profileNeedsAgreement() == OptionalBoolean.TRUE) {
+                                // 동의 요청 후 프로필 정보 획득 가능
+
+                            } else {
+                                // 프로필 획득 불가
+                            }
+
+
+                            updateUser(result.getId(), profile.getNickname(), kakaoAccount.getEmail(), profile.getThumbnailImageUrl()); // 파이어베이스에 저장
+                            redirectMainActivity();
+
+                        }
+                    }
+                });
     }
 
-    public void writeNewUser(Long id, String name, String email, String thumbnail){
 
-        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
-        Map<String, Object> childUpdates = new HashMap<>();
-        Map<String, Object> postValues = null;
 
-        User post = new User(id, name, email, thumbnail);
-        postValues = post.toMap();
 
-        childUpdates.put("/user_list/" + id, postValues);
-        mPostReference.updateChildren(childUpdates);
+    public void updateUser(Long id, String name, String email, String thumbnail){
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(id.toString());
+
+        Map<String, Object> userUpdate = new HashMap<>();
+        userUpdate.put("id",id);
+        userUpdate.put("name", name);
+        userUpdate.put("email", email);
+        userUpdate.put("thumbnail", thumbnail);
+
+        userRef.updateChildren(userUpdate);
     }
 
     /* 해쉬키 구하는 함수 (구했으면 지워도됨)*/
