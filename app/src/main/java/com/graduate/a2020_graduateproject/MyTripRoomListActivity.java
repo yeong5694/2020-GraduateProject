@@ -1,7 +1,6 @@
 package com.graduate.a2020_graduateproject;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -22,10 +20,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.kakao.auth.ApiResponseCallback;
-import com.kakao.auth.AuthService;
-import com.kakao.auth.network.response.AccessTokenInfoResponse;
-import com.kakao.network.ErrorResult;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,13 +46,13 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     private List<String> arrayData = new ArrayList<String>(); // 내 여행방 리스트 방 이름 저장
     private List<String> arrayIndex = new ArrayList<String>(); // 내 여행방 리스트 방 인덱스 저장
 
-    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips");
-    private DatabaseReference mReference;
-    private ChildEventListener mChild;
+    private DatabaseReference userReference;
+    private DatabaseReference tripRoomReference;
 
-    private String invited_room_name;
-    private String invited_room_id;
-    private String invited_room_master_id;
+
+    private String invited_room_name = null;
+    private String invited_room_id = null;
+    private String invited_room_master_id = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +78,9 @@ public class MyTripRoomListActivity extends AppCompatActivity {
 
 
 
-        mReference = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString()).child("/myRoomList/"); // 변경값을 확인할 child 이름
+        userReference = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString()).child("/myRoomList/"); // 변경값을 확인할 child 이름
         //mReference = databaseReference.child("/tripRoom_list/");
-        mReference.addValueEventListener(new ValueEventListener() {
+        userReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -107,7 +101,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
 
                     arrayData.add(room_name);
                     arrayIndex.add(key);
-                    arrayAdapter.add("방이름= "+room_name+" | 여행방id="+key);
+                    arrayAdapter.add(room_name);
 
                 }
 
@@ -121,6 +115,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
                 Log.w("getFirebaseDatabase","loadPost:onCancelled", databaseError.toException());
             }
         });
+
+
 
         myRoomList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -173,52 +169,65 @@ public class MyTripRoomListActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 invited_room_id = invited_text.getText().toString();
+                Log.e("InvitedRoomId", invited_room_id);
+
 
                 if(invited_room_id.equals("")){
                     Toast.makeText(getApplicationContext(), "여행코드 미입력", Toast.LENGTH_LONG).show();
                     return;
                 }
 
+
                 invited_room_name = null;
+                invited_room_master_id = null;
 
-                mReference = databaseReference.child("/tripRoom_list/");
-                mReference.addValueEventListener(new ValueEventListener() {
+                DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips")
+                        .child("tripRoom_list");
+                tripRoomRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
-                            // snapshot 내에 있는 데이터만큼 반복합니다.
-                            String key = snapshot.getKey();
-                            Log.e("MyTripRoomListActivity KEY", key);
-                            Log.e("MyTripRoomListActivity INVITED_ROOM_ID 1", invited_room_id);
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
+                            Log.e("snapshot KEY", snapshot.getKey());
 
-                            if(invited_room_id.equals(key)){
+                            if(invited_room_id.equals(snapshot.getKey())){
+                                Log.e("snapshot ROOM IS EXIST", invited_room_id);
+
                                 invited_room_name = snapshot.child("name").getValue().toString();
                                 invited_room_master_id = snapshot.child("master_id").getValue().toString();
-                                Log.e("MyTripRoomListActivity INVITED_ROOM_ID 2", invited_room_id);
-                                Log.e("MyTripRoomListActivity INVITED_ROOM_NAME 2", invited_room_name);
-                                updateMyRoomList(kakao_id, invited_room_id, invited_room_name, invited_room_master_id);
-                                Toast.makeText(getApplicationContext(), "초대받은 방 생성 완료", Toast.LENGTH_LONG).show();
+
+                                updateInvited(kakao_id, invited_room_id, invited_room_name, invited_room_master_id);
+                                Toast.makeText(getApplicationContext(), "갱신되었습니다", Toast.LENGTH_LONG).show();
+
+                                Log.e("snapshot ROOM INFO ", invited_room_name);
 
 
                                 return;
                             }
 
                         }
+
+                        Log.e("snapshot NO ROOM IN LIST ", invited_room_id);
                         Toast.makeText(getApplicationContext(), "존재하지 않는 방입니다", Toast.LENGTH_LONG).show();
+
 
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w("getFirebaseDatabase","loadPost:onCancelled", databaseError.toException());
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                     }
                 });
 
+
+
                 invited_text.setText("");
+
+
+
             }
 
         });
@@ -263,7 +272,9 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     }
 
 
-    public void updateMyRoomList(Long kakao_id, String invited_room_id, String invited_room_name, String invited_room_master_id){
+
+
+    public void updateInvited(Long kakao_id, String invited_room_id, String invited_room_name, String invited_room_master_id){
 
         // 내 방 목록에 추가
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString())
@@ -275,7 +286,19 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         myRoomUpdate.put("master_id", invited_room_master_id);
 
         userRef.updateChildren(myRoomUpdate);
+
+        // 초대 받은 방에 구성원으로 등록
+        DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(invited_room_id).child("invited_user_list");
+
+        Map<String, Object> tripRoomUpdate = new HashMap<>();
+
+        tripRoomUpdate.put("invited_user_id", kakao_id);
+
+        tripRoomRef.updateChildren(tripRoomUpdate);
     }
+
+
 
 
 }

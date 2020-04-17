@@ -110,7 +110,19 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
             startActivity(intent);
         }
-        else if(id == R.id.trip_mates) {
+        else if(id == R.id.trip_mates){
+
+            Intent intent = new Intent(TripRoomActivity.this, TripRoomActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
+
+        }
+        else if(id == R.id.invite_trip_mates) {
             // 기본적으로 구현해야 할 것
             Map<String, String> serverCallbackArgs = new HashMap<String, String>();
             serverCallbackArgs.put("user_id", "${current_user_id}");
@@ -121,7 +133,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
                             "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
                             LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                     .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
-                            .setDescrption("수정 코드 : xxx-xxx-xxx")
+                            .setDescrption("여행방 id : "+ selected_room_id)
                             .build())
                     .addButton(new ButtonObject("앱에서 보기", LinkObject.newBuilder()
                             .setWebUrl(KAKAO_BASE_LINK) //

@@ -101,11 +101,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
-        if(id == R.id.trips) {
-//            Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
-//            startActivity(intent);
-        }
-        else if(id == R.id.friends) {
+//        if(id == R.id.trips) {
+////            Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
+////            startActivity(intent);
+//        }
+        if(id == R.id.friends) {
 
         }
         else if (id == R.id.myRooms){
