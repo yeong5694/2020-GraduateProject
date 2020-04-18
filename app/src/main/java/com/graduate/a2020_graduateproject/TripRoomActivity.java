@@ -8,9 +8,15 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -32,13 +38,27 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
+    // 로그인 정보
+    private Long kakao_id;
+    private String kakao_email;
+    private String kakao_thumnail;
+    private String kakao_name;
+    // 선택한 여행방 정보
+    private String selected_room_name; // 여행방 이름
+    private String selected_room_id; // 여행방 id
+
+    View nav_header_view;
+    private ImageView profile_image;
+    private TextView profile_name;
+    private TextView profile_email;
+
     private String KAKAO_BASE_LINK = "https://developers.kakao.com"; // 나중에 playStore 로 연결
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_trip_room);
-        setTitle("○○ 여행");
+        //setTitle("○○ 여행");
 
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -57,6 +77,28 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
+        Intent intent = getIntent();
+        kakao_id = intent.getExtras().getLong("kakao_id");
+        kakao_email = intent.getExtras().getString("kakao_email");
+        kakao_name = intent.getExtras().getString("kakao_name");
+        kakao_thumnail = intent.getExtras().getString("kakao_thumnail");
+        selected_room_id = intent.getExtras().getString("selected_room_id");
+        selected_room_name = intent.getExtras().getString("selected_room_name");
+        Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
+
+        setTitle(selected_room_name);
+        nav_header_view = navigationView.getHeaderView(0);
+        profile_image = nav_header_view.findViewById(R.id.profile_image);
+        profile_name = (TextView)nav_header_view.findViewById(R.id.name);
+        profile_email = (TextView)nav_header_view.findViewById(R.id.email);
+
+        profile_email.setText(kakao_email);
+        profile_name.setText(kakao_name);
+        Glide.with(getApplicationContext()).load(kakao_thumnail).error(R.drawable.kakao_default_profile_image).into(profile_image);
+
+
+
     }
 
     @Override
@@ -68,7 +110,19 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
             startActivity(intent);
         }
-        else if(id == R.id.trip_mates) {
+        else if(id == R.id.trip_mates){
+
+            Intent intent = new Intent(TripRoomActivity.this, TripRoomActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
+
+        }
+        else if(id == R.id.invite_trip_mates) {
             // 기본적으로 구현해야 할 것
             Map<String, String> serverCallbackArgs = new HashMap<String, String>();
             serverCallbackArgs.put("user_id", "${current_user_id}");
@@ -79,7 +133,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
                             "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
                             LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                     .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
-                            .setDescrption("수정 코드 : xxx-xxx-xxx")
+                            .setDescrption("여행방 id : "+ selected_room_id)
                             .build())
                     .addButton(new ButtonObject("앱에서 보기", LinkObject.newBuilder()
                             .setWebUrl(KAKAO_BASE_LINK) //

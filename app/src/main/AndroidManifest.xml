@@ -2,13 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.graduate.a2020_graduateproject">
     <!-- 인터넷 사용 권한 -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <!--정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <!-- 읽기 권한 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <!-- 저장 권한 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 읽기 권한 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 저장 권한 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -20,9 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ShareGalleryActivity"></activity>
-        <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
-
+        <activity android:name=".TripRoomFriendsActivity"></activity>
+        <activity android:name=".MyTripRoomListActivity" />
+        <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <activity android:name=".KakaoFriendsInviteActivity">
             <intent-filter>
                 <data
@@ -30,15 +26,10 @@
                     android:scheme="@string/kakao_scheme" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".TripRoomActivity"></activity>
-
-        <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="@string/kakao_app_key" />
-
-        <!-- 구글 메타데이터 -->
+            android:value="@string/kakao_app_key" /> <!-- 구글 메타데이터 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />
@@ -57,16 +48,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
         <activity android:name=".MapActivity" />
         <activity android:name=".MapDistanceActivity" />
-        <activity android:name=".MapFindRoadActivity" />
-        <!-- 주소 검색 -->
+        <activity android:name=".MapFindRoadActivity" /> <!-- 주소 검색 -->
         <service
             android:name=".MapFetchAddressIntentService"
-            android:exported="false"/>
-
-        <!--set_timerslack_ns write failed: Operation not permitted 오류 해결-->
+            android:exported="false" /> <!-- set_timerslack_ns write failed: Operation not permitted 오류 해결 -->
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
