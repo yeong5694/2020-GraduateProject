@@ -15,6 +15,7 @@ public class User {
     public String name;
     public String email;
     public String thumbnail;
+    public String tripRoom_list;
 
     //private FirebaseDatabase mPostReference;
 

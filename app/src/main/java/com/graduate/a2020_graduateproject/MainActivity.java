@@ -16,14 +16,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.kakao.auth.ApiResponseCallback;
-import com.kakao.auth.AuthService;
-import com.kakao.auth.network.response.AccessTokenInfoResponse;
+import com.google.firebase.database.ValueEventListener;
 import com.kakao.network.ErrorResult;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
@@ -48,10 +49,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     View nav_header_view;
     private ImageView profile_image;
     private TextView kakao_name;
-    private TextView kakaoEmail;
-    private Long kakao_id;
+    private TextView kakao_email;
 
-    DatabaseReference mDBReference = null;
+    private Long kakao_id;
+    private String kakao_thumnail;
+    private String email;
+    private String name;
+
+    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips");
+    private DatabaseReference mReference;
 
 
     @Override
@@ -82,10 +88,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         nav_header_view = navigationView.getHeaderView(0);
         profile_image = nav_header_view.findViewById(R.id.profile_image);
         kakao_name = (TextView)nav_header_view.findViewById(R.id.name);
-        kakaoEmail = (TextView)nav_header_view.findViewById(R.id.email);
+        kakao_email = (TextView)nav_header_view.findViewById(R.id.email);
+
         requestUserInfo();
-
-
 
 
     }
@@ -96,12 +101,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
-        if(id == R.id.trips) {
-            Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
-            startActivity(intent);
-        }
-        else if(id == R.id.friends) {
+//        if(id == R.id.trips) {
+////            Intent intent = new Intent(MainActivity.this, TripRoomActivity.class);
+////            startActivity(intent);
+//        }
+        if(id == R.id.friends) {
 
+        }
+        else if (id == R.id.myRooms){
+            Intent intent = new Intent(MainActivity.this, MyTripRoomListActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", email);
+            intent.putExtra("kakao_name", name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            startActivity(intent);
         }
         else if(id == R.id.settings) {
 
@@ -205,27 +218,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
-    public void requestTokenInfo(){
-        AuthService.getInstance()
-                .requestAccessTokenInfo(new ApiResponseCallback<AccessTokenInfoResponse>() {
-                    @Override
-                    public void onSessionClosed(ErrorResult errorResult) {
-                        Log.e("KAKAO_API", "세션이 닫혀 있음: " + errorResult);
-                    }
-
-                    @Override
-                    public void onFailure(ErrorResult errorResult) {
-                        Log.e("KAKAO_API", "토큰 정보 요청 실패: " + errorResult);
-                    }
-
-                    @Override
-                    public void onSuccess(AccessTokenInfoResponse result) {
-                        Log.i("KAKAO_API", "사용자 아이디: " + result.getUserId());
-                        Log.i("KAKAO_API", "남은 시간 (ms): " + result.getExpiresInMillis());
-                    }
-                });
-    }
-
     public void requestUserInfo(){
         UserManagement.getInstance()
                 .me(new MeV2ResponseCallback() {
@@ -249,10 +241,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         if (kakaoAccount != null) {
 
                             // 이메일
-                            String email = kakaoAccount.getEmail();
+                            String e = kakaoAccount.getEmail();
 
-                            if (email != null) {
-                                Log.i("KAKAO_API", "email: " + email);
+                            if (e != null) {
+                                Log.i("KAKAO_API", "email: " + e);
 
                             } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
                                 // 동의 요청 후 이메일 획득 가능
@@ -277,10 +269,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 // 프로필 획득 불가
                             }
 
+                            // 프로필 정보 화면에 출력
                             Glide.with(getApplicationContext()).load( profile.getThumbnailImageUrl()).error(R.drawable.kakao_default_profile_image).into(profile_image);
                             kakao_name.setText(profile.getNickname());
-                            kakaoEmail.setText(email);
-                            writeNewUser(kakao_id, profile.getNickname(),email, profile.getThumbnailImageUrl());
+                            kakao_email.setText(e);
+                            // 로그인 정보 저장
+                            kakao_thumnail = profile.getThumbnailImageUrl();
+                            email = e;
+                            name = profile.getNickname();
                         }
                     }
                 });
@@ -288,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public void deleteUser(Long kakao_id){
 
-        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
+        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_trips");
         Map<String, Object> childUpdates = new HashMap<>();
         Map<String, Object> postValues = null;
 
@@ -296,16 +292,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mPostReference.updateChildren(childUpdates);
     }
 
-    public void writeNewUser(Long id, String name, String email, String thumbnail){
 
-        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference("sharing_tirps");
-        Map<String, Object> childUpdates = new HashMap<>();
-        Map<String, Object> postValues = null;
-
-        User post = new User(id, name, email, thumbnail);
-        postValues = post.toMap();
-
-        childUpdates.put("/user_list/" + id, postValues);
-        mPostReference.updateChildren(childUpdates);
-    }
 }

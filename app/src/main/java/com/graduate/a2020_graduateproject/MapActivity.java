@@ -51,7 +51,7 @@ public class MapActivity extends AppCompatActivity
     private Button place_Btn;
     private EditText place_Text;
     private Button go_Btn; //직선거리 보여주는 화면으로 이동 //나중에 바꿀예정
-
+    private Button find_Btn;
     private ArrayList<LatLng> clickList;
     private ArrayList<LatLng> markerList;
 
@@ -75,6 +75,7 @@ public class MapActivity extends AppCompatActivity
         place_Btn=(Button)findViewById(R.id.place_Btn);//장소 찾기 버튼
 
         go_Btn=findViewById(R.id.go_button);
+        find_Btn=findViewById(R.id.find_button);
 
 //        markerList=new ArrayList<MarkerInfo>();
         markerList=new ArrayList<>(); //장소찾기 버튼을 통한 저장
@@ -93,7 +94,7 @@ public class MapActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 Intent intent =new Intent(getApplicationContext(), MapDistanceActivity.class);
-                Log.d("a","MapActivity에서 MapDistanceActivity로 ");
+                System.out.println("MapActivity에서 MapDistanceActivity로 ");
              //   intent.putParcelableArrayListExtra("markerList", markerList);
                 intent.putExtra("markerList", markerList);
                 intent.putExtra("clickList", clickList);
@@ -102,6 +103,14 @@ public class MapActivity extends AppCompatActivity
         });
 
 
+         find_Btn.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 Intent findIntent=new Intent(getApplicationContext(), MapFindRoadActivity.class);
+                 System.out.println("MapActivity에서 MapFindRoadActivity로 ");
+                 startActivity(findIntent);
+             }
+         });
 
         place_Btn.setOnClickListener(new Button.OnClickListener(){ //장소 찾기 버튼 누르면
 

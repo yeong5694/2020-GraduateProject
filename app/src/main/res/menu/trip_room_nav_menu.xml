@@ -6,6 +6,9 @@
         android:icon="@drawable/baseline_home_black_18dp"/>
 
     <group android:checkableBehavior="single">
+        <item android:title="친구초대"
+            android:id="@+id/invite_trip_mates"
+            android:icon="@drawable/baseline_people_black_18dp"/>
         <item android:title="함께 가는 친구"
             android:id="@+id/trip_mates"
             android:icon="@drawable/baseline_people_black_18dp"/>
