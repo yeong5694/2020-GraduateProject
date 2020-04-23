@@ -157,7 +157,7 @@ public class MapActivity extends AppCompatActivity
                 //firebase에 추가하기
                 info=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
 
-                databaseReference.child("MapInfo").child("find").push().setValue(info);
+//                databaseReference.child("MapInfo").child("find").push().setValue(info);
 
                 markerList.add(latLng);
 
@@ -225,6 +225,14 @@ public class MapActivity extends AppCompatActivity
             }
         });
 
+        gMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                clickList.clear();
+                gMap.clear();
+
+            }
+        });
     }
 
 

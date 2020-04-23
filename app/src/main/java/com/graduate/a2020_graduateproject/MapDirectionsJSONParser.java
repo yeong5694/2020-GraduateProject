@@ -37,11 +37,13 @@ public class MapDirectionsJSONParser {
                     for(int k=0;k<jSteps.length();k++){
                         String polyline = "";
                         //String distance="";
-                        //String duration="";
+                        String duration="";
 
                         polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
                         //distance=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("distance")).get("text");
-                        //duration=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
+
+                        duration=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
+
                         List<LatLng> list = decodePoly(polyline);
 
                         /** Traversing all points */
@@ -49,7 +51,7 @@ public class MapDirectionsJSONParser {
                             HashMap<String, String> hashMap = new HashMap<>();
                             hashMap.put("lat", Double.toString((list.get(l)).latitude) );
                             hashMap.put("lng", Double.toString((list.get(l)).longitude) );
-                         //   hashMap.put("")
+
 
                             path.add(hashMap);
                         }
