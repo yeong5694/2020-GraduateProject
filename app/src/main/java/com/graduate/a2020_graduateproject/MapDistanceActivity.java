@@ -28,7 +28,7 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
     private PolylineOptions polylineOptions;
     private PolylineOptions polylineOptionsClick;
     private PolylineOptions polylineOptionsDistance;
-    //private ArrayList<Double> distance;
+
     private ArrayList<LatLng> markerList; //위도, 경도 정보 넣어두는 ArrayList
     private ArrayList<LatLng> clickList; // 클릭한 장소 넣어두는 ArrayList
 
@@ -52,9 +52,8 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
         button_short.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            //    gMap.clear();
-                ArrayList<LatLng> dijkstraList=dijkstra(clickList);
-
+               ArrayList<LatLng> dijkstraList=dijkstra(clickList);
+                System.out.println("onClick dijstraList.length : "+dijkstraList.size());
                for(int i=0;i<dijkstraList.size();i++){
                    System.out.println("clickList : "+ clickList.get(i));
                    System.out.println("dijstraList : "+dijkstraList.get(i));
@@ -63,8 +62,9 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
                    markerOptions.position(dijkstraList.get(i));
                    markerOptions.title(i+"");
                    markerOptions.snippet(dijkstraList.get(i).latitude+", "+dijkstraList.get(i).longitude);
-  //                 markerOptions.snippet("Hansung University");
+
                    gMap.addMarker(markerOptions);
+
                }
 
                 polylineOptionsDistance=new PolylineOptions();
@@ -86,7 +86,7 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
     public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
         double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
         ArrayList<LatLng> LatDistance=new ArrayList<>();
-        for(int i=0;i<list.size()-1;i++){ //가중치(거리) 계산해서 저장
+        for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
             for(int j=0;j<list.size();j++){
                 if(i==j){
                     a[i][j]=0;
@@ -131,7 +131,8 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
     }
 
-    public double calculate(LatLng origin, LatLng destination){  //하버사인 공식 이용해서 위도, 경도로 거리 구하기
+    public double calculate(LatLng origin, LatLng destination){
+        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
         double calDistance;
         double radius=6371; //지구 반지름
         double toRadian=Math.PI/180.0;
