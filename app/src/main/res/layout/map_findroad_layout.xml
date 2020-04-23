@@ -13,12 +13,25 @@
         android:layout_weight="1"
         tools:context=".MapDistanceActivity" />
 
-    <Button
-        android:id="@+id/findroad_button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:text="길찾기" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/findroad_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="길찾기" />
+
+        <Button
+            android:id="@+id/findroad_button_short"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="길찾기(최단)" />
+    </LinearLayout>
 
 
 </LinearLayout>

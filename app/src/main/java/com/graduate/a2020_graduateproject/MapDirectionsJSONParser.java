@@ -1,39 +1,32 @@
 package com.graduate.a2020_graduateproject;
 
-
 import com.google.android.gms.maps.model.LatLng;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class MapDirectionsJSONParser {
-    /* 위도, 경도 받아와서 polyline 찍기 */
+    //// 위도, 경도 받아와서 polyline 찍기
 
     public List<List<HashMap<String,String>>> parse(JSONObject jObject){
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
 
         try {
-
             JSONArray jRoutes = jObject.getJSONArray("routes");
             JSONArray jLegs, jSteps;
 
-            /** Traversing all routes */
             for(int i=0;i<jRoutes.length();i++){
                 jLegs = ( (JSONObject)jRoutes.get(i)).getJSONArray("legs");
 
                 List path = new ArrayList<HashMap<String, String>>();
 
-                /** Traversing all legs */
                 for(int j=0;j<jLegs.length();j++){
                     jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
 
-                    /** Traversing all steps */
                     for(int k=0;k<jSteps.length();k++){
                         String polyline = "";
                         //String distance="";
@@ -46,12 +39,10 @@ public class MapDirectionsJSONParser {
 
                         List<LatLng> list = decodePoly(polyline);
 
-                        /** Traversing all points */
                         for(int l=0;l<list.size();l++){
                             HashMap<String, String> hashMap = new HashMap<>();
                             hashMap.put("lat", Double.toString((list.get(l)).latitude) );
                             hashMap.put("lng", Double.toString((list.get(l)).longitude) );
-
 
                             path.add(hashMap);
                         }

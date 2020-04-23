@@ -6,9 +6,7 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -16,8 +14,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class MapDistanceActivity  extends AppCompatActivity implements OnMapReadyCallback {
@@ -77,7 +73,6 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 //                polylineOptionsDistance.addAll(dijkstraList);
 
                 gMap.addPolyline( polylineOptionsDistance);
-
 
             }
         });
@@ -152,12 +147,14 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
        return calDistance;
     }
 
-    public static double deg2rad(double lat){ //degree->radius
+/*    public static double deg2rad(double lat){ //degree->radius
         return (lat*Math.PI/180.0);
     }
     public static double rad2deg(double radius){ //radius->degree
         return (radius*180/Math.PI);
     }
+
+ */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         ////일단 좌표 찍어서 직선거리 보여줌 -> DB에 들어있는 정보 이용해서 직선거리 구하기

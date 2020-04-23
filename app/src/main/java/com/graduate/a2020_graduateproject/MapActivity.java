@@ -3,7 +3,6 @@ package com.graduate.a2020_graduateproject;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -11,11 +10,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -61,7 +58,6 @@ public class MapActivity extends AppCompatActivity
     private Map<String, Object> info;
     private Map<String, Object> clickinfo;
 
-    protected Location location;
     private AddressResultReceiver resultReceiver;
 
     private String addressOutput="";
