@@ -275,6 +275,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             kakao_email.setText(e);
                             // 로그인 정보 저장
                             kakao_thumnail = profile.getThumbnailImageUrl();
+                            if( kakao_thumnail == null){
+                                kakao_thumnail = "no thumnail";
+                            }
                             email = e;
                             name = profile.getNickname();
                         }
