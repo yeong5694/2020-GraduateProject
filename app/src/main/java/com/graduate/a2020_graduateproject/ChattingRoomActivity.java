@@ -110,6 +110,7 @@ public class ChattingRoomActivity extends AppCompatActivity {
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
         Log.e("Intent info",selected_room_id);
+        Log.e("Intent info",kakao_thumnail);
 
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
@@ -134,8 +135,8 @@ public class ChattingRoomActivity extends AppCompatActivity {
 
     }
 
-    private void connectMqtt() throws Exception{
-        mqttClient = new MqttClient("tcp://192.168.219.103:1883", MqttClient.generateClientId(), null);
+    private void connectMqtt() throws Exception{ // 192.168.43.149 // 192.168.219.103
+        mqttClient = new MqttClient("tcp://192.168.43.149:1883", MqttClient.generateClientId(), null);
         mqttClient.connect();
         mqttClient.subscribe(TOPIC);
         mqttClient.setCallback(new MqttCallback() {

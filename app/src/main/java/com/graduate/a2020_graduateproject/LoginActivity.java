@@ -202,6 +202,10 @@ public class LoginActivity extends AppCompatActivity {
 
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(id.toString());
 
+        if(thumbnail == null)
+        {
+            thumbnail = "no thumnail";
+        }
         Map<String, Object> userUpdate = new HashMap<>();
         userUpdate.put("id",id);
         userUpdate.put("name", name);
