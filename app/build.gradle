@@ -12,6 +12,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    compileOptions {
+        targetCompatibility = "8"
+        sourceCompatibility = "8"
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -65,5 +69,17 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.0-alpha03'
     // CircleImageView - 프로필 이미지 동그랗게
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    // MQTT
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+
+    // Butterknife
+    implementation 'com.jakewharton:butterknife:10.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.1.0'
+
+
+
+
 
 }

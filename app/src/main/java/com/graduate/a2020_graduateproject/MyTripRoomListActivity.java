@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -54,6 +55,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     private String invited_room_id = null;
     private String invited_room_master_id = null;
 
+    private Toolbar toolbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +78,10 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         kakao_email = intent.getExtras().getString("kakao_email");
         kakao_name = intent.getExtras().getString("kakao_name");
         kakao_thumnail = intent.getExtras().getString("kakao_thumnail");
+
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        setTitle("내 여행방 목록");
 
 
 
