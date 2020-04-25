@@ -361,11 +361,19 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                 for(int j=0;j<path.size();j++){
                     HashMap<String,String> point = path.get(j);
 
+                    if(point.containsKey("distance")||point.containsKey(("duration"))){
+                        String distance=point.get("distance");
+                        String duration=point.get("duration");
+                        System.out.println("distance, duration point.get : "+ distance +" " +duration);
+                    }
+                    else{
+
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
+                }
                 }
 
                 polylineOptions.addAll(points);

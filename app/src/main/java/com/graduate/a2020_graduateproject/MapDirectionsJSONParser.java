@@ -15,6 +15,8 @@ public class MapDirectionsJSONParser {
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
 
+
+        ////routes->legs->steps
         try {
             JSONArray jRoutes = jObject.getJSONArray("routes");
             JSONArray jLegs, jSteps;
@@ -27,15 +29,28 @@ public class MapDirectionsJSONParser {
                 for(int j=0;j<jLegs.length();j++){
                     jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
 
+                    // 지점-지점 사이 걸린 시간
+                    String duration="";
+                    String distance="";
+
+                    duration=(String)((JSONObject)((JSONObject)jLegs.get(j)).get("duration")).get("text");
+                    distance=(String)((JSONObject)((JSONObject)jLegs.get(j)).get("distance")).get("text");
+
+                    System.out.println("Map DirectionsJSONParser duration : "+duration);
+                    System.out.println("Map DirectionsJSONParser distance : "+distance);
+
+                    HashMap<String, String> dis_dur=new HashMap<>();
+
+                    dis_dur.put("duration", duration);
+                    dis_dur.put("distance", distance);
+
+
+                    path.add(dis_dur);
+
                     for(int k=0;k<jSteps.length();k++){
                         String polyline = "";
-                        //String distance="";
-                        String duration="";
 
                         polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
-                        //distance=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("distance")).get("text");
-
-                        duration=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
 
                         List<LatLng> list = decodePoly(polyline);
 
