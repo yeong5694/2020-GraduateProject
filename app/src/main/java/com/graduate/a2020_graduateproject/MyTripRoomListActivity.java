@@ -272,7 +272,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         Map<String, Object> myRoomUpdate = new HashMap<>();
 
         myRoomUpdate.put("name", name);
-        myRoomUpdate.put("master_id", kakao_id);
+        //myRoomUpdate.put("master_id", kakao_id);
+        myRoomUpdate.put("authority", "master");
 
         userRef.updateChildren(myRoomUpdate);
 
@@ -290,7 +291,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         Map<String, Object> myRoomUpdate = new HashMap<>();
 
         myRoomUpdate.put("name", invited_room_name);
-        myRoomUpdate.put("master_id", invited_room_master_id);
+        //myRoomUpdate.put("master_id", invited_room_master_id);
+        myRoomUpdate.put("authority", "invited_user");
 
         userRef.updateChildren(myRoomUpdate);
 

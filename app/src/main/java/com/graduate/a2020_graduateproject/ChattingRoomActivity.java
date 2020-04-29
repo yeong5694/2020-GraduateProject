@@ -127,6 +127,8 @@ public class ChattingRoomActivity extends AppCompatActivity {
         chatListView.setAdapter(chatAdapter);
 
 
+
+
         try{connectMqtt();}catch(Exception e){
             Log.d(TAG,"MqttConnect Error");
         }
@@ -147,6 +149,7 @@ public class ChattingRoomActivity extends AppCompatActivity {
             }
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
+                Log.e("chatting","messageArrived");
                 JSONObject json = new JSONObject(new String(message.getPayload(), "UTF-8"));
 
                 chatAdapter.add(new ChatItem(json.getString("id"), json.getString("content"), json.getString("thumnail"), json.getString("time")));
