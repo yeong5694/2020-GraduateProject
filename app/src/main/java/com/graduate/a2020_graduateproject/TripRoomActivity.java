@@ -18,6 +18,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.ButtonObject;
@@ -28,7 +34,9 @@ import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
@@ -53,6 +61,8 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
     private TextView profile_email;
 
     private String KAKAO_BASE_LINK = "https://developers.kakao.com"; // 나중에 playStore 로 연결
+
+    private String authority = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,6 +195,11 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             Intent intent = new Intent(TripRoomActivity.this, ShareGalleryActivity.class);
             startActivity(intent);
         }
+        else if(id == R.id.exit){
+            do_exit();
+            finish();
+
+        }
         else if(id == R.id.settings) {
 
         }
@@ -206,4 +221,82 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
+
+    public void exit_room(){ // 여행 구성원이 방 나가는 경우
+
+
+        // 초대 받은 방 구성원에서 삭제
+        DatabaseReference tripRoomRef2 = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id).child("invited_user_list").child(kakao_id.toString());
+        tripRoomRef2.removeValue();
+
+
+        // 내 방 목록에서 삭제
+        DatabaseReference userRef2 = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString())
+                .child("/myRoomList").child(selected_room_id);
+        userRef2.removeValue();
+
+
+    }
+
+    public void remove_room(){ // 방장이 방 나가는 경우
+
+        // 내 방 목록에서 삭제
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(kakao_id.toString())
+                .child("/myRoomList").child(selected_room_id);
+        userRef.removeValue();
+
+
+        // 전체 여행방리스트에서 영구 삭제
+        DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id);
+        tripRoomRef.removeValue();
+    }
+
+    public void do_exit(){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("sharing_trips")
+                .child("user_list").child(kakao_id.toString()).child("myRoomList");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                    Log.e("snapshot KEY", snapshot.getKey());
+
+                    if(selected_room_id.equals(snapshot.getKey())){
+                        Log.e("selectedRoomId", snapshot.getKey());
+
+                        authority = snapshot.child("authority").getValue().toString();
+                        Log.e("selectedRoomId-Master", authority);
+                        if(authority.equals("master")){
+                            remove_room();
+                        }
+                        else if(authority.equals("invited_user")){
+                            exit_room();
+                        }
+                        else{
+
+                        }
+                        return;
+                    }
+
+                }
+
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+
 }
+
