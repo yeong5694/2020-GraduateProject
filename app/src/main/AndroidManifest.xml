@@ -18,7 +18,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
+        <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
+        <!-- Android 10 디바이스에서 Scoped Storage 정책을 적용받지 않기 위해, android:requestLegacyExternalStorage="true" 설정 -->
+
         <activity android:name=".TripRoomFriendsActivity"></activity>
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" />
