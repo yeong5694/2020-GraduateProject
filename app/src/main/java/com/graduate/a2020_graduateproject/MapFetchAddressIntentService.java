@@ -8,11 +8,8 @@ import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
-
 import com.google.android.gms.maps.model.LatLng;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +47,6 @@ public class MapFetchAddressIntentService extends IntentService {
         if(intent==null){
             return;
         }
-
-
 
         List<Address> addresses=null;
 
@@ -97,6 +92,5 @@ public class MapFetchAddressIntentService extends IntentService {
 
             //System.getProperty("line.separator") //현재 OS에 맞는 줄바꿈
         }
-
     }
 }

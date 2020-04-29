@@ -17,9 +17,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +35,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     ArrayList<LatLng> listPoints;
 
     private Button findRoad_Btn;
+    private Button findRoad_Btn_short;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +60,38 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                     DownloadTask downloadTask=new DownloadTask();
                     downloadTask.execute(polyUrl);
                 }
+            }
+        });
+
+        findRoad_Btn_short=findViewById(R.id.findroad_button_short);
+        findRoad_Btn_short.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                gMap.clear();
+
+                ArrayList<LatLng> dijkstraList=dijkstra(listPoints);
+
+                for(int i=0;i<dijkstraList.size();i++){
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(dijkstraList.get(i));
+                    markerOptions.title(i+"");
+                    markerOptions.snippet(dijkstraList.get(i).latitude+", "+dijkstraList.get(i).longitude);
+
+                    gMap.addMarker(markerOptions);
+                }
+
+                String mode="transit"; //driving
+
+                for(int i=0;i<dijkstraList.size()-1;i++){
+                    String shortpolyUrl=getUrl(dijkstraList.get(i), dijkstraList.get(i+1), mode);
+                    System.out.println("dijkstraList.get(i), dijkstraList.get(i+1) : "+shortpolyUrl);
+                    DownloadTask downloadTask=new DownloadTask();
+                    downloadTask.execute(shortpolyUrl);
+                }
+
+
+
             }
         });
 
@@ -116,6 +147,75 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         });
     }
 
+    public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
+        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+        ArrayList<LatLng> LatDistance=new ArrayList<>();
+        for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
+            for(int j=0;j<list.size();j++){
+                if(i==j){
+                    a[i][j]=0;
+                }
+                else{
+                    a[i][j]=calculate(list.get(i), list.get(j));
+                    System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
+                }
+            }
+        }
+
+        int start=0;
+        double[] distance=a[start].clone();
+        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+
+        System.out.println("a.length : "+a.length);
+
+        for(int i=0;i<a.length;i++){
+            int minIndex=-1;
+            double min=10000000;
+
+            for(int j=0;j<distance.length;j++){
+                if(!visited[j] && min>distance[j]){
+                    minIndex=j;
+                    min=distance[j];
+                }
+            }
+
+            visited[minIndex]=true;
+            LatDistance.add(list.get(minIndex));
+
+            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
+
+            for(int k=0;k<distance.length;k++){
+                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
+                    distance[k]=distance[minIndex]+a[minIndex][k];
+                }
+            }
+        }
+        return LatDistance;
+
+    }
+
+    public double calculate(LatLng origin, LatLng destination){
+        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
+        double calDistance;
+        double radius=6371; //지구 반지름
+        double toRadian=Math.PI/180.0;
+
+        double deltaLat=Math.abs(origin.latitude-destination.latitude)*toRadian;
+        double deltaLog=Math.abs(origin.longitude-destination.longitude)*toRadian;
+
+        double sinDeltaLat=Math.sin(deltaLat/2);
+        double sinDeltaLog=Math.sin(deltaLog/2);
+
+        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.latitude*toRadian)*Math.cos(destination.latitude*toRadian)*Math.pow(sinDeltaLog,2));
+
+        calDistance=2*radius*Math.asin(root);
+
+        System.out.println("calDistance : "+calDistance);
+
+        return calDistance;
+    }
+
+
     private String getUrl(LatLng origin, LatLng dest, String mode){
 
         //출발지
@@ -124,7 +224,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         String destUrl="destination="+dest.latitude+","+dest.longitude;
         //센서
         String sensor="sensor=false";
-        //모드
+        //모드 -> 한국은 transit만 지원
         String modeURL="mode="+mode;
 
         String urlParameter=originUrl+"&"+destUrl+"&"+sensor+"&"+modeURL;
@@ -143,16 +243,15 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         String data = "";
         InputStream inputStream = null;
         HttpURLConnection httpURLConnection = null;
+
         try{
             URL downloadUrl = new URL(strUrl);
 
-            // Creating an http connection to communicate with url
             httpURLConnection = (HttpURLConnection) downloadUrl.openConnection();
 
-            // Connecting to url
             httpURLConnection.connect();
 
-            // Reading data from url
+            //데이터 읽어옴
             inputStream = httpURLConnection.getInputStream();
 
             BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
@@ -174,6 +273,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             inputStream.close();
             httpURLConnection.disconnect();
         }
+
         System.out.println("downloadURL data : "+data);
         return data;
     }
@@ -190,18 +290,17 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         }
     }
 */
-    /** A class to download data from Google Directions URL */
+
+    ///구글 api로부터 데이터를 다운로드
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
-        // Downloading data in non-ui thread
+        //백그라운드에서 데이터 다운로드 수행
         @Override
         protected String doInBackground(String... url) {
 
-            // For storing data from web service
             String data = "";
 
             try{
-                // Fetching the data from web service
                 System.out.println("DownloadTask url[0] : "+url[0]);
                 data = downloadUrl(url[0]);
 
@@ -211,8 +310,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             return data;
         }
 
-        // Executes in UI thread, after the execution of
-        // doInBackground()
+        //dolnBackground() 수행 후 UI에서 실행
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
@@ -226,7 +324,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
     private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
 
-        // Parsing the data in non-ui thread
+        /// 백그라운드에서 json파일 파싱
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
 
@@ -240,7 +338,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
                 MapDirectionsJSONParser parser = new MapDirectionsJSONParser();
 
-                // Starts parsing data
                 routes = parser.parse(jObject);
 
             }catch(Exception e){
@@ -249,23 +346,27 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             return routes;
         }
 
-        // Executes in UI thread, after the parsing process
+        //UI에서 실행-> polyline 찍기
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
             ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
+            PolylineOptions polylineOptions = null;
 
-            // Traversing through all the routes
             for(int i=0;i<result.size();i++){
                 points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
+                polylineOptions = new PolylineOptions();
 
-                // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
 
-                // Fetching all the points in i-th route
                 for(int j=0;j<path.size();j++){
                     HashMap<String,String> point = path.get(j);
+
+                    if(point.containsKey("distance")||point.containsKey(("duration"))){
+                        String distance=point.get("distance");
+                        String duration=point.get("duration");
+                        System.out.println("distance, duration point.get : "+ distance +" " +duration);
+                    }
+                    else{
 
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
@@ -273,14 +374,15 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
                     points.add(position);
                 }
+                }
 
-                lineOptions.addAll(points);
-                lineOptions.width(12);
-                lineOptions.color(Color.YELLOW);
+                polylineOptions.addAll(points);
+                polylineOptions.width(12);
+                polylineOptions.color(Color.YELLOW);
             }
 
-            if(lineOptions != null) {
-                polyline = gMap.addPolyline(lineOptions);
+            if(polylineOptions != null) {
+                polyline = gMap.addPolyline(polylineOptions);
             }else
                 Toast.makeText(getApplicationContext(),"zero route", Toast.LENGTH_LONG).show();
         }

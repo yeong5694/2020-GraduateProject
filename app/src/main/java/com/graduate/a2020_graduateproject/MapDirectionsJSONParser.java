@@ -1,55 +1,63 @@
 package com.graduate.a2020_graduateproject;
 
-
 import com.google.android.gms.maps.model.LatLng;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class MapDirectionsJSONParser {
-    /* 위도, 경도 받아와서 polyline 찍기 */
+    //// 위도, 경도 받아와서 polyline 찍기
 
     public List<List<HashMap<String,String>>> parse(JSONObject jObject){
 
         List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
 
-        try {
 
+        ////routes->legs->steps
+        try {
             JSONArray jRoutes = jObject.getJSONArray("routes");
             JSONArray jLegs, jSteps;
 
-            /** Traversing all routes */
             for(int i=0;i<jRoutes.length();i++){
                 jLegs = ( (JSONObject)jRoutes.get(i)).getJSONArray("legs");
 
                 List path = new ArrayList<HashMap<String, String>>();
 
-                /** Traversing all legs */
                 for(int j=0;j<jLegs.length();j++){
                     jSteps = ( (JSONObject)jLegs.get(j)).getJSONArray("steps");
 
-                    /** Traversing all steps */
+                    // 지점-지점 사이 걸린 시간
+                    String duration="";
+                    String distance="";
+
+                    duration=(String)((JSONObject)((JSONObject)jLegs.get(j)).get("duration")).get("text");
+                    distance=(String)((JSONObject)((JSONObject)jLegs.get(j)).get("distance")).get("text");
+
+                    System.out.println("Map DirectionsJSONParser duration : "+duration);
+                    System.out.println("Map DirectionsJSONParser distance : "+distance);
+
+                    HashMap<String, String> dis_dur=new HashMap<>();
+
+                    dis_dur.put("duration", duration);
+                    dis_dur.put("distance", distance);
+
+
+                    path.add(dis_dur);
+
                     for(int k=0;k<jSteps.length();k++){
                         String polyline = "";
-                        //String distance="";
-                        //String duration="";
 
                         polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
-                        //distance=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("distance")).get("text");
-                        //duration=(String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
+
                         List<LatLng> list = decodePoly(polyline);
 
-                        /** Traversing all points */
                         for(int l=0;l<list.size();l++){
                             HashMap<String, String> hashMap = new HashMap<>();
                             hashMap.put("lat", Double.toString((list.get(l)).latitude) );
                             hashMap.put("lng", Double.toString((list.get(l)).longitude) );
-                         //   hashMap.put("")
 
                             path.add(hashMap);
                         }

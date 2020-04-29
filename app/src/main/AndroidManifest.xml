@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- 저장 권한 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".GlobalApplication"
@@ -22,8 +23,11 @@
         android:requestLegacyExternalStorage="true">
         <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <!-- Android 10 디바이스에서 Scoped Storage 정책을 적용받지 않기 위해, android:requestLegacyExternalStorage="true" 설정 -->
+        <activity android:name=".ChattingRoomActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize">
 
-        <activity android:name=".TripRoomFriendsActivity"></activity>
+        </activity>
+        <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" />
         <activity android:name=".KakaoFriendsInviteActivity">
@@ -63,6 +67,8 @@
         <service
             android:name=".MapFetchAddressIntentService"
             android:exported="false" /> <!-- set_timerslack_ns write failed: Operation not permitted 오류 해결 -->
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
+
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />

@@ -112,7 +112,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         }
         else if(id == R.id.trip_mates){
 
-            Intent intent = new Intent(TripRoomActivity.this, TripRoomActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, TripRoomFriendsActivity.class);
             intent.putExtra("kakao_id", kakao_id);
             intent.putExtra("kakao_email", kakao_email);
             intent.putExtra("kakao_name", kakao_name);
@@ -157,6 +157,15 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
 
         }
         else if(id == R.id.chat) {
+            Intent intent = new Intent(TripRoomActivity.this, ChattingRoomActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
+
 
         }
         else if(id == R.id.calendar) {
