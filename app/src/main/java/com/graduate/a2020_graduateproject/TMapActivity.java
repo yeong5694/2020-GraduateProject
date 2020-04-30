@@ -1,12 +1,10 @@
 package com.graduate.a2020_graduateproject;
 
 import android.graphics.Color;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -15,12 +13,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.skt.Tmap.TMapData;
 import com.skt.Tmap.TMapPoint;
-import com.skt.Tmap.TMapPolyLine;
-import com.skt.Tmap.TMapTapi;
 
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -36,8 +30,8 @@ import java.util.List;
 public class TMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap gMap;
-    private Polyline polyline;
     ArrayList<LatLng> listPoints;
+    ArrayList<TMapPoint> tMapPoints;
 
     private Button findRoad_Btn;
     private Button findRoad_Btn_short;
@@ -54,33 +48,28 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
 
-
-        ///tmap app 지도 사용하지 않고, 연동만
-        TMapTapi tmaptapi = new TMapTapi(this);
-        tmaptapi.setSKTMapAuthentication ("l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a");
-
-
         listPoints=new ArrayList<>();
+        tMapPoints=new ArrayList<>();
 
         findRoad_Btn=findViewById(R.id.findroad_button);
         findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                String mode="transit";
-                String polyUrl=getUrl(tMapPointStart,tMapPointEnd, mode);
-               // System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
-                DownloadTask downloadTask=new DownloadTask();
-                downloadTask.execute(polyUrl);
-                /*
-                 String mode="transit"; //driving
 
-                for(int i=0;i<listPoints.size()-1;i++){
+//                String polyUrl=getUrl(tMapPointStart,tMapPointEnd, mode);
+                tMapPoints.clear();
 
-                   String polyUrl=getUrl(listPoints.get(i), listPoints.get(i+1), mode);
-                    System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
+                for(int i=0;i<listPoints.size();i++){
+                    tMapPoints.add(new TMapPoint(listPoints.get(i).latitude, listPoints.get(i).longitude));
+                    System.out.println("tMapPoints 값 : "+tMapPoints);
+                }
+
+                for(int i=0;i<tMapPoints.size()-1;i++){
+                    String polyUrl=getUrl(tMapPoints.get(i), tMapPoints.get(i+1));
+
                     DownloadTask downloadTask=new DownloadTask();
                     downloadTask.execute(polyUrl);
-                }*/
+                }
 
             }
         });
@@ -89,10 +78,6 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
         findRoad_Btn_short.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
-
-
 
             }
         });
@@ -132,6 +117,7 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapLongClick(LatLng latLng) {
                 listPoints.clear();
+                tMapPoints.clear();
                 gMap.clear();
             }
         });
@@ -141,7 +127,7 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
         System.out.println("test");
     }
 
-    private String getUrl(TMapPoint origin, TMapPoint dest, String mode){
+    private String getUrl(TMapPoint origin, TMapPoint dest){
 
         //출발지
         String startX="&startX="+origin.getLongitude();
@@ -267,6 +253,7 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
         //UI에서 실행-> polyline 찍기
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+
             ArrayList<LatLng> points;
             PolylineOptions polylineOptions = null;
 
@@ -282,23 +269,23 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
 
-                    System.out.println("onPostExecute : "+lat+", "+lng);
-                    LatLng position = new LatLng(lat, lng);
+                    LatLng position = new LatLng(lng, lat);
+                    MarkerOptions marker=new MarkerOptions();
+                    marker.position(position);
 
                     points.add(position);
 
+            //        gMap.addMarker(marker);
                 }
 
                 polylineOptions.addAll(points);
-                polylineOptions.width(12);
+
+                polylineOptions.width(15);
                 polylineOptions.color(Color.YELLOW);
+                gMap.addPolyline(polylineOptions);
+             //   System.out.println("draw gMap.addPolyline");
+
             }
-
-            if(polylineOptions != null) {
-                polyline = gMap.addPolyline(polylineOptions);
-            }else
-                Toast.makeText(getApplicationContext(),"zero route", Toast.LENGTH_LONG).show();
-
         }
     }
 
