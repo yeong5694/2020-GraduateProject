@@ -6,9 +6,10 @@
         android:icon="@drawable/baseline_home_black_18dp"/>
 
     <group android:checkableBehavior="single">
-        <item android:title="친구초대"
+        <item
             android:id="@+id/invite_trip_mates"
-            android:icon="@drawable/baseline_people_black_18dp"/>
+            android:icon="@drawable/baseline_group_add_black_18dp"
+            android:title="친구초대" />
         <item android:title="함께 가는 친구"
             android:id="@+id/trip_mates"
             android:icon="@drawable/baseline_people_black_18dp"/>
@@ -30,6 +31,10 @@
         <item android:title="갤러리"
             android:id="@+id/gallery"
             android:icon="@drawable/baseline_photo_black_18dp"/>
+        <item
+            android:id="@+id/exit"
+            android:icon="@drawable/baseline_keyboard_backspace_black_18dp"
+            android:title="방 나가기" />
     </group>
 
     <item android:title="APP">
