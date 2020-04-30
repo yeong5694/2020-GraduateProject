@@ -55,6 +55,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     private String invited_room_id = null;
     private String invited_room_master_id = null;
 
+
     private Toolbar toolbar;
 
     @Override
@@ -141,6 +142,7 @@ public class MyTripRoomListActivity extends AppCompatActivity {
                 intent.putExtra("kakao_thumnail", kakao_thumnail);
                 intent.putExtra("selected_room_name", selected_room_name);
                 intent.putExtra("selected_room_id", selected_room_id);
+
                 startActivity(intent);
 
             }
@@ -272,7 +274,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         Map<String, Object> myRoomUpdate = new HashMap<>();
 
         myRoomUpdate.put("name", name);
-        myRoomUpdate.put("master_id", kakao_id);
+        //myRoomUpdate.put("master_id", kakao_id);
+        myRoomUpdate.put("authority", "master");
 
         userRef.updateChildren(myRoomUpdate);
 
@@ -290,17 +293,19 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         Map<String, Object> myRoomUpdate = new HashMap<>();
 
         myRoomUpdate.put("name", invited_room_name);
-        myRoomUpdate.put("master_id", invited_room_master_id);
+        //myRoomUpdate.put("master_id", invited_room_master_id);
+        myRoomUpdate.put("authority", "invited_user");
 
         userRef.updateChildren(myRoomUpdate);
 
         // 초대 받은 방에 구성원으로 등록
         DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                .child(invited_room_id).child("invited_user_list");
+                .child(invited_room_id).child("invited_user_list").child(kakao_id.toString());
 
         Map<String, Object> tripRoomUpdate = new HashMap<>();
 
-        tripRoomUpdate.put("invited_user_id", kakao_id);
+        tripRoomUpdate.put("/id", kakao_id);
+
 
         tripRoomRef.updateChildren(tripRoomUpdate);
     }
