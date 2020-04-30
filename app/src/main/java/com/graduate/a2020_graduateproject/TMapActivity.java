@@ -17,6 +17,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.skt.Tmap.TMapData;
+import com.skt.Tmap.TMapPoint;
+import com.skt.Tmap.TMapPolyLine;
 import com.skt.Tmap.TMapTapi;
 
 import org.json.JSONObject;
@@ -30,7 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapFindRoadActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap gMap;
     private Polyline polyline;
@@ -38,11 +41,14 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
     private Button findRoad_Btn;
     private Button findRoad_Btn_short;
+    TMapPoint tMapPointStart = new TMapPoint(37.570841, 126.985302); // SKT타워(출발지)
+    TMapPoint tMapPointEnd = new TMapPoint(37.551135, 126.988205); // N서울타워(목적지)
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_findroad_layout);
+        setContentView(R.layout.tmap_layout);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_findroad);
@@ -54,21 +60,28 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         tmaptapi.setSKTMapAuthentication ("l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a");
 
 
-
         listPoints=new ArrayList<>();
 
         findRoad_Btn=findViewById(R.id.findroad_button);
         findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                String mode="transit"; //driving
+                String mode="transit";
+                String polyUrl=getUrl(tMapPointStart,tMapPointEnd, mode);
+               // System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
+                DownloadTask downloadTask=new DownloadTask();
+                downloadTask.execute(polyUrl);
+                /*
+                 String mode="transit"; //driving
 
                 for(int i=0;i<listPoints.size()-1;i++){
-                    String polyUrl=getUrl(listPoints.get(i), listPoints.get(i+1), mode);
+
+                   String polyUrl=getUrl(listPoints.get(i), listPoints.get(i+1), mode);
                     System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
                     DownloadTask downloadTask=new DownloadTask();
                     downloadTask.execute(polyUrl);
-                }
+                }*/
+
             }
         });
 
@@ -77,27 +90,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             @Override
             public void onClick(View v) {
 
-                gMap.clear();
 
-                ArrayList<LatLng> dijkstraList=dijkstra(listPoints);
-
-                for(int i=0;i<dijkstraList.size();i++){
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.position(dijkstraList.get(i));
-                    markerOptions.title(i+"");
-                    markerOptions.snippet(dijkstraList.get(i).latitude+", "+dijkstraList.get(i).longitude);
-
-                    gMap.addMarker(markerOptions);
-                }
-
-                String mode="transit"; //driving
-
-                for(int i=0;i<dijkstraList.size()-1;i++){
-                    String shortpolyUrl=getUrl(dijkstraList.get(i), dijkstraList.get(i+1), mode);
-                    System.out.println("dijkstraList.get(i), dijkstraList.get(i+1) : "+shortpolyUrl);
-                    DownloadTask downloadTask=new DownloadTask();
-                    downloadTask.execute(shortpolyUrl);
-                }
 
 
 
@@ -109,18 +102,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap=googleMap;
-   /*  권한 -> Map Activity로 옮기기
-      gMap.getUiSettings().setZoomControlsEnabled(true);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Check Permissions Now
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_REQUEST);
-            return;
-        }
-        gMap.setMyLocationEnabled(true);
-*/
 
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
         MarkerOptions markerOptions = new MarkerOptions();
@@ -156,97 +137,35 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         });
     }
 
-    public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
-        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
-        ArrayList<LatLng> LatDistance=new ArrayList<>();
-        for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
-            for(int j=0;j<list.size();j++){
-                if(i==j){
-                    a[i][j]=0;
-                }
-                else{
-                    a[i][j]=calculate(list.get(i), list.get(j));
-                    System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
-                }
-            }
-        }
-
-        int start=0;
-        double[] distance=a[start].clone();
-        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
-
-        System.out.println("a.length : "+a.length);
-
-        for(int i=0;i<a.length;i++){
-            int minIndex=-1;
-            double min=10000000;
-
-            for(int j=0;j<distance.length;j++){
-                if(!visited[j] && min>distance[j]){
-                    minIndex=j;
-                    min=distance[j];
-                }
-            }
-
-            visited[minIndex]=true;
-            LatDistance.add(list.get(minIndex));
-
-            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
-
-            for(int k=0;k<distance.length;k++){
-                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
-                    distance[k]=distance[minIndex]+a[minIndex][k];
-                }
-            }
-        }
-        return LatDistance;
-
+    private void test(){
+        System.out.println("test");
     }
 
-    public double calculate(LatLng origin, LatLng destination){
-        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
-        double calDistance;
-        double radius=6371; //지구 반지름
-        double toRadian=Math.PI/180.0;
-
-        double deltaLat=Math.abs(origin.latitude-destination.latitude)*toRadian;
-        double deltaLog=Math.abs(origin.longitude-destination.longitude)*toRadian;
-
-        double sinDeltaLat=Math.sin(deltaLat/2);
-        double sinDeltaLog=Math.sin(deltaLog/2);
-
-        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.latitude*toRadian)*Math.cos(destination.latitude*toRadian)*Math.pow(sinDeltaLog,2));
-
-        calDistance=2*radius*Math.asin(root);
-
-        System.out.println("calDistance : "+calDistance);
-
-        return calDistance;
-    }
-
-
-    public String getUrl(LatLng origin, LatLng dest, String mode){
+    private String getUrl(TMapPoint origin, TMapPoint dest, String mode){
 
         //출발지
-        String originUrl="origin="+origin.latitude+","+origin.longitude;
+        String startX="&startX="+origin.getLongitude();
+        String startY="&startY="+origin.getLatitude();
+
         //도착지
-        String destUrl="destination="+dest.latitude+","+dest.longitude;
-        //센서
-        String sensor="sensor=false";
-        //모드 -> 한국은 transit만 지원
-        String modeURL="mode="+mode;
+        String endX="&endX="+dest.getLongitude();
+        String endY="&endY="+dest.getLatitude();
+////////TMap의 경우 Google Map과 달리 lat, long 반대임
 
-        String urlParameter=originUrl+"&"+destUrl+"&"+sensor+"&"+modeURL;
+        String startName="&startName=출발지";
+        String endName="&endName=도착지";
 
-       //json파일
-        String output="json";
-        System.out.println("param : "+urlParameter);
+        String appKey="&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a";
 
-        String fullUrl="https://maps.googleapis.com/maps/api/directions/"+output+"?"+urlParameter+"&key="+"AIzaSyANE7MTnzzpaQ08SsN9quflkstM-cC1tIw";
+        //String fullUrl="https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a&startX=126.977022&startY=37.569758&endX=126.997589&endY=37.5705947&startName=출발지&endName=도착지";
+
+        String fullUrl="https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&"+appKey+startX+startY+endX+endY+startName+endName;
+
         System.out.println("Fullurl : "+fullUrl);
 
         return fullUrl;
     }
+
 
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
@@ -287,18 +206,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         return data;
     }
 
-/*    @SuppressLint("MissingPermission")
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch(requestCode) {
-            case LOCATION_REQUEST:
-                if(grantResults.length>0&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    gMap.setMyLocationEnabled(true);
-                }
-                break;
-        }
-    }
-*/
 
     ///구글 api로부터 데이터를 다운로드
     private class DownloadTask extends AsyncTask<String, Void, String> {
@@ -345,9 +252,11 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
                 jObject = new JSONObject(jsonData[0]);
 
-                MapDirectionsJSONParser parser = new MapDirectionsJSONParser();
+                TMapDirectionsJSONParser parser = new TMapDirectionsJSONParser();
 
                 routes = parser.parse(jObject);
+                System.out.println("ParserTask : "+routes);
+
 
             }catch(Exception e){
                 e.printStackTrace();
@@ -368,21 +277,16 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                 List<HashMap<String, String>> path = result.get(i);
 
                 for(int j=0;j<path.size();j++){
+
                     HashMap<String,String> point = path.get(j);
-
-                    if(point.containsKey("distance")||point.containsKey(("duration"))){
-                        String distance=point.get("distance");
-                        String duration=point.get("duration");
-                        System.out.println("distance, duration point.get : "+ distance +" " +duration);
-                    }
-                    else{
-
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
+
+                    System.out.println("onPostExecute : "+lat+", "+lng);
                     LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
-                }
+
                 }
 
                 polylineOptions.addAll(points);
@@ -394,6 +298,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                 polyline = gMap.addPolyline(polylineOptions);
             }else
                 Toast.makeText(getApplicationContext(),"zero route", Toast.LENGTH_LONG).show();
+
         }
     }
 

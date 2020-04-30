@@ -14,6 +14,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.skt.Tmap.TMapTapi;
+
 import java.util.ArrayList;
 
 public class MapDistanceActivity  extends AppCompatActivity implements OnMapReadyCallback {
@@ -30,6 +32,8 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
 
     private Button button_short;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,10 +43,14 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
         markerList=intent.getParcelableArrayListExtra("markerList");
         clickList=intent.getParcelableArrayListExtra("clickList");
 
+        intent.getStringExtra("");
         ////지도
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
+
+
+
 
         button_short=findViewById(R.id.button_short);
         button_short.setOnClickListener(new View.OnClickListener() {

@@ -102,7 +102,9 @@ public class MapActivity extends AppCompatActivity
          find_Btn.setOnClickListener(new View.OnClickListener() {
              @Override
              public void onClick(View v) {
-                 Intent findIntent=new Intent(getApplicationContext(), MapFindRoadActivity.class);
+               ///////////  Intent findIntent=new Intent(getApplicationContext(), MapFindRoadActivity.class);
+                 Intent findIntent=new Intent(getApplicationContext(), TMapActivity.class);
+
                  System.out.println("MapActivity에서 MapFindRoadActivity로 ");
                  startActivity(findIntent);
              }

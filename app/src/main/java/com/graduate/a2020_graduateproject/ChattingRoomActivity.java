@@ -135,8 +135,8 @@ public class ChattingRoomActivity extends AppCompatActivity {
 
     }
 
-    private void connectMqtt() throws Exception{ // 192.168.43.149 // 192.168.219.103
-        mqttClient = new MqttClient("tcp://192.168.43.149:1883", MqttClient.generateClientId(), null);
+    private void connectMqtt() throws Exception{ // 192.168.43.149 // 192.168.219.103  ///92.168.43.149:1883
+        mqttClient = new MqttClient("tcp://172.30.1.3", MqttClient.generateClientId(), null);
         mqttClient.connect();
         mqttClient.subscribe(TOPIC);
         mqttClient.setCallback(new MqttCallback() {

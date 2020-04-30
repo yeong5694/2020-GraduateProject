@@ -17,10 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ChattingRoomActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize">
-
-        </activity>
+        <activity
+            android:name=".ChattingRoomActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"></activity>
         <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
@@ -55,7 +54,9 @@
         </activity>
         <activity android:name=".MapActivity" />
         <activity android:name=".MapDistanceActivity" />
-        <activity android:name=".MapFindRoadActivity" /> <!-- 주소 검색 -->
+        <activity android:name=".MapFindRoadActivity" />
+        <activity android:name=".TMapActivity" />
+        <!-- 주소 검색 -->
         <service
             android:name=".MapFetchAddressIntentService"
             android:exported="false" /> <!-- set_timerslack_ns write failed: Operation not permitted 오류 해결 -->
