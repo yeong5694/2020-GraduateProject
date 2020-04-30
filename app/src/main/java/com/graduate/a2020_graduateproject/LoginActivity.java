@@ -206,6 +206,12 @@ public class LoginActivity extends AppCompatActivity {
         {
             thumbnail = "no thumnail";
         }
+        if(email == null ){
+            email = "no email";
+        }
+        if( name == null ){
+            name = "no name";
+        }
         Map<String, Object> userUpdate = new HashMap<>();
         userUpdate.put("id",id);
         userUpdate.put("name", name);

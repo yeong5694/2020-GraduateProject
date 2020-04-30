@@ -183,6 +183,15 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         }
         else if(id == R.id.plan) {
 
+//            Intent intent = new Intent(TripRoomActivity.this, ChattingRoomActivity.class);
+//            intent.putExtra("kakao_id", kakao_id);
+//            intent.putExtra("kakao_email", kakao_email);
+//            intent.putExtra("kakao_name", kakao_name);
+//            intent.putExtra("kakao_thumnail", kakao_thumnail);
+//            intent.putExtra("selected_room_name", selected_room_name);
+//            intent.putExtra("selected_room_id", selected_room_id);
+//            startActivity(intent);
+
         }
         else if(id == R.id.map) {
             Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
@@ -251,6 +260,10 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
                 .child(selected_room_id);
         tripRoomRef.removeValue();
+
+        // 전체 채팅리스트에서 영구 삭제
+        DatabaseReference chatRef =  chatRef = FirebaseDatabase.getInstance().getReference("sharing_trips/chat_list").child(selected_room_id);
+        chatRef.removeValue();
     }
 
     public void do_exit(){

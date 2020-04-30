@@ -34,6 +34,10 @@ public class ChatAdapter extends BaseAdapter {
         return i;
     }
 
+    public void clear(){
+        chatList.clear();
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
