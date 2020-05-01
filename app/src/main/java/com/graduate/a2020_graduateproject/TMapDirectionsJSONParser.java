@@ -15,10 +15,9 @@ import java.util.List;
 public class TMapDirectionsJSONParser {
     //// 위도, 경도 받아와서 polyline 찍기
 
-    public List<List<HashMap<String,String>>> parse(JSONObject jObject){
+    public List<HashMap<String,String>> parse(JSONObject jObject){
 
-        List<List<HashMap<String, String>>> features = new ArrayList<>() ;
-
+        List<HashMap<String, String>> features = new ArrayList<>() ;
 
         ////routes->legs->steps
         try {
@@ -29,19 +28,18 @@ public class TMapDirectionsJSONParser {
 
             for(int i=0;i<jFeatures.length();i++){
                 jType = (JSONObject) (jFeatures.get(i));
-                List path = new ArrayList<HashMap<String, String>>();
+             //   List path = new ArrayList<HashMap<String, String>>();
 
                 String type=((JSONObject)jType.get("geometry")).get("type").toString();
 
                 if(type.equals("LineString")){
-
                     corArray=(JSONArray)((JSONObject)jType.get("geometry")).get("coordinates");
                     for(int j=0;j<corArray.length();j++){
-                 //      String a=corArray.get(j).toString();
-                   //    System.out.println(a);
+                       String a=corArray.get(j).toString();
+                  //     System.out.println(a);
                        list= (JSONArray)corArray.get(j);
-//                       System.out.println("list length : "+list.length());
-//                       System.out.println(list);
+                //       System.out.println("list length : "+list.length());
+                  //     System.out.println(list);
 
                        HashMap<String, String> hashMap=new HashMap();
                        hashMap.put("lat", list.get(0).toString());
@@ -49,20 +47,14 @@ public class TMapDirectionsJSONParser {
 
 //                       System.out.println("list [] : "+list.get(0).toString()+" "+list.get(1).toString());
 
-                        path.add(hashMap);
-
+                        features.add(hashMap);
                     }
-
-//                    System.out.println("corArray.length() : "+corArray.length());
-//                    System.out.println("coordinate : "+corArray);
-
-
+                //    System.out.println("corArray.length() : "+corArray.length());
+              //      System.out.println("coordinate : "+corArray);
                 }
 
                 else{
                 }
-                features.add(path);
-
             }
 
         } catch (JSONException e) {

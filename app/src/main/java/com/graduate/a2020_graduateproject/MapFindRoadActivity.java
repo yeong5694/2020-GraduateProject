@@ -376,15 +376,12 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                         System.out.println("distance, duration point.get : "+ distance +" " +duration);
                     }
                     else{
-
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-
                     points.add(position);
                 }
                 }
-
                 polylineOptions.addAll(points);
                 polylineOptions.width(12);
                 polylineOptions.color(Color.YELLOW);

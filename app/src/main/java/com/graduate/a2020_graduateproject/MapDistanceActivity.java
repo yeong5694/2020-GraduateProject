@@ -155,14 +155,6 @@ public class MapDistanceActivity  extends AppCompatActivity implements OnMapRead
        return calDistance;
     }
 
-/*    public static double deg2rad(double lat){ //degree->radius
-        return (lat*Math.PI/180.0);
-    }
-    public static double rad2deg(double radius){ //radius->degree
-        return (radius*180/Math.PI);
-    }
-
- */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         ////일단 좌표 찍어서 직선거리 보여줌 -> DB에 들어있는 정보 이용해서 직선거리 구하기

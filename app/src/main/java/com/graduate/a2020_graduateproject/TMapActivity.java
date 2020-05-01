@@ -4,7 +4,10 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.HttpAuthHandler;
 import android.widget.Button;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -15,7 +18,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.skt.Tmap.TMapPoint;
-
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,9 +37,8 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Button findRoad_Btn;
     private Button findRoad_Btn_short;
-    TMapPoint tMapPointStart = new TMapPoint(37.570841, 126.985302); // SKT타워(출발지)
-    TMapPoint tMapPointEnd = new TMapPoint(37.551135, 126.988205); // N서울타워(목적지)
-
+ //   TMapPoint tMapPointStart = new TMapPoint(37.570841, 126.985302); // SKT타워(출발지)
+ //   TMapPoint tMapPointEnd = new TMapPoint(37.551135, 126.988205); // N서울타워(목적지)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +62,7 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 for(int i=0;i<listPoints.size();i++){
                     tMapPoints.add(new TMapPoint(listPoints.get(i).latitude, listPoints.get(i).longitude));
-                    System.out.println("tMapPoints 값 : "+tMapPoints);
+                    System.out.println("tMapPoints "+i+"번째 값 : "+tMapPoints);
                 }
 
                 for(int i=0;i<tMapPoints.size()-1;i++){
@@ -78,6 +79,33 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
         findRoad_Btn_short.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                gMap.clear();
+                tMapPoints.clear();
+
+                ArrayList<LatLng> dijkstraList=dijkstra(listPoints);
+
+                for(int i=0;i<dijkstraList.size();i++){
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(dijkstraList.get(i));
+                    markerOptions.title(i+"");
+                    markerOptions.snippet(dijkstraList.get(i).latitude+", "+dijkstraList.get(i).longitude);
+
+                    gMap.addMarker(markerOptions);
+                }
+
+                for(int i=0;i<dijkstraList.size();i++){
+                    tMapPoints.add(new TMapPoint(dijkstraList.get(i).latitude, dijkstraList.get(i).longitude));
+                    System.out.println("tMapPoints "+i+"번째 값 : "+tMapPoints);
+                }
+
+                for(int i=0;i<dijkstraList.size()-1;i++){
+                    String shortpolyUrl=getUrl(tMapPoints.get(i), tMapPoints.get(i+1));
+                    System.out.println("dijkstraList.get(i), dijkstraList.get(i+1) : "+shortpolyUrl);
+                    DownloadTask downloadTask=new DownloadTask();
+                    downloadTask.execute(shortpolyUrl);
+
+            }
 
             }
         });
@@ -123,9 +151,75 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void test(){
-        System.out.println("test");
+    public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
+        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+        ArrayList<LatLng> LatDistance=new ArrayList<>();
+        for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
+            for(int j=0;j<list.size();j++){
+                if(i==j){
+                    a[i][j]=0;
+                }
+                else{
+                    a[i][j]=calculate(list.get(i), list.get(j));
+                    System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
+                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
+                }
+            }
+        }
+
+        int start=0;
+        double[] distance=a[start].clone();
+        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+
+        System.out.println("a.length : "+a.length);
+
+        for(int i=0;i<a.length;i++){
+            int minIndex=-1;
+            double min=10000000;
+
+            for(int j=0;j<distance.length;j++){
+                if(!visited[j] && min>distance[j]){
+                    minIndex=j;
+                    min=distance[j];
+                }
+            }
+
+            visited[minIndex]=true;
+            LatDistance.add(list.get(minIndex));
+
+            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
+
+            for(int k=0;k<distance.length;k++){
+                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
+                    distance[k]=distance[minIndex]+a[minIndex][k];
+                }
+            }
+        }
+        return LatDistance;
+
     }
+
+    public double calculate(LatLng origin, LatLng destination){
+        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
+        double calDistance;
+        double radius=6371; //지구 반지름
+        double toRadian=Math.PI/180.0;
+
+        double deltaLat=Math.abs(origin.latitude-destination.latitude)*toRadian;
+        double deltaLog=Math.abs(origin.longitude-destination.longitude)*toRadian;
+
+        double sinDeltaLat=Math.sin(deltaLat/2);
+        double sinDeltaLog=Math.sin(deltaLog/2);
+
+        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.latitude*toRadian)*Math.cos(destination.latitude*toRadian)*Math.pow(sinDeltaLog,2));
+
+        calDistance=2*radius*Math.asin(root);
+
+        System.out.println("calDistance : "+calDistance);
+
+        return calDistance;
+    }
+
 
     private String getUrl(TMapPoint origin, TMapPoint dest){
 
@@ -224,14 +318,14 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+    private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String,String>> >{
 
         /// 백그라운드에서 json파일 파싱
         @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+        protected List<HashMap<String, String>> doInBackground(String... jsonData) {
 
             JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
+            List<HashMap<String, String>> routes = null;
 
             try{
                 System.out.println("ParserTask jsonData[0] : "+jsonData[0]);
@@ -252,39 +346,42 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //UI에서 실행-> polyline 찍기
         @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+        protected void onPostExecute(List<HashMap<String, String>> result) {
+            ArrayList<LatLng> points=new ArrayList<>();
+            PolylineOptions polylineOptionsT = new PolylineOptions();
+            HashMap<String, String> path;
 
-            ArrayList<LatLng> points;
-            PolylineOptions polylineOptions = null;
+            System.out.println("result.size : "+result.size());
 
             for(int i=0;i<result.size();i++){
-                points = new ArrayList<>();
-                polylineOptions = new PolylineOptions();
+                path=new HashMap<>();
 
-                List<HashMap<String, String>> path = result.get(i);
+                path = result.get(i);
+                double lat = Double.parseDouble(path.get("lat"));
+                double lng = Double.parseDouble(path.get("lng"));
 
-                for(int j=0;j<path.size();j++){
+                LatLng position = new LatLng(lng, lat);
 
-                    HashMap<String,String> point = path.get(j);
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
+                MarkerOptions marker=new MarkerOptions();
+                marker.position(position);
+              //  gMap.addMarker(marker);
 
-                    LatLng position = new LatLng(lng, lat);
-                    MarkerOptions marker=new MarkerOptions();
-                    marker.position(position);
+                points.add(position);
 
-                    points.add(position);
+            }
 
-            //        gMap.addMarker(marker);
-                }
+            polylineOptionsT.addAll(points);
+            polylineOptionsT.width(15);
+            polylineOptionsT.color(Color.YELLOW);
 
-                polylineOptions.addAll(points);
+            if(polylineOptionsT != null) {
+                System.out.println("poly null아님");
+                gMap.addPolyline(polylineOptionsT);
+                System.out.println(polylineOptionsT);
 
-                polylineOptions.width(15);
-                polylineOptions.color(Color.YELLOW);
-                gMap.addPolyline(polylineOptions);
-             //   System.out.println("draw gMap.addPolyline");
-
+            }else {
+                Toast.makeText(getApplicationContext(), "zero route", Toast.LENGTH_LONG).show();
+                System.out.println("들은게 없엄....");
             }
         }
     }
