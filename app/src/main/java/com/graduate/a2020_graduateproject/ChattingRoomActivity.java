@@ -14,6 +14,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -27,7 +33,9 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,15 +52,15 @@ public class ChattingRoomActivity extends AppCompatActivity {
     private String selected_room_name; // 여행방 이름
     private String selected_room_id; // 여행방 id
 
-    // TOPIC
     static final String TAG = ChattingRoomActivity.class.getSimpleName();
-    static String TOPIC;
 
 
     private ChatAdapter chatAdapter;
     private MqttClient mqttClient;
 
     private Toolbar toolbar;
+    private DatabaseReference chatRef;
+
 
     InputMethodManager imm;
 
@@ -66,27 +74,30 @@ public class ChattingRoomActivity extends AppCompatActivity {
 
     @OnClick(R.id.chatSendButton)
     public void sendChat(){
+
         hideKeyboard();
+
         String id = kakao_name;
         String content = chatEditText.getText().toString();
+        String thumnail = kakao_thumnail;
         String currentTime;
+
         // 현재시간
         long now = System.currentTimeMillis();
         Date mDate = new Date(now);
         SimpleDateFormat simpleDate = new SimpleDateFormat("yyyy년 MM월 dd일 hh시mm분");
         currentTime = simpleDate.format(mDate);
+
         if(content.equals("")){ }
         else{
-            JSONObject json = new JSONObject();
+
             try{
-                json.put("id",id);
-                json.put("content",content);
-                //
-                json.put("thumnail", kakao_thumnail);
-                json.put("time", currentTime);
-                //
-                mqttClient.publish(TOPIC,new MqttMessage(json.toString().getBytes()));
+
+                DatabaseReference sendRef = FirebaseDatabase.getInstance().getReference("sharing_trips/chat_list").child(selected_room_id);
+                sendRef.push().setValue(new ChatItem(id, content, thumnail, currentTime));
+
             }catch (Exception e){}
+
             chatEditText.setText("");
         }
     }
@@ -100,7 +111,7 @@ public class ChattingRoomActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE|WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        //getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+
 
         Intent intent = getIntent();
         kakao_id = intent.getExtras().getLong("kakao_id");
@@ -119,50 +130,58 @@ public class ChattingRoomActivity extends AppCompatActivity {
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
 
-
-        TOPIC = selected_room_id + "/chatting"; // topic 설정
-
         chatAdapter = new ChatAdapter();
         chatListView = findViewById(R.id.chat_list);
         chatListView.setAdapter(chatAdapter);
 
-
-        try{connectMqtt();}catch(Exception e){
-            Log.d(TAG,"MqttConnect Error");
-        }
-
-
-
-    }
-
-    private void connectMqtt() throws Exception{ // 192.168.43.149 // 192.168.219.103  ///92.168.43.149:1883
-        mqttClient = new MqttClient("tcp://172.30.1.3", MqttClient.generateClientId(), null);
-        mqttClient.connect();
-        mqttClient.subscribe(TOPIC);
-        mqttClient.setCallback(new MqttCallback() {
+        chatRef = FirebaseDatabase.getInstance().getReference("sharing_trips/chat_list").child(selected_room_id);
+        //mReference = databaseReference.child("/tripRoom_list/");
+        chatRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void connectionLost(Throwable cause) {
-                Log.d(TAG,"Mqtt ReConnect");
-                try{connectMqtt();}catch(Exception e){Log.d(TAG,"MqttReConnect Error");}
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                chatAdapter.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    // snapshot 내에 있는 데이터만큼 반복합니다.
+                    String key = snapshot.getKey();
+                    Log.e(TAG, "key: "+key); // 채팅 id
+
+
+                    String send_id =  snapshot.child("id").getValue().toString();
+                    String content = snapshot.child("content").getValue().toString();
+                    String thumnail = snapshot.child("thumnail").getValue().toString();
+                    String time = snapshot.child("time").getValue().toString();
+
+                    ChatItem chatItem = new ChatItem(send_id, content, thumnail, time);
+
+
+                    chatAdapter.add(chatItem);
+
+                }
+
+
+                chatAdapter.notifyDataSetChanged();
+                chatListView.setSelection(chatAdapter.getCount()-1);
             }
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                JSONObject json = new JSONObject(new String(message.getPayload(), "UTF-8"));
 
-                chatAdapter.add(new ChatItem(json.getString("id"), json.getString("content"), json.getString("thumnail"), json.getString("time")));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        chatAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
             @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG,"loadPost:onCancelled", databaseError.toException());
             }
         });
+
+
+
+
+
+
+
     }
+
+
+
 
     private void hideKeyboard()
     {
