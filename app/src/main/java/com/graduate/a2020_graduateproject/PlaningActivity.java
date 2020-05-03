@@ -21,6 +21,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -52,6 +53,7 @@ public class PlaningActivity extends AppCompatActivity {
 
     private ListView planListView;
     private PlanAdapter planAdapter;
+    private ArrayList<String> arrayIndex = new ArrayList<String>();
 
     Calendar fromCal = Calendar.getInstance();
     Calendar toCal = Calendar.getInstance();
@@ -182,30 +184,25 @@ public class PlaningActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                planAdapter.clear();
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                    String key = snapshot.getKey();
-
-                    String day =  snapshot.child("day").getValue().toString();
-                    Log.e("day",day);
-
-                    PlanListViewItem planItem = new PlanListViewItem(day);
-
-
-                    planAdapter.add(planItem);
-                }
-
-
-                planAdapter.notifyDataSetChanged();
-                planListView.setSelection(planAdapter.getCount()-1);
-
+                sort_list();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+
+        planListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                        .child("schedule_list");
+                removeRef.child(arrayIndex.get(i));
+
+                return true;
             }
         });
 
@@ -230,6 +227,39 @@ public class PlaningActivity extends AppCompatActivity {
 
 
 
+    }
+
+    public void sort_list(){
+      scheduleRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                planAdapter.clear();
+                arrayIndex.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    String key = snapshot.getKey();
+
+                    String day =  snapshot.child("day").getValue().toString();
+                    Log.e("day",day);
+
+                    PlanListViewItem planItem = new PlanListViewItem(day);
+
+
+                    arrayIndex.add(key);
+                    planAdapter.add(planItem);
+                }
+
+
+                planAdapter.notifyDataSetChanged();
+                planListView.setSelection(planAdapter.getCount()-1);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
