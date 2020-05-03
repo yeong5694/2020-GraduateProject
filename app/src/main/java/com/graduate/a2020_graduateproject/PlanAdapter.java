@@ -1,25 +1,33 @@
 package com.graduate.a2020_graduateproject;
 
-import android.content.Context;
-import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class PlanAdapter extends BaseAdapter {
 
     private ArrayList<PlanListViewItem> planListViewItems = new ArrayList<PlanListViewItem>();
+    private String selected_room_id;
 
-    public PlanAdapter(){
-
+    public PlanAdapter(String selected_room_id){
+        this.selected_room_id = selected_room_id;
 
     }
     @Override
@@ -38,31 +46,101 @@ public class PlanAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-        final int pos = i;
-        final Context context = viewGroup.getContext();
+        mViewHolder viewHolder;
+        if(convertView == null){
+            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.plan_list,parent,false);
+            viewHolder = new mViewHolder();
 
-        // "listview_item" Layout을 inflate하여 convertView 참조 획득.
-        if (view == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.plan_list, viewGroup, false);
+            viewHolder.day_text = convertView.findViewById(R.id.day_text);
+            viewHolder.edit_index = convertView.findViewById(R.id.edit_index);
+
+
+            convertView.setTag(viewHolder);
+        }else{
+            viewHolder = (mViewHolder)convertView.getTag();
         }
-
-        TextView  day_text = view.findViewById(R.id.day_text);
-
-        ImageButton edit_index = view.findViewById(R.id.edit_index);
-        edit_index.setOnClickListener(new View.OnClickListener() {
+        viewHolder.day_text.setText("Day"+planListViewItems.get(position).getName());
+        viewHolder.edit_index.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.e("button", day_text.toString());
+                //Log.e("button", viewHolder.day_text.getText().toString());
+            }
+        });
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e("itemClick", viewHolder.day_text.getText().toString());
+            }
+        });
+        convertView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                        .child(selected_room_id);
+                Query rmQuery = removeRef.child("schedule_list").orderByChild("day").equalTo(planListViewItems.get(position).getName());
+                rmQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                            snapshot.getRef().removeValue();
+                        }
+                        // 나머지 업데이트
+                        sort_and_update(planListViewItems.get(position).getName());
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+                return false;
             }
         });
 
-        PlanListViewItem item = planListViewItems.get(i);
 
-        day_text.setText("Day"+item.getName());
-        return view;
+        return convertView;
+
+    }
+
+    public void sort_and_update(String rm_day){
+
+       // ArrayList<Schedule> schedules = new ArrayList<>(); // 일정들
+
+        DatabaseReference orderRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                .child("schedule_list");
+        orderRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               // schedules.clear();
+                int i=1;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+
+                    Log.e("key",snapshot.getKey() );
+
+                    String beforeDay = snapshot.child("day").getValue().toString();
+                    snapshot.child("day").getRef().setValue(Integer.toString(i));
+
+
+                    i++;
+
+                    Log.e("before",beforeDay+" --> "+snapshot.child("day").getValue().toString() );
+
+                    //schedules.add(schedule);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     public void add(PlanListViewItem item){
@@ -74,4 +152,15 @@ public class PlanAdapter extends BaseAdapter {
     public void clear(){
         planListViewItems.clear();
     }
+
+    private class mViewHolder{
+        TextView day_text;
+        ImageButton edit_index;
+
+
+
+
+    }
+
+
 }

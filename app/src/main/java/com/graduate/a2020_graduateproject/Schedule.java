@@ -8,6 +8,10 @@ public class Schedule {
         this.day = day;
     }
 
+    public void setDay(String i){
+        this.day = i;
+    }
+
     public String getDay(){
         return this.day;
     }

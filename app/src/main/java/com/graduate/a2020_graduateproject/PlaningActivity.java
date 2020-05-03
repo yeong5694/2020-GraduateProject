@@ -174,7 +174,7 @@ public class PlaningActivity extends AppCompatActivity {
             }
         });
 
-        planAdapter = new PlanAdapter();
+        planAdapter = new PlanAdapter(selected_room_id);
         planListView = findViewById(R.id.scheduleListView);
         planListView.setAdapter(planAdapter);
 
@@ -192,20 +192,6 @@ public class PlaningActivity extends AppCompatActivity {
 
             }
         });
-
-
-        planListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
-                        .child("schedule_list");
-                removeRef.child(arrayIndex.get(i));
-
-                return true;
-            }
-        });
-
 
 
 
