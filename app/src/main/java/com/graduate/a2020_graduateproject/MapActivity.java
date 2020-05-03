@@ -66,10 +66,19 @@ public class MapActivity extends AppCompatActivity
 
     private String addressOutput="";
 
+    private String day;
+    private String selected_room_id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_layout);
+
+        Intent intent = getIntent();
+        day = intent.getExtras().getString("day");
+        selected_room_id = intent.getExtras().getString("selected_room_id");
+        Log.e("Intent info", "day : "+day);
+        Log.e("Intent info", "selected room id : "+selected_room_id);
 
         place_Text=(EditText)findViewById(R.id.place_Text); //장소 입력하는 공간
         place_Btn=(Button)findViewById(R.id.place_Btn);//장소 찾기 버튼

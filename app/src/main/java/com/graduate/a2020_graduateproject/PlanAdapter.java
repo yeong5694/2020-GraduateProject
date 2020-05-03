@@ -1,5 +1,6 @@
 package com.graduate.a2020_graduateproject;
 
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,6 +73,14 @@ public class PlanAdapter extends BaseAdapter {
             @Override
             public void onClick(View view) {
                 Log.e("itemClick", viewHolder.day_text.getText().toString());
+
+
+
+                Intent intent = new Intent(parent.getContext(), MapActivity.class);
+                intent.putExtra("selected_room_id", selected_room_id);
+                intent.putExtra("day", viewHolder.day_text.getText().toString());
+
+                parent.getContext().startActivity(intent);
             }
         });
         convertView.setOnLongClickListener(new View.OnLongClickListener() {
