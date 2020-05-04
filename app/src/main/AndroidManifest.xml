@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.graduate.a2020_graduateproject">
-    <!-- 인터넷 사용 권한 -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- 정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 읽기 권한 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 저장 권한 -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.INTERNET" /><!-- 인터넷 사용 권한 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /><!--정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /><!-- MediaStore에서 파일 읽기 권한 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" /><!-- SDK 28 이하 기기에서만 쓰기 권한 요청하도록 분기 처리 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
@@ -16,14 +17,30 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="q">
+        <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
+        <!-- Android 10 이상을 타겟팅하는 경우, 기존의 범위 지정 저장소를 사용하려면 android:requestLegacyExternalStorage="true"로 설정 -->
+
+        <!-- Add Provider -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.graduate.a2020_graduateproject.fileprovider"
+            android:grantUriPermissions="true"
+            android:exported="false" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/path" /> <!-- add paths -->
+        </provider>
+
         <activity android:name=".PlaningActivity"></activity>
         <activity
             android:name=".ChattingRoomActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".MyTripRoomListActivity" />
-        <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
+        <activity android:name=".ShareGalleryActivity" />
         <activity android:name=".KakaoFriendsInviteActivity">
             <intent-filter>
                 <data
@@ -31,10 +48,12 @@
                     android:scheme="@string/kakao_scheme" />
             </intent-filter>
         </activity>
-        <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".TripRoomActivity" />
+        <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="@string/kakao_app_key" /> <!-- 구글 메타데이터 -->
+            android:value="@string/kakao_app_key" />
+        <!-- 구글 메타데이터 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />

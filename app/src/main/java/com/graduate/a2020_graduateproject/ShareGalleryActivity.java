@@ -9,16 +9,23 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -39,22 +46,25 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Objects;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class ShareGalleryActivity extends AppCompatActivity {
-
-    /*
-    public final static int REQUEST_CODE = 1;
-    public static ArrayList<String> selectedPhotos = new ArrayList<>();*/
-
-    //private static final int REQUEST_CODE_CHOOSE = 23;  // define request code constants
-    //private static final int REQUEST_OPEN_RESULT_CODE = 0;
-    //private static final int REQUEST_CODE = 0;
 
     private static final int PICK_IMAGE_REQUEST = 1;
 
@@ -62,8 +72,10 @@ public class ShareGalleryActivity extends AppCompatActivity {
     private ImageView imageView;
     private ProgressBar progressBar;
     private Button firebaseUploadButton;
+    private Button saveImageButton;
+    private OutputStream outputStream;
 
-    private Uri imageUri;
+    private Uri image_uri;
 
     private StorageReference storageReference;
     private DatabaseReference rootReference;
@@ -74,59 +86,34 @@ public class ShareGalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_gallery);
 
-        //requirePermission();    // 권한 체크
-
-        /*
-        // 카메라 버튼
-        Button button = findViewById(R.id.camera_button);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean camera = ContextCompat.checkSelfPermission(view.getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
-
-                boolean write = ContextCompat.checkSelfPermission(view.getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-
-                if(camera && write) {
-                    // 사진찍는 인텐트
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(intent, 0);
-                }
-                else {
-                    Toast.makeText(ShareGalleryActivity.this, "카메라 권한 및 쓰기 권한을 허용해주세요", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });*/
-
         imageView = findViewById(R.id.selected_imageView);
         progressBar = findViewById(R.id.progress_bar);
-
-        /*
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/*");
-        startActivityForResult(intent, REQUEST_OPEN_RESULT_CODE);*/
-
-        /*
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);*/
-
-        // Storage에 uploads 폴더 만듦
-        storageReference = FirebaseStorage.getInstance().getReference("uploads");
-        rootReference = FirebaseDatabase.getInstance().getReference("SharingTrips");
-        databaseReference = rootReference;
-
-        // Firebase에 업로드 버튼
         firebaseUploadButton = findViewById(R.id.upload_button);
-        firebaseUploadButton.setOnClickListener(new View.OnClickListener() {
+        saveImageButton = findViewById(R.id.createFolder_button);
+
+
+        //////// 외부저장소 공용 영역에 사진 업로드 버튼
+
+        // 외부저장소 공용 영역에 사진 저장 버튼 이벤트리스너
+        saveImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                uploadFile();
+
+                // 저장소 접근 권한 체크
+                if(checkPermission()) {
+                    new downloadImage().execute("https://i.picsum.photos/id/797/200/300.jpg"); // 이미지 다운로드
+                } else {
+                    Toast.makeText(getApplicationContext(), "Grant Permission Ro Save Image", Toast.LENGTH_SHORT).show();
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(new String[] {WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE}, 111);
+                    }
+                }
             }
         });
 
-        // 갤러리에서 사진 업로드 버튼
+
+        //////// 핸드폰 기기의 저장소에서 여행방 갤러리에 사진 업로드 버튼 (우측 하단의 동그란 + 버튼)
+
         uploadButton = findViewById(R.id.uploadFab);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,29 +121,137 @@ public class ShareGalleryActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-                //startActivityForResult(intent, REQUEST_CODE);
                 startActivityForResult(intent, PICK_IMAGE_REQUEST);
-                /*
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
-                startActivityForResult(intent, REQUEST_OPEN_RESULT_CODE);*/
+            }
+        });
+
+
+        //////// Firebase Storage
+
+        storageReference = FirebaseStorage.getInstance().getReference("uploads"); // Storage에 uploads 폴더 만듦
+        rootReference = FirebaseDatabase.getInstance().getReference("SharingTrips");
+        databaseReference = rootReference;
+
+        // Firebase Storage에 업로드 버튼 이벤트리스너
+        firebaseUploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uploadFile();
             }
         });
     }
+    // onCreate() 여기까지 //
+
+
+    //////// 핸드폰 기기의 저장소에서 사진을 선택하여 현재 여행방 갤러리에 선택한 사진 이미지뷰로 보이기
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            imageUri = data.getData();
+            image_uri = data.getData();
 
             Glide.with(this)
-                    .load(imageUri)
+                    .load(image_uri)
                     .into(imageView);
         }
     }
+
+
+    //////// 외부저장소 공용 영역(/Pictures 아래) 접근, 이미지 저장
+
+    // 외부저장소 공용 영역에 저장할 이미지 다운로드
+
+    private class downloadImage extends AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+            String imgUrl = strings[0];
+            Bitmap bitmap = null;
+
+            try {
+                // Here we fetch image bitmap
+                // open url inputstream to read url bitmap
+                InputStream inputStream = new  java.net.URL(imgUrl).openStream();
+
+                // Now save to bitmap
+                bitmap = BitmapFactory.decodeStream(inputStream);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            // Now return bitmap
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            // Here we call save image function
+            try {
+                saveImage(bitmap, "demo");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    // MediaStore API를 사용하여 외부저장소의 공용 폴더 안의 미디어 파일(사진/동영상)에 접근 - 현재는 다운로드 받은 이미지 파일 저장
+
+    // ... 공용 폴더 안의 미디어 파일(사진/동영상/오디오)들은 MediaStore를 통해 읽을 수 있음
+    // ... 사진 파일을 찾고 싶으면 공용 폴더 아래의 모든 파일 탐색 X, MediaStore에 쿼리를 하여 Uri 객체를 얻어 사용
+    // ... 기본적으로 외부저장소 공용 영역의 /Pictures 아래 저장됨
+
+    private void saveImage(Bitmap bitmap, String name) throws IOException {
+
+        OutputStream fos; // File Output Stream
+
+        // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이상일 때
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentResolver resolver = getContentResolver();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name + ".jpg"); // Set image name
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            // MediaColumns.RELATIVE_PATH를 설정하여 파일을 저장할 구체적 위치를 설정할 수 있음
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);   // 갤러리 폴더 새로 생성해서 경로 수정하기
+
+            Uri uri;
+            Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+            fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
+        }
+        // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이하일 때
+        else {
+            String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+            File Image = new File(ImagesDir, name + ".jpg");
+            fos = new FileOutputStream(Image);
+        }
+
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        Objects.requireNonNull(fos).close();
+    }
+
+    // 외부저장소 접근 권한 체크 - 안드로이드 9 이하일 경우에는 쓰기 권한도 별도의 체크 필요
+    private boolean checkPermission() {
+        int write = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
+        int read = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
+        return write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        for(int grantResult : grantResults) {
+            if(grantResult == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(getApplicationContext(), "Permisson Granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+
+
+    //////// Firebase - 현재는 선택한 이미지가 Firebase Storage에만 저장됨 (지난주에 했던 거)
 
     private String getFileExtension(Uri uri) {
         ContentResolver cr = getContentResolver();
@@ -165,10 +260,10 @@ public class ShareGalleryActivity extends AppCompatActivity {
     }
 
     private void uploadFile() {
-        if(imageUri != null) {
-            StorageReference fileReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(imageUri));
+        if(image_uri != null) {
+            StorageReference fileReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(image_uri));
 
-            fileReference.putFile(imageUri)
+            fileReference.putFile(image_uri)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -205,80 +300,4 @@ public class ShareGalleryActivity extends AppCompatActivity {
             Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
         }
     }
-
-    /*
-    void requirePermission() {
-
-        String[] permissions = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        ArrayList<String> listPermissionsNeeded = new ArrayList<>();
-
-        // 필수 권한 두 가지(CAMERA와 WRITE_EXTERNAL_STORAGE) 확인. 권한이 허가되었는지 체크
-        for(String permission : permissions) {
-            // 권한이 허가가 안 됐을 경우 요청할 권한을 추가
-            if(ContextCompat.checkSelfPermission(this,permission) == PackageManager.PERMISSION_DENIED) {
-                listPermissionsNeeded.add(permission);  // permission 배열에 추가
-            }
-        }
-
-        // 이제 데이터가 있을 경우
-        if(!listPermissionsNeeded.isEmpty()) {
-            // 권한 요청 // listPermissionsNeeded이 한꺼번에 돌아가서 퍼미션 크기만큼 요청, 즉 두 개의 퍼미션을 요청
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),1);
-        }
-    }*/
-
-    /*
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        super.onActivityResult(requestCode, resultCode, resultData);    //?
-        if (requestCode == REQUEST_OPEN_RESULT_CODE && resultCode == RESULT_OK) {
-            Uri uri = null;
-            if (resultData != null) {
-                uri = resultData.getData();
-
-                try {
-                    Bitmap bitmap = getBitmapFromUri(uri);
-                    imageView.setImageBitmap(bitmap);
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Glide.with(this)
-                        .load(uri)
-                        .into(imageView);
-            }
-        }
-    }
-
-    private Bitmap getBitmapFromUri(Uri uri) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
-        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-        parcelFileDescriptor.close();
-
-        return bitmap;
-    }*/
-
-    /*
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        super.onActivityResult(requestCode, resultCode, resultData);
-        if (requestCode == REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                try {
-                    InputStream in = getContentResolver().openInputStream(resultData.getData());
-
-                    Bitmap img = BitmapFactory.decodeStream(in);
-                    in.close();
-
-                    imageView.setImageBitmap(img);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(this, "사진 선택 취소", Toast.LENGTH_LONG).show();
-            }
-        }
-    }*/
 }
