@@ -34,10 +34,10 @@
                 android:resource="@xml/path" /> <!-- add paths -->
         </provider>
 
+        <activity android:name=".PlaningActivity"></activity>
         <activity
             android:name=".ChattingRoomActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" />
