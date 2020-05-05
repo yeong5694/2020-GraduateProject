@@ -6,12 +6,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -95,6 +97,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         kakao_thumnail = intent.getExtras().getString("kakao_thumnail");
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
+
         Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
 
         setTitle(selected_room_name);
@@ -106,6 +109,12 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         profile_email.setText(kakao_email);
         profile_name.setText(kakao_name);
         Glide.with(getApplicationContext()).load(kakao_thumnail).error(R.drawable.kakao_default_profile_image).into(profile_image);
+
+
+
+
+
+
 
 
 
@@ -176,13 +185,21 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
 
+
         }
         else if(id == R.id.calendar) {
 
         }
         else if(id == R.id.plan) {
 
-          
+            Intent intent = new Intent(TripRoomActivity.this, PlaningActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
 
         }
         else if(id == R.id.map) {
