@@ -27,6 +27,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -62,10 +67,20 @@ public class MapActivity extends AppCompatActivity
 
     private String addressOutput="";
 
+    private MarkerAdapter markerAdapter;
+
+//    markerAdapter=new MarkerAdapter();
+
+    private MqttClient mqttClient;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_layout);
+
+//        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(),null);
+  //     mqttClient.connect();
 
         place_Text=(EditText)findViewById(R.id.place_Text); //장소 입력하는 공간
         place_Btn=(Button)findViewById(R.id.place_Btn);//장소 찾기 버튼
@@ -179,7 +194,35 @@ public class MapActivity extends AppCompatActivity
         });
     }
 
+    static String TOPIC="googlemap";
 
+    private void connectMqtt() throws  Exception{
+        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(), null);
+        mqttClient.connect();
+
+        mqttClient.subscribe(TOPIC);
+        mqttClient.setCallback(new MqttCallback() {
+            @Override
+            public void connectionLost(Throwable cause) {
+                System.out.println("mqtt reconnect");
+                try{
+                    connectMqtt();
+                }catch (Exception e){
+                    System.out.println("mqtt connect error");
+                }
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+    }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
