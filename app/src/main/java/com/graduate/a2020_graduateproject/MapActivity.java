@@ -26,19 +26,20 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import noman.googleplaces.NRPlaces;
 import noman.googleplaces.Place;
 import noman.googleplaces.PlaceType;
@@ -79,6 +80,12 @@ public class MapActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_layout);
 
+        try {
+            System.out.println("onCreate-mqtt Connect");
+            connectMqtt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 //        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(),null);
   //     mqttClient.connect();
 
@@ -197,10 +204,15 @@ public class MapActivity extends AppCompatActivity
     static String TOPIC="googlemap";
 
     private void connectMqtt() throws  Exception{
-        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(), null);
+
+        System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883
+        mqttClient=new MqttClient("tcp://192.168.0.5:1883", MqttClient.generateClientId(), new MemoryPersistence());
         mqttClient.connect();
 
+        System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
+
         mqttClient.subscribe(TOPIC);
+
         mqttClient.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
@@ -215,6 +227,39 @@ public class MapActivity extends AppCompatActivity
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
 
+              System.out.println("messageArrived");
+                JSONObject json=new JSONObject(new String(message.getPayload(), "UTF-8"));
+
+                System.out.println("message.getPayload() json");
+             //   markerAdapter.add(new MarkerInfo(Double.parseDouble(json.getString("lat")), Double.parseDouble(json.getString("lng")),json.getString("name")));
+               // System.out.println("markerAdapter messageArrived : "+markerAdapter);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        System.out.println("run");
+
+                        MarkerOptions markerOptions=new MarkerOptions();
+                        try {
+                            double lat,lng; String name;
+                            lat=Double.parseDouble(json.getString("lat"));
+                            lng=Double.parseDouble(json.getString("lng"));
+                            name=json.getString("name");
+                            markerOptions.position(new LatLng(lat, lng));
+                            markerOptions.title(name);
+
+                            gMap.addMarker(markerOptions);
+                            System.out.println("Mqtt Subscribe 받아서 마커 찍음");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+
+                    //    markerAdapter.notifyDataSetChanged();
+                    }
+                });
             }
 
             @Override
@@ -255,6 +300,22 @@ public class MapActivity extends AppCompatActivity
                 markerOptions2.position(latLng);
                 markerOptions2.title(addressOutput);
                 markerOptions2.snippet(latLng.latitude+", "+latLng.longitude);
+
+                String lat=Double.toString(latLng.latitude);
+                String lng=Double.toString(latLng.longitude);
+                String name=addressOutput;
+
+                JSONObject json=new JSONObject();
+                try {
+                    json.put("lat", lat);
+                    json.put("lng", lng);
+                    json.put("name", name);
+
+                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("안보내짐....");
+                }
 
                 googleMap.addMarker(markerOptions2);
 
