@@ -7,14 +7,17 @@ import androidx.recyclerview.widget.RecyclerView;
 public class PlanItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
 
+    private final ItemTouchHelperAdapter mAdapter;
+
+
+    public PlanItemTouchHelperCallback(ItemTouchHelperAdapter adapter){
+        this.mAdapter = adapter;
+    }
+
     public interface  OnItemMoveListener{
         boolean onItemMove(int fromPosition, int toPosition);
     }
 
-    private final OnItemMoveListener mItemMoveListener;
-    public PlanItemTouchHelperCallback(OnItemMoveListener listener){
-        mItemMoveListener = listener;
-    }
 
     @Override
     public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
@@ -28,12 +31,33 @@ public class PlanItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
 
-        mItemMoveListener.onItemMove(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+        mAdapter.onItemMove(viewHolder.getAdapterPosition(), target.getAdapterPosition());
         return true;
+
     }
 
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        mAdapter.onItemDismiss(viewHolder.getAdapterPosition());
 
     }
+
+    @Override
+    public boolean isLongPressDragEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean isItemViewSwipeEnabled() {
+        return true;
+    }
+
+
+    public interface ItemTouchHelperAdapter {
+
+        boolean onItemMove(int fromPosition, int toPosition);
+
+        void onItemDismiss(int position);
+    }
+
 }

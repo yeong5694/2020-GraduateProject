@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,7 +28,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class PlaningActivity extends AppCompatActivity {
+public class PlaningActivity extends AppCompatActivity
+implements  PlanAdapter.OnStartDragListener{
 
     // 로그인 정보
     private Long kakao_id;
@@ -53,6 +55,7 @@ public class PlaningActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager planLayoutManager;
 
     private PlanAdapter planAdapter;
+    private ItemTouchHelper mItemTouchHelper;
     private ArrayList<String> arrayIndex = new ArrayList<String>();
 
     Calendar fromCal = Calendar.getInstance();
@@ -183,6 +186,11 @@ public class PlaningActivity extends AppCompatActivity {
         planRecyclerView.setLayoutManager(planLayoutManager);
         planRecyclerView.setAdapter(planAdapter);
 
+        ItemTouchHelper.Callback callback =  new PlanItemTouchHelperCallback(planAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(planRecyclerView);
+
+
 
 
         scheduleRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
@@ -259,5 +267,8 @@ public class PlaningActivity extends AppCompatActivity {
     }
 
 
-
+    @Override
+    public void onStartDrag(PlanViewHolder holder) {
+        mItemTouchHelper.startDrag(holder);
+    }
 }
