@@ -57,6 +57,8 @@
         <activity android:name=".MapDistanceActivity" />
         <activity android:name=".MapFindRoadActivity" />
         <activity android:name=".TMapActivity" />
+        <activity android:name=".PlaningActivity" />
+
 
         <!-- 주소 검색 -->
         <service

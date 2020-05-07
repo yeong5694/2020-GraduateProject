@@ -265,6 +265,7 @@ public class MapActivity extends AppCompatActivity
                             markerOptions.title(name);
 
                             gMap.addMarker(markerOptions);
+
                             System.out.println("Mqtt Subscribe 받아서 마커 찍음");
                         } catch (JSONException e) {
                             e.printStackTrace();
