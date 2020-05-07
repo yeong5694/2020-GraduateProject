@@ -73,11 +73,22 @@ public class MapActivity extends AppCompatActivity
 
     private MqttClient mqttClient;
 
+    // intent 정보
+    private String selected_room_id;
+    private String day;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_layout);
+
+        Intent intent = getIntent();
+        selected_room_id = intent.getExtras().getString("selected_room_id");
+        day = intent.getExtras().getString("day");
+        Log.e("Intent info ", "room:"+selected_room_id);
+        Log.e("Intent info", "day:"+day);
 
 //        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(),null);
   //     mqttClient.connect();
