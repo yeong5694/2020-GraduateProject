@@ -77,13 +77,15 @@
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
         android:text="여행지 :" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="// 지도 띄우기" />
+        android:layout_marginLeft="10dp"
+        android:text="// 지도에 전체 일정 표시" />
 
     <Button
         android:id="@+id/add_btn"
@@ -95,14 +97,13 @@
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="(item길게누르면삭제됨)" />
+        android:layout_marginLeft="10dp"
+        android:text="( 왼쪽으로 밀어서 삭제 / 드래그 앤 드롭으로 순서변경)" />
 
-    <ListView
-        android:id="@+id/scheduleListView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/planRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </ListView>
+        android:layout_height="match_parent" />
 
 
 </LinearLayout>
