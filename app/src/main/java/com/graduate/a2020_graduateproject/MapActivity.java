@@ -68,7 +68,7 @@ public class MapActivity extends AppCompatActivity
 
     private String addressOutput="";
 
-    private MarkerAdapter markerAdapter;
+    //private MarkerAdapter markerAdapter;
 
 //    markerAdapter=new MarkerAdapter();
 
@@ -81,11 +81,14 @@ public class MapActivity extends AppCompatActivity
         setContentView(R.layout.map_layout);
 
         try {
+
             System.out.println("onCreate-mqtt Connect");
             connectMqtt();
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
 //        mqttClient=new MqttClient("tcp://18.204.210.252:1883", MqttClient.generateClientId(),null);
   //     mqttClient.connect();
 
@@ -116,6 +119,14 @@ public class MapActivity extends AppCompatActivity
              //   intent.putParcelableArrayListExtra("markerList", markerList);
                 intent.putExtra("markerList", markerList);
                 intent.putExtra("clickList", clickList);
+                try {
+                    mqttClient.disconnect();
+                    mqttClient.close();
+                    System.out.println("disconnect !! ");
+
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
                 startActivity(intent);
             }
         });
@@ -126,6 +137,15 @@ public class MapActivity extends AppCompatActivity
              public void onClick(View v) {
                ///////////  Intent findIntent=new Intent(getApplicationContext(), MapFindRoadActivity.class);
                  Intent findIntent=new Intent(getApplicationContext(), TMapActivity.class);
+
+                 try {
+                     mqttClient.disconnect();
+                     mqttClient.close();
+
+                     System.out.println("disconnect !! ");
+                 } catch (MqttException e) {
+                     e.printStackTrace();
+                 }
 
                  System.out.println("MapActivity에서 MapFindRoadActivity로 ");
                  startActivity(findIntent);
@@ -201,12 +221,12 @@ public class MapActivity extends AppCompatActivity
         });
     }
 
-    static String TOPIC="googlemap";
+    static String TOPIC="googlemap2";
 
     private void connectMqtt() throws  Exception{
 
         System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883
-        mqttClient=new MqttClient("tcp://192.168.0.5:1883", MqttClient.generateClientId(), new MemoryPersistence());
+        mqttClient=new MqttClient("tcp://192.168.0.5:1883", MqttClient.generateClientId(), null);
         mqttClient.connect();
 
         System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
@@ -226,19 +246,14 @@ public class MapActivity extends AppCompatActivity
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-
               System.out.println("messageArrived");
                 JSONObject json=new JSONObject(new String(message.getPayload(), "UTF-8"));
 
-                System.out.println("message.getPayload() json");
              //   markerAdapter.add(new MarkerInfo(Double.parseDouble(json.getString("lat")), Double.parseDouble(json.getString("lng")),json.getString("name")));
                // System.out.println("markerAdapter messageArrived : "+markerAdapter);
-
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
-                        System.out.println("run");
 
                         MarkerOptions markerOptions=new MarkerOptions();
                         try {
@@ -257,7 +272,7 @@ public class MapActivity extends AppCompatActivity
 
 
 
-                    //    markerAdapter.notifyDataSetChanged();
+                 //       markerAdapter.notifyDataSetChanged();
                     }
                 });
             }
@@ -276,6 +291,7 @@ public class MapActivity extends AppCompatActivity
         geocoder=new Geocoder(this);
         // 내부적인 좌표값에 대한 정보 얻기 위한 객체
 
+        gMap.clear();
         //한성대학교 위치 찍기
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
         MarkerOptions markerOptions = new MarkerOptions();
