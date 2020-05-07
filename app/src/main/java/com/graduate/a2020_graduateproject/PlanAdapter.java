@@ -52,7 +52,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
     public void onBindViewHolder(@NonNull PlanViewHolder holder, int position) {
 
         PlanItem item = planItems.get(position);
-        holder.day_text.setText("Day" + item.getDay()  + item.getKey());
+        holder.day_text.setText("Day" + item.getDay());
 
 
 
@@ -70,7 +70,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
 
 
 
-    public void sort_and_update(String rm_day){
+    public void sort_and_update(){
 
 
 
@@ -132,6 +132,8 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
             }
         }
         notifyItemMoved(fromPosition, toPosition);
+
+
       return true;
     }
 
@@ -152,7 +154,7 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
                     snapshot.getRef().removeValue(); // 파이어베이스에서 삭제
                 }
                 // 나머지 업데이트
-                sort_and_update(planItems.get(position).getDay());
+                sort_and_update();
             }
 
             @Override

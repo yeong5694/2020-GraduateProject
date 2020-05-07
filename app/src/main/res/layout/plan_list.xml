@@ -18,15 +18,23 @@
             android:layout_weight="10"
             android:paddingLeft="10dp"
             android:text="일정"
-            android:textSize="30sp" />
+            android:textSize="36sp" />
 
         <ImageView
             android:id="@+id/drag_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
             android:layout_weight="1"
             app:srcCompat="@drawable/baseline_reorder_black_18dp" />
 
     </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
 
 </LinearLayout>
