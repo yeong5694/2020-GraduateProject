@@ -19,8 +19,15 @@
             android:text="일정"
             android:textSize="30sp" />
 
-        <ImageButton
-            android:id="@+id/edit_index"
+        <ImageView
+            android:id="@+id/remove_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/baseline_remove_black_18dp" />
+
+        <ImageView
+            android:id="@+id/drag_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

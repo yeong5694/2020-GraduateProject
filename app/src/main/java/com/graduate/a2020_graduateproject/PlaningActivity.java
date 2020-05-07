@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -42,6 +43,8 @@ public class PlaningActivity extends AppCompatActivity {
     // 선택한 여행방 정보
     private String selected_room_name; // 여행방 이름
     private String selected_room_id; // 여행방 id
+
+    private static String TAG = "PlaningActivity";
 
     private Toolbar toolbar;
 
@@ -177,6 +180,10 @@ public class PlaningActivity extends AppCompatActivity {
         planAdapter = new PlanAdapter(selected_room_id);
         planListView = findViewById(R.id.scheduleListView);
         planListView.setAdapter(planAdapter);
+
+
+
+
 
         scheduleRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");

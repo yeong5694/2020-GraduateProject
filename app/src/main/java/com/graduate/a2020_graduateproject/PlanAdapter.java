@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -55,7 +56,8 @@ public class PlanAdapter extends BaseAdapter {
             viewHolder = new mViewHolder();
 
             viewHolder.day_text = convertView.findViewById(R.id.day_text);
-            viewHolder.edit_index = convertView.findViewById(R.id.edit_index);
+            viewHolder.remove_view = convertView.findViewById(R.id.remove_view);
+            viewHolder.drag_view = convertView.findViewById(R.id.drag_view);
 
 
             convertView.setTag(viewHolder);
@@ -63,29 +65,9 @@ public class PlanAdapter extends BaseAdapter {
             viewHolder = (mViewHolder)convertView.getTag();
         }
         viewHolder.day_text.setText("Day"+planListViewItems.get(position).getName());
-        viewHolder.edit_index.setOnClickListener(new View.OnClickListener() {
+        viewHolder.remove_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Log.e("button", viewHolder.day_text.getText().toString());
-            }
-        });
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("itemClick", viewHolder.day_text.getText().toString());
-
-
-
-                Intent intent = new Intent(parent.getContext(), MapActivity.class);
-                intent.putExtra("selected_room_id", selected_room_id);
-                intent.putExtra("day", viewHolder.day_text.getText().toString());
-
-                parent.getContext().startActivity(intent);
-            }
-        });
-        convertView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
                 DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
                         .child(selected_room_id);
                 Query rmQuery = removeRef.child("schedule_list").orderByChild("day").equalTo(planListViewItems.get(position).getName());
@@ -104,11 +86,32 @@ public class PlanAdapter extends BaseAdapter {
 
                     }
                 });
-
-
-                return false;
             }
         });
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e("itemClick", viewHolder.day_text.getText().toString());
+
+
+
+                Intent intent = new Intent(parent.getContext(), MapActivity.class);
+                intent.putExtra("selected_room_id", selected_room_id);
+                intent.putExtra("day", viewHolder.day_text.getText().toString());
+
+                parent.getContext().startActivity(intent);
+            }
+        });
+//        convertView.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View view) {
+//
+//
+//
+//                return false;
+//            }
+//        });
+
 
 
         return convertView;
@@ -117,29 +120,29 @@ public class PlanAdapter extends BaseAdapter {
 
     public void sort_and_update(String rm_day){
 
-       // ArrayList<Schedule> schedules = new ArrayList<>(); // 일정들
+
 
         DatabaseReference orderRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
         orderRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               // schedules.clear();
+
                 int i=1;
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
 
                     Log.e("key",snapshot.getKey() );
 
-                    String beforeDay = snapshot.child("day").getValue().toString();
+                    //String beforeDay = snapshot.child("day").getValue().toString();
                     snapshot.child("day").getRef().setValue(Integer.toString(i));
 
 
                     i++;
 
-                    Log.e("before",beforeDay+" --> "+snapshot.child("day").getValue().toString() );
+                    //Log.e("before",beforeDay+" --> "+snapshot.child("day").getValue().toString() );
 
-                    //schedules.add(schedule);
+
                 }
             }
 
@@ -164,8 +167,9 @@ public class PlanAdapter extends BaseAdapter {
 
     private class mViewHolder{
         TextView day_text;
-        ImageButton edit_index;
-
+        //ImageButton edit_index;
+        ImageView remove_view;
+        ImageView drag_view;
 
 
 
