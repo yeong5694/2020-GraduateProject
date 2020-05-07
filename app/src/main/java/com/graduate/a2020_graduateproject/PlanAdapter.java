@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,26 +19,35 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-public class PlanAdapter extends BaseAdapter {
+public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder> {
 
-    private ArrayList<PlanListViewItem> planListViewItems = new ArrayList<PlanListViewItem>();
+    private ArrayList<PlanItem> planItems = new ArrayList<PlanItem>();
     private String selected_room_id;
 
     public PlanAdapter(String selected_room_id){
         this.selected_room_id = selected_room_id;
 
     }
+
+
+    @NonNull
     @Override
-    public int getCount() {
-        return planListViewItems.size();
+    public PlanViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(
+                parent.getContext()
+        ).inflate(R.layout.plan_list, parent, false);
+        return new PlanViewHolder(v);
     }
 
+
     @Override
-    public Object getItem(int i) {
-        return planListViewItems.get(i);
+    public void onBindViewHolder(@NonNull PlanViewHolder holder, int position) {
+
+        PlanItem item = planItems.get(position);
+        holder.day_text.setText("Day" + item.getDay()  + item.getKey());
+
     }
 
     @Override
@@ -48,75 +56,11 @@ public class PlanAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        mViewHolder viewHolder;
-        if(convertView == null){
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.plan_list,parent,false);
-            viewHolder = new mViewHolder();
-
-            viewHolder.day_text = convertView.findViewById(R.id.day_text);
-            viewHolder.remove_view = convertView.findViewById(R.id.remove_view);
-            viewHolder.drag_view = convertView.findViewById(R.id.drag_view);
-
-
-            convertView.setTag(viewHolder);
-        }else{
-            viewHolder = (mViewHolder)convertView.getTag();
-        }
-        viewHolder.day_text.setText("Day"+planListViewItems.get(position).getName());
-        viewHolder.remove_view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                        .child(selected_room_id);
-                Query rmQuery = removeRef.child("schedule_list").orderByChild("day").equalTo(planListViewItems.get(position).getName());
-                rmQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                            snapshot.getRef().removeValue();
-                        }
-                        // 나머지 업데이트
-                        sort_and_update(planListViewItems.get(position).getName());
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-            }
-        });
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("itemClick", viewHolder.day_text.getText().toString());
-
-
-
-                Intent intent = new Intent(parent.getContext(), MapActivity.class);
-                intent.putExtra("selected_room_id", selected_room_id);
-                intent.putExtra("day", viewHolder.day_text.getText().toString());
-
-                parent.getContext().startActivity(intent);
-            }
-        });
-//        convertView.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View view) {
-//
-//
-//
-//                return false;
-//            }
-//        });
-
-
-
-        return convertView;
-
+    public int getItemCount() {
+        return planItems.size();
     }
+
+
 
     public void sort_and_update(String rm_day){
 
@@ -155,25 +99,20 @@ public class PlanAdapter extends BaseAdapter {
 
     }
 
-    public void add(PlanListViewItem item){
+    public void add(PlanItem item){
 
-        planListViewItems.add(item);
+        planItems.add(item);
+        //notifyDataSetChanged();
 
     }
 
     public void clear(){
-        planListViewItems.clear();
-    }
-
-    private class mViewHolder{
-        TextView day_text;
-        //ImageButton edit_index;
-        ImageView remove_view;
-        ImageView drag_view;
-
-
+        planItems.clear();
 
     }
+
+
+
 
 
 }

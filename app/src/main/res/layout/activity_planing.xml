@@ -95,14 +95,12 @@
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="(item길게누르면삭제됨)" />
+        android:text="(item터치하면지도로이동)" />
 
-    <ListView
-        android:id="@+id/scheduleListView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/planRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </ListView>
+        android:layout_height="match_parent" />
 
 
 </LinearLayout>
