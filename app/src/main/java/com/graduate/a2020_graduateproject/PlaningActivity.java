@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,7 +47,6 @@ implements  PlanAdapter.OnStartDragListener{
 
     private TextView schedule_txt;
     private TextView schedule_end_txt;
-    private Button add_btn;
     private ImageView planEdit;
     private ImageView planEditFin;
     private ImageView add;
@@ -271,15 +271,15 @@ implements  PlanAdapter.OnStartDragListener{
                 description.setText("밀어서 삭제");
 
                 planAdapter.change();
+
+                Toast.makeText(getApplicationContext(), "변경되었습니다", Toast.LENGTH_LONG).show();
             }
         });
 
 
     }
 
-    public void change(){
 
-    }
 
     public void sort_list(){
       scheduleRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
