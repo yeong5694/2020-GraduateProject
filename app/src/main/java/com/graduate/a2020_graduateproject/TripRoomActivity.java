@@ -408,18 +408,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         else if(id == R.id.calendar) {
 
         }
-        else if(id == R.id.plan) {
 
-//            Intent intent = new Intent(TripRoomActivity.this, PlaningActivity.class);
-//            intent.putExtra("kakao_id", kakao_id);
-//            intent.putExtra("kakao_email", kakao_email);
-//            intent.putExtra("kakao_name", kakao_name);
-//            intent.putExtra("kakao_thumnail", kakao_thumnail);
-//            intent.putExtra("selected_room_name", selected_room_name);
-//            intent.putExtra("selected_room_id", selected_room_id);
-//            startActivity(intent);
-
-        }
         else if(id == R.id.map) {
             Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
             startActivity(intent);

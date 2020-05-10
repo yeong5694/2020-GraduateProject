@@ -19,9 +19,7 @@
         <item android:title="여행 캘린더"
             android:id="@+id/calendar"
             android:icon="@drawable/baseline_calendar_today_black_18dp"/>
-        <item android:title="일정"
-            android:id="@+id/plan"
-            android:icon="@drawable/baseline_event_black_18dp"/>
+
         <item android:title="지도"
             android:id="@+id/map"
             android:icon="@drawable/baseline_place_black_18dp"/>

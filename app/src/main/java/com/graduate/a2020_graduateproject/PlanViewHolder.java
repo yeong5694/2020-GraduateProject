@@ -25,16 +25,16 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
 
         divider = itemView.findViewById(R.id.divider);
 
-//        itemView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(parent, MapActivity.class);
-//                intent.putExtra("selected_room_id", selected_room_id);
-//                intent.putExtra("day", day_text.getText().toString());
-//
-//                parent.startActivity(intent);
-//            }
-//        });
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(parent, MapActivity.class);
+                intent.putExtra("selected_room_id", selected_room_id);
+                intent.putExtra("day", day_text.getText().toString());
+
+                parent.startActivity(intent);
+            }
+        });
 
 
 
