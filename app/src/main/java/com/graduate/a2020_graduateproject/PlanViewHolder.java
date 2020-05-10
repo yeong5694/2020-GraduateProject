@@ -35,5 +35,9 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
                 parent.startActivity(intent);
             }
         });
+
+
+
+
     }
 }
