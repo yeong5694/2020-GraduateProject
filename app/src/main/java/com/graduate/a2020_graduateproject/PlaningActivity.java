@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -47,6 +47,10 @@ implements  PlanAdapter.OnStartDragListener{
     private TextView schedule_txt;
     private TextView schedule_end_txt;
     private Button add_btn;
+    private ImageView planEdit;
+    private ImageView planEditFin;
+    private ImageView add;
+    private TextView description;
 
     private DatabaseReference scheduleRef;
 
@@ -180,15 +184,27 @@ implements  PlanAdapter.OnStartDragListener{
 
 
         planRecyclerView = findViewById(R.id.planRecyclerView);
-        planAdapter = new PlanAdapter(selected_room_id);
+        //planAdapter = new PlanAdapter(selected_room_id);
+
+        planAdapter = new PlanAdapter(selected_room_id,this,this);
+
 
         planLayoutManager = new LinearLayoutManager(this);
         planRecyclerView.setLayoutManager(planLayoutManager);
         planRecyclerView.setAdapter(planAdapter);
 
-        ItemTouchHelper.Callback callback =  new PlanItemTouchHelperCallback(planAdapter);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
-        touchHelper.attachToRecyclerView(planRecyclerView);
+//        ItemTouchHelper.Callback callback =  new PlanItemTouchHelperCallback(planAdapter);
+//        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+//        touchHelper.attachToRecyclerView(planRecyclerView);
+
+        PlanItemTouchHelperCallback mCallback = new PlanItemTouchHelperCallback(planAdapter);
+        mCallback.setMintem(false); // 드래그 안되게
+        mCallback.setMintem2(true); // 스와핑 되게
+
+
+        mItemTouchHelper = new ItemTouchHelper((mCallback));
+        mItemTouchHelper.attachToRecyclerView(planRecyclerView);
+
 
 
 
@@ -210,8 +226,9 @@ implements  PlanAdapter.OnStartDragListener{
 
 
 
-        add_btn = findViewById(R.id.add_btn);
-        add_btn.setOnClickListener(new View.OnClickListener() {
+
+        add = findViewById(R.id.planAdd);
+        add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
@@ -220,13 +237,47 @@ implements  PlanAdapter.OnStartDragListener{
                 int d = planAdapter.getItemCount() +1;
 
                 ref.push().setValue(new Schedule(Integer.toString(d)));
+            }
+        });
+        description = findViewById(R.id.descriptionText);
+        description.setText("밀어서 삭제");
 
 
+        planEdit = findViewById(R.id.planEdit);
+        planEditFin = findViewById(R.id.planEditFin);
+        planEditFin.setVisibility(View.INVISIBLE);
+
+        planEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                planEdit.setVisibility(View.INVISIBLE);
+                planEditFin.setVisibility(View.VISIBLE);
+                description.setText("드래그해서 순서변경");
+                add.setVisibility(View.INVISIBLE);
+
+                mCallback.setMintem(true); // 드래그 되게
+                mCallback.setMintem2(false); // 스와핑 안되게
+            }
+        });
+        planEditFin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e(TAG,"plan edit fin");
+                mCallback.setMintem(false); // 드래그 안되게
+                mCallback.setMintem2(true); // 스와핑 되게
+                planEdit.setVisibility(View.VISIBLE);
+                planEditFin.setVisibility(View.INVISIBLE);
+                add.setVisibility(View.VISIBLE);
+                description.setText("밀어서 삭제");
+
+                planAdapter.change();
             }
         });
 
 
+    }
 
+    public void change(){
 
     }
 
