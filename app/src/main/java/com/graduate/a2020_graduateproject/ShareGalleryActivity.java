@@ -161,7 +161,7 @@ public class ShareGalleryActivity extends AppCompatActivity {
 
     //////// 외부저장소 공용 영역(/Pictures 아래) 접근, 이미지 저장
 
-    // 외부저장소 공용 영역에 저장할 이미지 다운로드
+    // 외부저장소 공용 영역에 이미지 다운로드
 
     private class downloadImage extends AsyncTask<String, Void, Bitmap> {
         @Override
@@ -172,7 +172,7 @@ public class ShareGalleryActivity extends AppCompatActivity {
             try {
                 // Here we fetch image bitmap
                 // open url inputstream to read url bitmap
-                InputStream inputStream = new  java.net.URL(imgUrl).openStream();
+                InputStream inputStream = new java.net.URL(imgUrl).openStream();
 
                 // Now save to bitmap
                 bitmap = BitmapFactory.decodeStream(inputStream);
@@ -187,7 +187,7 @@ public class ShareGalleryActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
-            // Here we call save image function
+            // save image function 호출
             try {
                 saveImage(bitmap, "demo");
             } catch (Exception e) {
@@ -209,12 +209,16 @@ public class ShareGalleryActivity extends AppCompatActivity {
 
         // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이상일 때
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+            final String relativePath = Environment.DIRECTORY_PICTURES + "/SharingTrips";
+
+            // ContentResolver 인스턴스를 가져옴
             ContentResolver resolver = getContentResolver();
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name + ".jpg"); // Set image name
             contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
             // MediaColumns.RELATIVE_PATH를 설정하여 파일을 저장할 구체적 위치를 설정할 수 있음
-            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);   // 갤러리 폴더 새로 생성해서 경로 수정하기
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, relativePath);   // 갤러리 폴더 새로 생성해서 경로 수정하기
 
             Uri uri;
             Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
@@ -222,8 +226,21 @@ public class ShareGalleryActivity extends AppCompatActivity {
         }
         // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이하일 때
         else {
-            String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+            /*
+            String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/SharingTrips").toString();
+
             File Image = new File(ImagesDir, name + ".jpg");
+            fos = new FileOutputStream(Image);
+            */
+
+            File galleryFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/SharingTrips");
+
+            // Pictures 아래 SharingTrips 폴더가 없다면 생성
+            if(!galleryFolder.exists()){
+                galleryFolder.mkdir();
+            }
+
+            File Image = new File(galleryFolder.toString(), name + ".jpg");
             fos = new FileOutputStream(Image);
         }
 
