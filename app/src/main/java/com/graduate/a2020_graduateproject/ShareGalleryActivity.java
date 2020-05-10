@@ -78,7 +78,6 @@ public class ShareGalleryActivity extends AppCompatActivity {
     private Uri image_uri;
 
     private StorageReference storageReference;
-    private DatabaseReference rootReference;
     private DatabaseReference databaseReference;
 
     @Override
@@ -101,9 +100,12 @@ public class ShareGalleryActivity extends AppCompatActivity {
 
                 // 저장소 접근 권한 체크
                 if(checkPermission()) {
-                    new downloadImage().execute("https://i.picsum.photos/id/797/200/300.jpg"); // 이미지 다운로드
-                } else {
-                    Toast.makeText(getApplicationContext(), "Grant Permission Ro Save Image", Toast.LENGTH_SHORT).show();
+                    //new downloadImage().execute("https://i.picsum.photos/id/797/200/300.jpg"); // 이미지 다운로드
+                    // uploadButton, saveImageButton 비활성화
+                }
+                // Ask for Permission
+                else {
+                    Toast.makeText(getApplicationContext(), "Grant Permission To Save Image", Toast.LENGTH_SHORT).show();
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         requestPermissions(new String[] {WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE}, 111);
                     }
@@ -129,8 +131,7 @@ public class ShareGalleryActivity extends AppCompatActivity {
         //////// Firebase Storage
 
         storageReference = FirebaseStorage.getInstance().getReference("uploads"); // Storage에 uploads 폴더 만듦
-        rootReference = FirebaseDatabase.getInstance().getReference("SharingTrips");
-        databaseReference = rootReference;
+        databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips/gallery");
 
         // Firebase Storage에 업로드 버튼 이벤트리스너
         firebaseUploadButton.setOnClickListener(new View.OnClickListener() {
@@ -155,53 +156,21 @@ public class ShareGalleryActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(image_uri)
                     .into(imageView);
+
+            try {
+                InputStream in = getContentResolver().openInputStream(image_uri);   // Open uri inputStream to read bitmap
+                Bitmap imageToBitmap = BitmapFactory.decodeStream(in);  // Save to bitmap
+                in.close();
+                saveImage(imageToBitmap, "demo");   // 핸드폰 저장소에 이미지를 저장하는 함수 호출
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
+
 
 
     //////// 외부저장소 공용 영역(/Pictures 아래) 접근, 이미지 저장
-
-    // 외부저장소 공용 영역에 이미지 다운로드
-
-    private class downloadImage extends AsyncTask<String, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(String... strings) {
-            String imgUrl = strings[0];
-            Bitmap bitmap = null;
-
-            try {
-                // Here we fetch image bitmap
-                // open url inputstream to read url bitmap
-                InputStream inputStream = new java.net.URL(imgUrl).openStream();
-
-                // Now save to bitmap
-                bitmap = BitmapFactory.decodeStream(inputStream);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            // Now return bitmap
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            // save image function 호출
-            try {
-                saveImage(bitmap, "demo");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    // MediaStore API를 사용하여 외부저장소의 공용 폴더 안의 미디어 파일(사진/동영상)에 접근 - 현재는 다운로드 받은 이미지 파일 저장
-
-    // ... 공용 폴더 안의 미디어 파일(사진/동영상/오디오)들은 MediaStore를 통해 읽을 수 있음
-    // ... 사진 파일을 찾고 싶으면 공용 폴더 아래의 모든 파일 탐색 X, MediaStore에 쿼리를 하여 Uri 객체를 얻어 사용
-    // ... 기본적으로 외부저장소 공용 영역의 /Pictures 아래 저장됨
 
     private void saveImage(Bitmap bitmap, String name) throws IOException {
 
@@ -209,30 +178,28 @@ public class ShareGalleryActivity extends AppCompatActivity {
 
         // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이상일 때
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-
+            /*
+            MediaStore API를 사용하여 외부저장소의 공용 폴더 안의 미디어 파일(사진/동영상)에 접근 - 현재는 다운로드 받은 이미지 파일 저장
+            ... 공용 폴더 안의 미디어 파일(사진/동영상/오디오)들은 MediaStore를 통해 읽을 수 있음
+            ... 사진 파일을 찾고 싶으면 공용 폴더 아래의 모든 파일 탐색 X, MediaStore에 쿼리를 하여 Uri 객체를 얻어 사용
+            ... 기본적으로 외부저장소 공용 영역의 /Pictures 아래 저장됨
+            */
             final String relativePath = Environment.DIRECTORY_PICTURES + "/SharingTrips";
+            // 해당 경로가 없을 때 생성해주는지.. 폴더를 만들어줘야 하는지!
 
-            // ContentResolver 인스턴스를 가져옴
-            ContentResolver resolver = getContentResolver();
+            ContentResolver resolver = getContentResolver();    // ContentResolver 인스턴스를 가져옴
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name + ".jpg"); // Set image name
-            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
-            // MediaColumns.RELATIVE_PATH를 설정하여 파일을 저장할 구체적 위치를 설정할 수 있음
-            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, relativePath);   // 갤러리 폴더 새로 생성해서 경로 수정하기
+            //contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, name + ".png"); // Set image name
+            //contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/*");
+            contentValues.put(MediaStore.Images.Media.RELATIVE_PATH, relativePath); // 파일을 저장할 구체적 위치 설정
 
-            Uri uri;
             Uri imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
             fos = resolver.openOutputStream(Objects.requireNonNull(imageUri));
         }
         // 타겟 SDK가 안드로이드 10(Q) (SDK 29) 이하일 때
         else {
-            /*
-            String ImagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/SharingTrips").toString();
-
-            File Image = new File(ImagesDir, name + ".jpg");
-            fos = new FileOutputStream(Image);
-            */
-
             File galleryFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/SharingTrips");
 
             // Pictures 아래 SharingTrips 폴더가 없다면 생성
@@ -241,10 +208,12 @@ public class ShareGalleryActivity extends AppCompatActivity {
             }
 
             File Image = new File(galleryFolder.toString(), name + ".jpg");
+            //File Image = new File(galleryFolder.toString(), name + ".png");
             fos = new FileOutputStream(Image);
         }
 
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        //bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
         Objects.requireNonNull(fos).close();
     }
 
@@ -255,12 +224,13 @@ public class ShareGalleryActivity extends AppCompatActivity {
         return write == PackageManager.PERMISSION_GRANTED && read == PackageManager.PERMISSION_GRANTED;
     }
 
+    // Grant Permission
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         for(int grantResult : grantResults) {
             if(grantResult == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "Permisson Granted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
             }
         }
     }
