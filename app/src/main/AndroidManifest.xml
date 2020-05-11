@@ -30,6 +30,7 @@
             android:name=".ChattingRoomActivity"
             android:windowSoftInputMode="stateVisible|adjustResize"></activity>
         <activity android:name=".TripRoomFriendsActivity" />
+        <activity android:name=".PlaningActivity"/>
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <activity android:name=".KakaoFriendsInviteActivity">
