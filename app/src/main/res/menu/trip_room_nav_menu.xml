@@ -21,7 +21,7 @@
             android:icon="@drawable/baseline_calendar_today_black_18dp"/>
 
         <item android:title="지도"
-            android:id="@+id/map"
+            android:id="@+id/planningMap"
             android:icon="@drawable/baseline_place_black_18dp"/>
         <item android:title="메모"
             android:id="@+id/memo"

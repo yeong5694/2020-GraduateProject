@@ -66,7 +66,7 @@
         <activity android:name=".MapDistanceActivity" />
         <activity android:name=".MapFindRoadActivity" />
         <activity android:name=".TMapActivity" />
-        <activity android:name=".PlaningActivity" />
+        <activity android:name=".MapPlaningActivity" />
 
 
         <!-- 주소 검색 -->
