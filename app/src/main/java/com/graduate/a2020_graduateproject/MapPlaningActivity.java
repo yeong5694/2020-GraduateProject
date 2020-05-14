@@ -5,11 +5,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,6 +23,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -30,6 +38,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import noman.googleplaces.PlacesListener;
 
@@ -40,6 +49,8 @@ public class MapPlaningActivity  extends AppCompatActivity
         implements OnMapReadyCallback {
 
     private GoogleMap gMap;
+
+    private DatabaseReference mapDataReference=null;
 
     private AddressResultReceiver resultReceiver;
     private String addressOutput="";
@@ -55,6 +66,11 @@ public class MapPlaningActivity  extends AppCompatActivity
     private Button button_update;
     private Button button_polly;
 
+    static String TOPIC="";
+    private String selected_room_id, day;
+
+    private Map<String, Object> MapInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +79,54 @@ public class MapPlaningActivity  extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.planningMap);
         mapFragment.getMapAsync(this);
+
+        Intent intent = getIntent();
+        selected_room_id=intent.getExtras().getString("selected_room_id");
+        day=intent.getExtras().getString("day");
+        System.out.println("selected_room_id : "+selected_room_id+ " day : "+day);
+
+        TOPIC="Map/"+selected_room_id+"/"+day;
+
+        mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/map_list").child(selected_room_id).child(day);
+
+        mapDataReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println("OnDataChange");
+                System.out.println(dataSnapshot);
+
+                if (dataSnapshot.getChildren() != null) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+
+                        // snapshot 내에 있는 데이터만큼 반복합니다.
+
+                        String key = snapshot.getKey();
+                        System.out.println("snapshot key : "+key);
+                        double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
+                        double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
+                        String fireName = snapshot.child("name").toString();
+
+
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        LatLng fireLatlng = new LatLng(fireLat, fireLng);
+                        markerOptions.position(fireLatlng);
+                        markerOptions.title(fireName);
+                        System.out.println("firebase에서 받아옴 ");
+
+                        Marker fireMarker = gMap.addMarker(markerOptions);
+                        planningList.add(fireLatlng);
+                        markerList.add(fireMarker);
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                    System.out.println("실패");
+            }
+
+            });
+
 
 
         try {
@@ -74,7 +138,6 @@ public class MapPlaningActivity  extends AppCompatActivity
 
         ///mqtt로 전달하는 마커 저장
         planningList=new ArrayList<>();
-//        isClickList=new ArrayList<>();
         markerList=new ArrayList<>();
 
         button_update=findViewById(R.id.button_update);
@@ -85,6 +148,10 @@ public class MapPlaningActivity  extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 ///mqtt->firebase 저장
+
+
+
+
             }
         });
 
@@ -158,6 +225,9 @@ public class MapPlaningActivity  extends AppCompatActivity
                 planningList.add(latLng);
                 markerList.add(clickMarker);
 
+                MapInfo=new MarkerInfo(latLng.latitude, latLng.longitude, addressOutput).toMap();
+                mapDataReference.push().setValue(MapInfo);
+
 
                 System.out.println("markerList add size : "+markerList.size());
                 //   clickinfo=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
@@ -201,6 +271,9 @@ public class MapPlaningActivity  extends AppCompatActivity
                 markerList.remove(marker);
 
                 marker.remove();
+
+                mapDataReference.child(day).removeValue();
+
                 System.out.println("markerList remove size : "+markerList.size());
                 //isClickList.remove(marker.getPosition());
 //                isMarkerClick=FALSE;
@@ -307,7 +380,6 @@ public class MapPlaningActivity  extends AppCompatActivity
             return calDistance;
         }
 
-    static String TOPIC="googlemap2";
 
     private void connectMqtt() throws  Exception{
 
@@ -337,8 +409,6 @@ public class MapPlaningActivity  extends AppCompatActivity
                 System.out.println("messageArrived");
                 JSONObject json=new JSONObject(new String(message.getPayload(), "UTF-8"));
 
-                //   markerAdapter.add(new MarkerInfo(Double.parseDouble(json.getString("lat")), Double.parseDouble(json.getString("lng")),json.getString("name")));
-                // System.out.println("markerAdapter messageArrived : "+markerAdapter);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -348,27 +418,24 @@ public class MapPlaningActivity  extends AppCompatActivity
                             double lat,lng;
                             String name;
                             boolean isClick;
+
                             lat=Double.parseDouble(json.getString("lat"));
                             lng=Double.parseDouble(json.getString("lng"));
                             name=json.getString("name");
-
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
 
-                            System.out.println("isClick : "+isClick);
                             markerOptions.position(new LatLng(lat, lng));
-                            markerOptions.title(addressOutput);
-
                             markerOptions.title(name);
-                           // markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                       //     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
                             Marker resMarker=gMap.addMarker(markerOptions);
 
-
                             if(!isClick){ //false-> 마커 찍기
-
                                 planningList.add(markerOptions.getPosition());
                                 markerList.add(resMarker);
 
+                              //  MapInfo=new MarkerInfo(lat, lng, name).toMap();
+                                //mapDataReference.push().setValue(MapInfo);
                                 System.out.println("Mqtt Subscribe 받아서 마커 찍음");
                             }
                             else{
@@ -380,14 +447,11 @@ public class MapPlaningActivity  extends AppCompatActivity
 
                                         markerList.get(index).remove();
                                         resMarker.remove();
-                                 //       markerList.remove(resMarker);
                                         planningList.remove(markerOptions.getPosition());
 
                                         System.out.println("마커 지워짐!!!");
                                     }
                                 }
-
-
                             }
 
                         } catch (JSONException e) {

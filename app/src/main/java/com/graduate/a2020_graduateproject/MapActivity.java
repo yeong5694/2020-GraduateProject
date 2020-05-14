@@ -99,7 +99,7 @@ public class MapActivity extends AppCompatActivity
         clickList=new ArrayList<>(); //클릭한 장소 저장
 
         database= FirebaseDatabase.getInstance();
-        databaseReference=database.getReference("SharingTrips");
+       // databaseReference=database.getReference("SharingTrips");
 
         ////지도 띄우기
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -261,6 +261,7 @@ public class MapActivity extends AppCompatActivity
                             name=json.getString("name");
                             markerOptions.position(new LatLng(lat, lng));
                             markerOptions.title(name);
+//                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
                             gMap.addMarker(markerOptions);
 
