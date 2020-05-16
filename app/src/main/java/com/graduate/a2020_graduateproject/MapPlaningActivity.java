@@ -85,7 +85,19 @@ public class MapPlaningActivity  extends AppCompatActivity
         day=intent.getExtras().getString("day");
         System.out.println("selected_room_id : "+selected_room_id+ " day : "+day);
 
+
+
+
+
         TOPIC="Map/"+selected_room_id+"/"+day;
+
+        try {
+            System.out.println("onCreate-mqtt Connect");
+            connectMqtt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/map_list").child(selected_room_id).child(day);
 
@@ -95,14 +107,20 @@ public class MapPlaningActivity  extends AppCompatActivity
                 System.out.println("OnDataChange");
                 System.out.println(dataSnapshot);
 
+                planningList.clear();
+                markerList.clear();
+
+                System.out.println("planningList 초기화 후 : "+planningList.size());
+                System.out.println("markerList 초기화 후 : "+markerList.size());
+
+
                 if (dataSnapshot.getChildren() != null) {
+                    System.out.println("firebase에서 받아옴 ");
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
+                    //    String key = snapshot.getKey();
+                    //    System.out.println("snapshot key : "+key);
 
-                        // snapshot 내에 있는 데이터만큼 반복합니다.
-
-                        String key = snapshot.getKey();
-                        System.out.println("snapshot key : "+key);
                         double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
                         double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
                         String fireName = snapshot.child("name").toString();
@@ -112,7 +130,6 @@ public class MapPlaningActivity  extends AppCompatActivity
                         LatLng fireLatlng = new LatLng(fireLat, fireLng);
                         markerOptions.position(fireLatlng);
                         markerOptions.title(fireName);
-                        System.out.println("firebase에서 받아옴 ");
 
                         Marker fireMarker = gMap.addMarker(markerOptions);
                         planningList.add(fireLatlng);
@@ -129,16 +146,11 @@ public class MapPlaningActivity  extends AppCompatActivity
 
 
 
-        try {
-            System.out.println("onCreate-mqtt Connect");
-            connectMqtt();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         ///mqtt로 전달하는 마커 저장
         planningList=new ArrayList<>();
         markerList=new ArrayList<>();
+
+
 
         button_update=findViewById(R.id.button_update);
         button_polly=findViewById(R.id.button_polly);
@@ -149,25 +161,41 @@ public class MapPlaningActivity  extends AppCompatActivity
             public void onClick(View v) {
                 ///mqtt->firebase 저장
 
+                  mapDataReference.removeValue();
 
+                  System.out.println("update button markerList: "+markerList);
 
+                  System.out.println("markerList.size() : "+markerList.size());
+                  for(int i=0;i<markerList.size();i++){
+                      System.out.println("i  : "+i);
+                      MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude, markerList.get(i).getPosition().longitude, markerList.get(i).getTitle()).toMap();
+                      mapDataReference.push().setValue(MapInfo);
 
+                  }
+                planningList.clear();
+                markerList.clear();
             }
         });
 
         button_polly.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ArrayList<LatLng> dijkstraList = dijkstra(planningList);
+                //ArrayList<LatLng> dijkstraList = new ArrayList<>();
+                ArrayList<LatLng> dijkstraList=dijkstra(planningList);
+                /*
+                for(int i=0;i<markerList.size();i++){
+                    dijkstraList.add(markerList.get(i).getPosition());
+                }*/
+
                 System.out.println("onClick dijstraList.length : " + dijkstraList.size());
 
-               if(!flag){
-                    PolylineOptions polylineOptionsDistance;
+                PolylineOptions polylineOptionsDistance;
 
-                    polylineOptionsDistance = new PolylineOptions();
-                    polylineOptionsDistance.color(Color.MAGENTA);
-                    polylineOptionsDistance.width(8);
+                polylineOptionsDistance = new PolylineOptions();
+                polylineOptionsDistance.color(Color.MAGENTA);
+                polylineOptionsDistance.width(8);
 
+                if(!flag){
                     for (int i = 0; i < dijkstraList.size(); i++) {
                         polylineOptionsDistance.add(dijkstraList.get(i));
                     }
@@ -205,46 +233,60 @@ public class MapPlaningActivity  extends AppCompatActivity
                 markerOptions.title(addressOutput);
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-//                isMarkerClick=FALSE;
+                Marker marker=gMap.addMarker(markerOptions);
+
                 JSONObject json=new JSONObject();
                 try {
                     json.put("lat", Double.toString(latLng.latitude));
                     json.put("lng", Double.toString(latLng.longitude));
                     json.put("name", addressOutput);
                     json.put("isClick", "FALSE");
+                    json.put("isAllDelete", "FALSE");
+
 
                     mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+
+                    planningList.add(markerOptions.getPosition());
+                    markerList.add(marker);
+
 
 
                 } catch (Exception e) {
                     System.out.println("안보내짐....");
                 }
 
-                Marker clickMarker=gMap.addMarker(markerOptions);
 
-                planningList.add(latLng);
-                markerList.add(clickMarker);
-
-                MapInfo=new MarkerInfo(latLng.latitude, latLng.longitude, addressOutput).toMap();
-                mapDataReference.push().setValue(MapInfo);
-
+                System.out.println("planningList add size : "+planningList.size());
 
                 System.out.println("markerList add size : "+markerList.size());
-                //   clickinfo=new MarkerInfo(latLng.latitude, latLng.longitude, place).toMap();
-                // databaseReference.child("MapInfo").child("click").push().setValue(info);
-
             }
         });
 
         gMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-             //   clickList.clear();
                 gMap.clear();
+
+                JSONObject json=new JSONObject();
+                try {
+                    json.put("lat", Double.toString(0.0));
+                    json.put("lng", Double.toString(0.0));
+                    json.put("name", addressOutput);
+                    json.put("isClick", "TRUE");
+                    json.put("isAllDelete", "TRUE");
+
+                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+
+                } catch (Exception e) {
+                    System.out.println("안보내짐....");
+                }
+
                 planningList.clear();
                 markerList.clear();
-//                isClickList.clear();
-                polyline.remove();
+
+                if(polyline!=null){
+                    polyline.remove();
+                }
 
             }
         });
@@ -253,13 +295,18 @@ public class MapPlaningActivity  extends AppCompatActivity
             @Override
             public boolean onMarkerClick(Marker marker) {
 
-//                isMarkerClick=TRUE;
+                marker.remove();
+
+             //   planningList.remove(marker.getPosition());
+               // markerList.remove(marker);
+
                 JSONObject json=new JSONObject();
                 try {
                     json.put("lat", Double.toString(marker.getPosition().latitude));
                     json.put("lng", Double.toString(marker.getPosition().longitude));
                     json.put("name", addressOutput);
                     json.put("isClick", "TRUE");
+                    json.put("isAllDelete", "FALSE");
 
                     mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
 
@@ -267,18 +314,9 @@ public class MapPlaningActivity  extends AppCompatActivity
                     System.out.println("안보내짐....");
                 }
 
-                planningList.remove(marker.getPosition());
-                markerList.remove(marker);
-
-                marker.remove();
-
-                mapDataReference.child(day).removeValue();
-
                 System.out.println("markerList remove size : "+markerList.size());
-                //isClickList.remove(marker.getPosition());
-//                isMarkerClick=FALSE;
 
-                return false;
+                return true;
             }
         });
     }
@@ -417,43 +455,54 @@ public class MapPlaningActivity  extends AppCompatActivity
                         try {
                             double lat,lng;
                             String name;
-                            boolean isClick;
+                            boolean isClick, isAllDelete;
 
                             lat=Double.parseDouble(json.getString("lat"));
                             lng=Double.parseDouble(json.getString("lng"));
                             name=json.getString("name");
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
+                            isAllDelete=Boolean.parseBoolean(json.getString("isAllDelete"));
 
-                            markerOptions.position(new LatLng(lat, lng));
-                            markerOptions.title(name);
-                       //     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                            Marker resMarker=gMap.addMarker(markerOptions);
-
-                            if(!isClick){ //false-> 마커 찍기
-                                planningList.add(markerOptions.getPosition());
-                                markerList.add(resMarker);
-
-                              //  MapInfo=new MarkerInfo(lat, lng, name).toMap();
-                                //mapDataReference.push().setValue(MapInfo);
-                                System.out.println("Mqtt Subscribe 받아서 마커 찍음");
+                            if(isAllDelete){
+                                gMap.clear();
+                                planningList.clear();
+                                markerList.clear();
                             }
-                            else{
+                            else {
+                                markerOptions.position(new LatLng(lat, lng));
+                                markerOptions.title(name);
+                                //     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                                Marker resMarker = gMap.addMarker(markerOptions);
+
+                                if (!isClick) { //false-> 마커 찍기
+                                    System.out.println("sub - planningList size size : " + planningList.size());
+                                    System.out.println("sub - MarkerList size click : " + markerList.size());
+                                }
+
+                                else {
+                                    //resMarker.remove();
                                 int index=-1;
+                                System.out.println("markerList size reMarker : "+markerList.size());
                                 for(int i=0;i<markerList.size();i++){
-                                    if(markerList.get(i).getPosition().equals(resMarker.getPosition())) {
+                                    if(resMarker.getPosition().equals(markerList.get(i).getPosition())) {
+                                        resMarker.remove();
+
                                         index = i;
                                         System.out.println("index : "+index);
 
                                         markerList.get(index).remove();
-                                        resMarker.remove();
-                                        planningList.remove(markerOptions.getPosition());
+                                        markerList.remove(markerList.get(i));
+
+                                        planningList.remove(resMarker.getPosition());
 
                                         System.out.println("마커 지워짐!!!");
+
                                     }
                                 }
-                            }
 
+                                }
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
