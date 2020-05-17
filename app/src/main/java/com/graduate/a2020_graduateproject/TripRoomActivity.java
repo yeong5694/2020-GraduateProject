@@ -469,6 +469,30 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
                 .child("/myRoomList").child(selected_room_id);
         userRef.removeValue();
 
+        // 초대된 사람들 방 목록에서 삭제 (확인해봐야함)
+        ArrayList<String> id_list = new ArrayList<>();
+
+        DatabaseReference otherRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id).child("invited_user_list");
+        otherRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                    id_list.add(snapshot.getKey());
+                }
+
+                remove_room_in_id_list(id_list); // 각자 방목록에서 삭제
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
 
         // 전체 여행방리스트에서 영구 삭제
         DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
@@ -522,6 +546,17 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             }
         });
     }
+
+    public void remove_room_in_id_list(ArrayList<String> id_list){
+
+        for(String id : id_list){
+
+            DatabaseReference rmRef =  FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(id)
+                    .child("/myRoomList").child(selected_room_id);
+            rmRef.removeValue();
+        }
+    }
+
 
     public void sort_list(){
         scheduleRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
