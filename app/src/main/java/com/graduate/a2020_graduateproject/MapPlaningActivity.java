@@ -100,6 +100,8 @@ public class MapPlaningActivity  extends AppCompatActivity
 
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/map_list").child(selected_room_id).child(day);
+        DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id);
 
         mapDataReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -246,8 +248,8 @@ public class MapPlaningActivity  extends AppCompatActivity
 
                     mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
 
-                    planningList.add(markerOptions.getPosition());
-                    markerList.add(marker);
+                    //planningList.add(markerOptions.getPosition());
+                    //markerList.add(marker);
 
 
 
@@ -256,9 +258,9 @@ public class MapPlaningActivity  extends AppCompatActivity
                 }
 
 
-                System.out.println("planningList add size : "+planningList.size());
+//                System.out.println("planningList add size : "+planningList.size());
 
-                System.out.println("markerList add size : "+markerList.size());
+  //              System.out.println("markerList add size : "+markerList.size());
             }
         });
 
@@ -297,9 +299,6 @@ public class MapPlaningActivity  extends AppCompatActivity
 
                 marker.remove();
 
-             //   planningList.remove(marker.getPosition());
-               // markerList.remove(marker);
-
                 JSONObject json=new JSONObject();
                 try {
                     json.put("lat", Double.toString(marker.getPosition().latitude));
@@ -314,7 +313,9 @@ public class MapPlaningActivity  extends AppCompatActivity
                     System.out.println("안보내짐....");
                 }
 
-                System.out.println("markerList remove size : "+markerList.size());
+                planningList.remove(marker.getPosition());
+                markerList.remove(marker);
+
 
                 return true;
             }
@@ -413,7 +414,7 @@ public class MapPlaningActivity  extends AppCompatActivity
 
             calDistance=2*radius*Math.asin(root);
 
-            System.out.println("calDistance : "+calDistance);
+           // System.out.println("calDistance : "+calDistance);
 
             return calDistance;
         }
@@ -463,40 +464,49 @@ public class MapPlaningActivity  extends AppCompatActivity
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
                             isAllDelete=Boolean.parseBoolean(json.getString("isAllDelete"));
 
+                            LatLng resLat=new LatLng(lat, lng);
                             if(isAllDelete){
                                 gMap.clear();
                                 planningList.clear();
                                 markerList.clear();
                             }
                             else {
-                                markerOptions.position(new LatLng(lat, lng));
-                                markerOptions.title(name);
+
                                 //     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-                                Marker resMarker = gMap.addMarker(markerOptions);
+//                                Marker resMarker = gMap.addMarker(markerOptions);
 
                                 if (!isClick) { //false-> 마커 찍기
-                                    System.out.println("sub - planningList size size : " + planningList.size());
-                                    System.out.println("sub - MarkerList size click : " + markerList.size());
+                                    markerOptions.position(resLat);
+                                    markerOptions.title(name);
+                                    Marker resMarker=gMap.addMarker(markerOptions);
+
+                                    planningList.add(resLat);
+                                    markerList.add(resMarker);
+                                    System.out.println("add - planningList size size : " + planningList.size());
+                                    System.out.println("add - MarkerList size click : " + markerList.size());
                                 }
 
                                 else {
-                                    //resMarker.remove();
-                                int index=-1;
+
                                 System.out.println("markerList size reMarker : "+markerList.size());
                                 for(int i=0;i<markerList.size();i++){
-                                    if(resMarker.getPosition().equals(markerList.get(i).getPosition())) {
-                                        resMarker.remove();
+                                    if(resLat.equals(markerList.get(i).getPosition())) {
 
-                                        index = i;
-                                        System.out.println("index : "+index);
+                                        System.out.println("index : "+i);
 
-                                        markerList.get(index).remove();
-                                        markerList.remove(markerList.get(i));
+                                        Marker removeMarker=markerList.get(i);
+                                        System.out.println("resMarker Latlng : "+resLat);
+                                        System.out.println("removeMarker Latlng : "+removeMarker.getPosition());
 
-                                        planningList.remove(resMarker.getPosition());
+                                        removeMarker.remove();
 
-                                        System.out.println("마커 지워짐!!!");
+                                        markerList.remove(removeMarker);
+
+                                        planningList.remove(removeMarker.getPosition());
+
+                                        System.out.println("sub-resMarker Latlng : "+resLat);
+                                        System.out.println("sub-removeMarker Latlng : "+removeMarker.getPosition());
 
                                     }
                                 }
