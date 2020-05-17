@@ -226,7 +226,7 @@ public class MapActivity extends AppCompatActivity
     private void connectMqtt() throws  Exception{
 
         System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883
-        mqttClient=new MqttClient("tcp://192.168.0.5:1883", MqttClient.generateClientId(), null);
+        mqttClient=new MqttClient("tcp://3.224.178.67:1883", MqttClient.generateClientId(), null);
         mqttClient.connect();
 
         System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
