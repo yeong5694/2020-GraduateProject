@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -31,13 +30,10 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import noman.googleplaces.NRPlaces;
@@ -103,11 +99,11 @@ public class MapActivity extends AppCompatActivity
         clickList=new ArrayList<>(); //클릭한 장소 저장
 
         database= FirebaseDatabase.getInstance();
-        databaseReference=database.getReference("SharingTrips");
+       // databaseReference=database.getReference("SharingTrips");
 
         ////지도 띄우기
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.planningMap);
         mapFragment.getMapAsync(this);
 
          go_Btn.setOnClickListener(new View.OnClickListener(){
@@ -225,8 +221,11 @@ public class MapActivity extends AppCompatActivity
 
     private void connectMqtt() throws  Exception{
 
-        System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883
+
+        System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883 //탄력적 ip 3.224.178.67
         mqttClient=new MqttClient("tcp://3.224.178.67:1883", MqttClient.generateClientId(), null);
+        System.out.println("ConnectMqtt() 연결 준비" +MqttClient.generateClientId());
+
         mqttClient.connect();
 
         System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
@@ -263,6 +262,7 @@ public class MapActivity extends AppCompatActivity
                             name=json.getString("name");
                             markerOptions.position(new LatLng(lat, lng));
                             markerOptions.title(name);
+//                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
                             gMap.addMarker(markerOptions);
 

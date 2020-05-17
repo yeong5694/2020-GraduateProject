@@ -1,7 +1,6 @@
 package com.graduate.a2020_graduateproject;
 
 import android.graphics.Color;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -57,7 +56,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
         listPoints=new ArrayList<>();
 
-        findRoad_Btn=findViewById(R.id.findroad_button);
+        findRoad_Btn=findViewById(R.id.button_update);
         findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {

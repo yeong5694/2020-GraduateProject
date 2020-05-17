@@ -27,7 +27,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -43,7 +42,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -409,7 +407,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
 
         }
 
-        else if(id == R.id.map) {
+        else if(id == R.id.planningMap) {
             Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
             startActivity(intent);
         }
