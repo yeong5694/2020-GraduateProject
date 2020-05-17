@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -30,7 +31,12 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
             public void onClick(View view) {
                 Intent intent = new Intent(parent, MapPlaningActivity.class);
                 intent.putExtra("selected_room_id", selected_room_id);
-                intent.putExtra("day", day_text.getText().toString());
+
+                String day = day_text.getText().toString();
+                String[] days = day.split("Day");
+                day = days[1];
+
+                intent.putExtra("day", day);
 
                 parent.startActivity(intent);
             }
