@@ -148,10 +148,6 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
 
                         }
                     }
-
-
-
-
                 }
             }
 

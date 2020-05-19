@@ -28,6 +28,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -70,7 +71,7 @@ public class MapPlaningActivity  extends AppCompatActivity
     private String selected_room_id, day;
 
     private Map<String, Object> MapInfo;
-
+    private String Mapkey="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,10 +86,6 @@ public class MapPlaningActivity  extends AppCompatActivity
         day=intent.getExtras().getString("day");
         System.out.println("selected_room_id : "+selected_room_id+ " day : "+day);
 
-
-
-
-
         TOPIC="Map/"+selected_room_id+"/"+day;
 
         try {
@@ -99,29 +96,26 @@ public class MapPlaningActivity  extends AppCompatActivity
         }
 
 
-        mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/map_list").child(selected_room_id).child(day);
-        DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                .child(selected_room_id);
+        mapDataReference =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                .child("schedule_list");
 
-        mapDataReference.addValueEventListener(new ValueEventListener() {
+        mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println("OnDataChange");
-                System.out.println(dataSnapshot);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Mapkey=snapshot.getKey();
+                    System.out.println("snapshot get key : "+Mapkey);
 
+                }
                 planningList.clear();
                 markerList.clear();
 
-                System.out.println("planningList 초기화 후 : "+planningList.size());
-                System.out.println("markerList 초기화 후 : "+markerList.size());
-
-
-                if (dataSnapshot.getChildren() != null) {
+                if (dataSnapshot.child(Mapkey).child("map_info") != null) {
                     System.out.println("firebase에서 받아옴 ");
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot snapshot : dataSnapshot.child(Mapkey).child("map_info").getChildren()) {
 
-                    //    String key = snapshot.getKey();
-                    //    System.out.println("snapshot key : "+key);
+                        //    String key = snapshot.getKey();
+                        //    System.out.println("snapshot key : "+key);
 
                         double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
                         double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
@@ -138,14 +132,15 @@ public class MapPlaningActivity  extends AppCompatActivity
                         markerList.add(fireMarker);
                     }
                 }
+
+
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                    System.out.println("실패");
+
             }
-
-            });
-
+        });
 
 
         ///mqtt로 전달하는 마커 저장
@@ -157,23 +152,28 @@ public class MapPlaningActivity  extends AppCompatActivity
         button_update=findViewById(R.id.button_update);
         button_polly=findViewById(R.id.button_polly);
 
+
+
+
         button_update.setOnClickListener(new Button.OnClickListener(){
 
             @Override
             public void onClick(View v) {
                 ///mqtt->firebase 저장
+                ///삭제후
+                mapDataReference.child(Mapkey).child("map_info").removeValue();
 
-                  mapDataReference.removeValue();
 
-                  System.out.println("update button markerList: "+markerList);
+                DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
+                for(int i=0;i<markerList.size();i++){
+                    System.out.println("i  : "+i);
+                    System.out.println(" click key : "+Mapkey);
+                    MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude, markerList.get(i).getPosition().longitude, markerList.get(i).getTitle()).toMap();
+                    clickRef.push().setValue(MapInfo);
 
-                  System.out.println("markerList.size() : "+markerList.size());
-                  for(int i=0;i<markerList.size();i++){
-                      System.out.println("i  : "+i);
-                      MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude, markerList.get(i).getPosition().longitude, markerList.get(i).getTitle()).toMap();
-                      mapDataReference.push().setValue(MapInfo);
+                }
 
-                  }
+              //
                 planningList.clear();
                 markerList.clear();
             }
@@ -471,11 +471,6 @@ public class MapPlaningActivity  extends AppCompatActivity
                                 markerList.clear();
                             }
                             else {
-
-                                //     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-//                                Marker resMarker = gMap.addMarker(markerOptions);
-
                                 if (!isClick) { //false-> 마커 찍기
                                     markerOptions.position(resLat);
                                     markerOptions.title(name);
