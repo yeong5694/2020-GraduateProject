@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
@@ -77,6 +78,12 @@ public class MapPlaningActivity  extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_planning_layout);
 
+        /////AutoComplete
+
+        AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto);
+        autoCompleteTextView.setAdapter(new MapPlaceAutoSuggestAdapter(MapPlaningActivity.this, android.R.layout.simple_list_item_1));
+
+        //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.planningMap);
         mapFragment.getMapAsync(this);

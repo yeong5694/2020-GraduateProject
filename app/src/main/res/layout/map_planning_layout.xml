@@ -8,15 +8,24 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+        <AutoCompleteTextView
+            android:id="@+id/text_auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter the place"
+            android:layout_weight="1"
+            android:completionThreshold="2"
+            android:ems="12"
 
-        <EditText
+            />
+        <!--EditText
             android:id="@+id/place_Text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
             android:hint="Enter the place..."
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName" /-->
 
 
         <Button
