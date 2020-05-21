@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -9,10 +10,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.skt.Tmap.TMapPoint;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -39,7 +45,15 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import noman.googleplaces.PlacesListener;
@@ -73,15 +87,19 @@ public class MapPlaningActivity  extends AppCompatActivity
 
     private Map<String, Object> MapInfo;
     private String Mapkey="";
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_planning_layout);
 
         /////AutoComplete
-
         AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto);
         autoCompleteTextView.setAdapter(new MapPlaceAutoSuggestAdapter(MapPlaningActivity.this, android.R.layout.simple_list_item_1));
+        //////
+
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -528,5 +546,9 @@ public class MapPlaningActivity  extends AppCompatActivity
             }
         });
     }
+
+
+
+
 
 }

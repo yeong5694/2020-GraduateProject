@@ -4,6 +4,7 @@ import android.content.Context;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -14,7 +15,7 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter implements Filterab
     int resource;
     Context context;
 
-    MapPlaceApi mapPlaceApi=new MapPlaceApi();
+    TMapAdressParser TMapAdressParser =new TMapAdressParser();
 
     public MapPlaceAutoSuggestAdapter(Context context, int resId){
         super(context, resId);
@@ -40,7 +41,7 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter implements Filterab
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults filterResults=new FilterResults();
                 if(constraint!=null){
-                    results=mapPlaceApi.autoComplete(constraint.toString());
+                    results= TMapAdressParser.autoComplete(constraint.toString());
 
                     filterResults.values=results;
                     filterResults.count=results.size();
@@ -61,5 +62,8 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter implements Filterab
         };
         return filter;
     }
+
+
+
 
 }
