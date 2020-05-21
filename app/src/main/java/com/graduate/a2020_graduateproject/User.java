@@ -11,7 +11,7 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class User {
 
-    public Long id;
+    public String id;
     public String name;
     public String email;
     public String thumbnail;
@@ -19,13 +19,45 @@ public class User {
 
     //private FirebaseDatabase mPostReference;
 
-    public User (Long id, String name, String email, String thumbnail){
+    public User (String id, String name, String email, String thumbnail){
 
         this.id = id;
         this.name = name;
         this.email = email;
         this.thumbnail = thumbnail;
 
+    }
+
+    public String getId(){
+        return id;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getEmail(){
+        return email;
+    }
+
+    public String getThumbnail(){
+        return thumbnail;
+    }
+
+    public void setId(String id){
+        this.id = id;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public void setThumbnail(String thumbnail){
+        this.thumbnail = thumbnail;
     }
 
     @Exclude

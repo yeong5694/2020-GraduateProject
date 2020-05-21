@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -14,10 +15,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.skt.Tmap.TMapTapi;
-
+import com.skt.Tmap.TMapPoint;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,45 +28,49 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapFindRoadActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class TMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap gMap;
-    private Polyline polyline;
     ArrayList<LatLng> listPoints;
+    ArrayList<TMapPoint> tMapPoints;
 
     private Button findRoad_Btn;
     private Button findRoad_Btn_short;
+ //   TMapPoint tMapPointStart = new TMapPoint(37.570841, 126.985302); // SKT타워(출발지)
+ //   TMapPoint tMapPointEnd = new TMapPoint(37.551135, 126.988205); // N서울타워(목적지)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.map_findroad_layout);
+        setContentView(R.layout.tmap_layout);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
 
-
-        ///tmap app 지도 사용하지 않고, 연동만
-        TMapTapi tmaptapi = new TMapTapi(this);
-        tmaptapi.setSKTMapAuthentication ("l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a");
-
-
-
         listPoints=new ArrayList<>();
+        tMapPoints=new ArrayList<>();
 
         findRoad_Btn=findViewById(R.id.button_update);
         findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                String mode="transit"; //driving
 
-                for(int i=0;i<listPoints.size()-1;i++){
-                    String polyUrl=getUrl(listPoints.get(i), listPoints.get(i+1), mode);
-                    System.out.println("listPoints.get(i), listPoints.get(i+1) : "+polyUrl);
+//                String polyUrl=getUrl(tMapPointStart,tMapPointEnd, mode);
+                tMapPoints.clear();
+
+                for(int i=0;i<listPoints.size();i++){
+                    tMapPoints.add(new TMapPoint(listPoints.get(i).latitude, listPoints.get(i).longitude));
+                    System.out.println("tMapPoints "+i+"번째 값 : "+tMapPoints);
+                }
+
+                for(int i=0;i<tMapPoints.size()-1;i++){
+                    String polyUrl=getUrl(tMapPoints.get(i), tMapPoints.get(i+1));
+
                     DownloadTask downloadTask=new DownloadTask();
                     downloadTask.execute(polyUrl);
                 }
+
             }
         });
 
@@ -77,6 +80,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             public void onClick(View v) {
 
                 gMap.clear();
+                tMapPoints.clear();
 
                 ArrayList<LatLng> dijkstraList=dijkstra(listPoints);
 
@@ -89,16 +93,18 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                     gMap.addMarker(markerOptions);
                 }
 
-                String mode="transit"; //driving
+                for(int i=0;i<dijkstraList.size();i++){
+                    tMapPoints.add(new TMapPoint(dijkstraList.get(i).latitude, dijkstraList.get(i).longitude));
+                    System.out.println("tMapPoints "+i+"번째 값 : "+tMapPoints);
+                }
 
                 for(int i=0;i<dijkstraList.size()-1;i++){
-                    String shortpolyUrl=getUrl(dijkstraList.get(i), dijkstraList.get(i+1), mode);
+                    String shortpolyUrl=getUrl(tMapPoints.get(i), tMapPoints.get(i+1));
                     System.out.println("dijkstraList.get(i), dijkstraList.get(i+1) : "+shortpolyUrl);
                     DownloadTask downloadTask=new DownloadTask();
                     downloadTask.execute(shortpolyUrl);
-                }
 
-
+            }
 
             }
         });
@@ -108,18 +114,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap=googleMap;
-   /*  권한 -> Map Activity로 옮기기
-      gMap.getUiSettings().setZoomControlsEnabled(true);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Check Permissions Now
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_REQUEST);
-            return;
-        }
-        gMap.setMyLocationEnabled(true);
-*/
 
         LatLng Hansung = new LatLng(37.582465, 127.009393); //Hansung University 위도, 경도
         MarkerOptions markerOptions = new MarkerOptions();
@@ -150,6 +144,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
             @Override
             public void onMapLongClick(LatLng latLng) {
                 listPoints.clear();
+                tMapPoints.clear();
                 gMap.clear();
             }
         });
@@ -166,6 +161,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                 else{
                     a[i][j]=calculate(list.get(i), list.get(j));
                     System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
+                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
                 }
             }
         }
@@ -224,28 +220,31 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     }
 
 
-    public String getUrl(LatLng origin, LatLng dest, String mode){
+    private String getUrl(TMapPoint origin, TMapPoint dest){
 
         //출발지
-        String originUrl="origin="+origin.latitude+","+origin.longitude;
+        String startX="&startX="+origin.getLongitude();
+        String startY="&startY="+origin.getLatitude();
+
         //도착지
-        String destUrl="destination="+dest.latitude+","+dest.longitude;
-        //센서
-        String sensor="sensor=false";
-        //모드 -> 한국은 transit만 지원
-        String modeURL="mode="+mode;
+        String endX="&endX="+dest.getLongitude();
+        String endY="&endY="+dest.getLatitude();
+////////TMap의 경우 Google Map과 달리 lat, long 반대임
 
-        String urlParameter=originUrl+"&"+destUrl+"&"+sensor+"&"+modeURL;
+        String startName="&startName=출발지";
+        String endName="&endName=도착지";
 
-       //json파일
-        String output="json";
-        System.out.println("param : "+urlParameter);
+        String appKey="&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a";
 
-        String fullUrl="https://maps.googleapis.com/maps/api/directions/"+output+"?"+urlParameter+"&key="+"AIzaSyANE7MTnzzpaQ08SsN9quflkstM-cC1tIw";
+        //String fullUrl="https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a&startX=126.977022&startY=37.569758&endX=126.997589&endY=37.5705947&startName=출발지&endName=도착지";
+
+        String fullUrl="https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1&"+appKey+startX+startY+endX+endY+startName+endName;
+
         System.out.println("Fullurl : "+fullUrl);
 
         return fullUrl;
     }
+
 
     private String downloadUrl(String strUrl) throws IOException {
         String data = "";
@@ -286,18 +285,6 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
         return data;
     }
 
-/*    @SuppressLint("MissingPermission")
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch(requestCode) {
-            case LOCATION_REQUEST:
-                if(grantResults.length>0&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    gMap.setMyLocationEnabled(true);
-                }
-                break;
-        }
-    }
-*/
 
     ///구글 api로부터 데이터를 다운로드
     private class DownloadTask extends AsyncTask<String, Void, String> {
@@ -330,23 +317,25 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     }
 
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+    private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String,String>> >{
 
         /// 백그라운드에서 json파일 파싱
         @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+        protected List<HashMap<String, String>> doInBackground(String... jsonData) {
 
             JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
+            List<HashMap<String, String>> routes = null;
 
             try{
                 System.out.println("ParserTask jsonData[0] : "+jsonData[0]);
 
                 jObject = new JSONObject(jsonData[0]);
 
-                MapDirectionsJSONParser parser = new MapDirectionsJSONParser();
+                TMapDirectionsJSONParser parser = new TMapDirectionsJSONParser();
 
                 routes = parser.parse(jObject);
+                System.out.println("ParserTask : "+routes);
+
 
             }catch(Exception e){
                 e.printStackTrace();
@@ -356,40 +345,43 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
 
         //UI에서 실행-> polyline 찍기
         @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions polylineOptions = null;
+        protected void onPostExecute(List<HashMap<String, String>> result) {
+            ArrayList<LatLng> points=new ArrayList<>();
+            PolylineOptions polylineOptionsT = new PolylineOptions();
+            HashMap<String, String> path;
+
+            System.out.println("result.size : "+result.size());
 
             for(int i=0;i<result.size();i++){
-                points = new ArrayList<>();
-                polylineOptions = new PolylineOptions();
+                path=new HashMap<>();
 
-                List<HashMap<String, String>> path = result.get(i);
+                path = result.get(i);
+                double lat = Double.parseDouble(path.get("lat"));
+                double lng = Double.parseDouble(path.get("lng"));
 
-                for(int j=0;j<path.size();j++){
-                    HashMap<String,String> point = path.get(j);
+                LatLng position = new LatLng(lng, lat);
 
-                    if(point.containsKey("distance")||point.containsKey(("duration"))){
-                        String distance=point.get("distance");
-                        String duration=point.get("duration");
-                        System.out.println("distance, duration point.get : "+ distance +" " +duration);
-                    }
-                    else{
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-                }
-                }
-                polylineOptions.addAll(points);
-                polylineOptions.width(12);
-                polylineOptions.color(Color.YELLOW);
+                MarkerOptions marker=new MarkerOptions();
+                marker.position(position);
+              //  gMap.addMarker(marker);
+
+                points.add(position);
+
             }
 
-            if(polylineOptions != null) {
-                polyline = gMap.addPolyline(polylineOptions);
-            }else
-                Toast.makeText(getApplicationContext(),"zero route", Toast.LENGTH_LONG).show();
+            polylineOptionsT.addAll(points);
+            polylineOptionsT.width(15);
+            polylineOptionsT.color(Color.YELLOW);
+
+            if(polylineOptionsT != null) {
+                System.out.println("poly null아님");
+                gMap.addPolyline(polylineOptionsT);
+                System.out.println(polylineOptionsT);
+
+            }else {
+                Toast.makeText(getApplicationContext(), "zero route", Toast.LENGTH_LONG).show();
+                System.out.println("들은게 없엄....");
+            }
         }
     }
 

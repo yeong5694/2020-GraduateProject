@@ -5,6 +5,9 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -24,7 +27,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
@@ -36,9 +38,11 @@ import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
@@ -65,6 +69,69 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
     private String KAKAO_BASE_LINK = "https://developers.kakao.com"; // 나중에 playStore 로 연결
 
     private String authority = null;
+
+    //////////////////////
+
+    private static String TAG = "PlaningActivity";
+
+    private TextView schedule_txt;
+    private TextView schedule_end_txt;
+    private ImageView planEdit;
+    private ImageView planEditFin;
+    private ImageView add;
+    private TextView description;
+
+    private DatabaseReference scheduleRef;
+
+    private RecyclerView planRecyclerView;
+    private RecyclerView.Adapter planRecycleAdapter;
+    private RecyclerView.LayoutManager planLayoutManager;
+
+    private PlanAdapter planAdapter;
+    private ItemTouchHelper mItemTouchHelper;
+    private ArrayList<String> arrayIndex = new ArrayList<String>();
+
+    Calendar fromCal = Calendar.getInstance();
+    Calendar toCal = Calendar.getInstance();
+
+    private DatabaseReference fromRef;
+    private DatabaseReference toRef;
+
+    DatePickerDialog.OnDateSetListener fromDatePicker = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+            fromCal.set(Calendar.YEAR, year);
+            fromCal.set(Calendar.MONTH, month);
+            fromCal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            String myFormat = "yyyy년 MM월 dd일";    // 출력형식   2018/11/28
+            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.KOREA);
+
+            DatabaseReference fromRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                    .child("from");
+            fromRef.setValue(sdf.format(fromCal.getTime()));
+
+            //schedule_txt.setText(sdf.format(fromCal.getTime()));
+        }
+
+    };
+
+    DatePickerDialog.OnDateSetListener toDatePicker = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+            toCal.set(Calendar.YEAR, year);
+            toCal.set(Calendar.MONTH, month);
+            toCal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+            String myFormat = "yyyy년 MM월 dd일";    // 출력형식   2018/11/28
+            SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.KOREA);
+
+            DatabaseReference toRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                    .child("to");
+            toRef.setValue(sdf.format(toCal.getTime()));
+
+            //schedule_end_txt.setText(sdf.format(toCal.getTime()));
+        }
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +177,155 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         profile_name.setText(kakao_name);
         Glide.with(getApplicationContext()).load(kakao_thumnail).error(R.drawable.kakao_default_profile_image).into(profile_image);
 
+
+        schedule_txt = findViewById(R.id.schedule_txt);
+        schedule_txt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(TripRoomActivity.this, fromDatePicker, fromCal.get(Calendar.YEAR),
+                        fromCal.get(Calendar.MONTH), fromCal.get(Calendar.DAY_OF_MONTH)).show();
+
+            }
+        });
+        schedule_end_txt = findViewById(R.id.schedule_end_txt);
+        schedule_end_txt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DatePickerDialog(TripRoomActivity.this, toDatePicker, toCal.get(Calendar.YEAR),
+                        toCal.get(Calendar.MONTH), toCal.get(Calendar.DAY_OF_MONTH)).show();
+            }
+
+        });
+
+        fromRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id).child("from");
+        fromRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //dataSnapshot.getKey();
+                if(dataSnapshot.getValue() != null){
+                    Log.e("from",dataSnapshot.getValue().toString());
+                    schedule_txt.setText(dataSnapshot.getValue().toString());
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        toRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id).child("to");
+        toRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() != null){
+                    Log.e("to",dataSnapshot.getValue().toString());
+                    schedule_end_txt.setText(dataSnapshot.getValue().toString());
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        planRecyclerView = findViewById(R.id.planRecyclerView);
+        //planAdapter = new PlanAdapter(selected_room_id);
+
+        planAdapter = new PlanAdapter(selected_room_id);
+
+
+        planLayoutManager = new LinearLayoutManager(this);
+        planRecyclerView.setLayoutManager(planLayoutManager);
+        planRecyclerView.setAdapter(planAdapter);
+
+//        ItemTouchHelper.Callback callback =  new PlanItemTouchHelperCallback(planAdapter);
+//        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+//        touchHelper.attachToRecyclerView(planRecyclerView);
+
+        PlanItemTouchHelperCallback mCallback = new PlanItemTouchHelperCallback(planAdapter);
+        mCallback.setMintem(false); // 드래그 안되게
+        mCallback.setMintem2(true); // 스와핑 되게
+
+
+        mItemTouchHelper = new ItemTouchHelper((mCallback));
+        mItemTouchHelper.attachToRecyclerView(planRecyclerView);
+
+
+
+
+
+        scheduleRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                .child("schedule_list");
+        scheduleRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                sort_list();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+
+        add = findViewById(R.id.planAdd);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                        .child("schedule_list");
+
+                int d = planAdapter.getItemCount() +1;
+
+                ref.push().setValue(new Schedule(Integer.toString(d)));
+            }
+        });
+        description = findViewById(R.id.descriptionText);
+        description.setText("밀어서 삭제하세요");
+
+
+        planEdit = findViewById(R.id.planEdit);
+        planEditFin = findViewById(R.id.planEditFin);
+        planEditFin.setVisibility(View.INVISIBLE);
+
+        planEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                planEdit.setVisibility(View.INVISIBLE);
+                planEditFin.setVisibility(View.VISIBLE);
+                description.setText("드래그해서 순서변경");
+                add.setVisibility(View.INVISIBLE);
+
+                mCallback.setMintem(true); // 드래그 되게
+                mCallback.setMintem2(false); // 스와핑 안되게
+            }
+        });
+        planEditFin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e(TAG,"plan edit fin");
+                mCallback.setMintem(false); // 드래그 안되게
+                mCallback.setMintem2(true); // 스와핑 되게
+                planEdit.setVisibility(View.VISIBLE);
+                planEditFin.setVisibility(View.INVISIBLE);
+                add.setVisibility(View.VISIBLE);
+                description.setText("밀어서 삭제하세요");
+
+                planAdapter.change();
+
+                Toast.makeText(getApplicationContext(), "변경되었습니다", Toast.LENGTH_LONG).show();
+            }
+        });
 
 
 
@@ -190,19 +406,8 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         else if(id == R.id.calendar) {
 
         }
-        else if(id == R.id.plan) {
 
-            Intent intent = new Intent(TripRoomActivity.this, PlaningActivity.class);
-            intent.putExtra("kakao_id", kakao_id);
-            intent.putExtra("kakao_email", kakao_email);
-            intent.putExtra("kakao_name", kakao_name);
-            intent.putExtra("kakao_thumnail", kakao_thumnail);
-            intent.putExtra("selected_room_name", selected_room_name);
-            intent.putExtra("selected_room_id", selected_room_id);
-            startActivity(intent);
-
-        }
-        else if(id == R.id.map) {
+        else if(id == R.id.planningMap) {
             Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
             startActivity(intent);
         }
@@ -264,6 +469,30 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
                 .child("/myRoomList").child(selected_room_id);
         userRef.removeValue();
 
+        // 초대된 사람들 방 목록에서 삭제 (확인해봐야함)
+        ArrayList<String> id_list = new ArrayList<>();
+
+        DatabaseReference otherRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id).child("invited_user_list");
+        otherRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                    id_list.add(snapshot.getKey());
+                }
+
+                remove_room_in_id_list(id_list); // 각자 방목록에서 삭제
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
 
         // 전체 여행방리스트에서 영구 삭제
         DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
@@ -317,6 +546,55 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
             }
         });
     }
+
+    public void remove_room_in_id_list(ArrayList<String> id_list){
+
+        for(String id : id_list){
+
+            DatabaseReference rmRef =  FirebaseDatabase.getInstance().getReference("sharing_trips/user_list").child(id)
+                    .child("/myRoomList").child(selected_room_id);
+            rmRef.removeValue();
+        }
+    }
+
+
+    public void sort_list(){
+        scheduleRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.e(TAG,"day 기준으로 내림차순 정렬 -- ");
+
+                planAdapter.clear();
+                //arrayIndex.clear();
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                    String key = snapshot.getKey();
+
+                    String day =  snapshot.child("day").getValue().toString();
+
+
+                    PlanItem planItem = new PlanItem(day,key);
+
+
+                    //arrayIndex.add(key);
+                    planAdapter.add(planItem);
+                }
+
+
+                planAdapter.notifyDataSetChanged();
+                //planRecyclerView.setSelection(planAdapter.getCount()-1);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
 
 
 

@@ -11,7 +11,7 @@
     <color name="colorAccent">#FEDBD0</color>
     <color name="colorSecondary">#feeae6</color>
     <color name="colorSurface">#fffbfa</color>
-    <color name="colorBackground">#ffffff</color>
+    <color name="colorBackground">#FFFFFF</color>
     <color name="colorError">#c5032b</color>
     <color name="colorPrimaryVariant">#442c2e</color>
     <color name="colorOnPrimary">#442c2e</color>
