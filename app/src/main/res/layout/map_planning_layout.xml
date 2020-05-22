@@ -8,32 +8,39 @@
     <!--LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"-->
-        <AutoCompleteTextView
-            android:id="@+id/text_auto"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter the place"
-            android:layout_weight="1"/>
-          <!--  android:ems="12"-->
 
-    
-        <!--EditText
-            android:id="@+id/place_Text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="Enter the place..."
-            android:inputType="textPersonName" /-->
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
 
 
-        <!--Button
-            android:id="@+id/place_Btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="search" /-->
+        map:srcCompat="@android:drawable/ic_search_category_default" />
 
+
+    <AutoCompleteTextView
+        android:id="@+id/text_auto"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="30dp"
+        android:layout_weight="1"
+        android:hint="Enter the place" />
+
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        map:srcCompat="@android:drawable/presence_offline" />
 
     <fragment
         android:id="@+id/planningMap"

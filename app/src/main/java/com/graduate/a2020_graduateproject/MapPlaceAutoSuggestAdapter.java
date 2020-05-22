@@ -1,69 +1,125 @@
 package com.graduate.a2020_graduateproject;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
+import java.util.List;
 
-public class MapPlaceAutoSuggestAdapter extends ArrayAdapter implements Filterable {
+//extends RecyclerView.Adapter<MapViewHolder>
+public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> implements Filterable {
 
-    ArrayList<String> results;
-
-    int resource;
-    Context context;
 
     TMapAdressParser TMapAdressParser =new TMapAdressParser();
 
-    public MapPlaceAutoSuggestAdapter(Context context, int resId){
-        super(context, resId);
-        this.context=context;
-        this.resource=resId;
+    public MapPlaceAutoSuggestAdapter(@NonNull Context context, int resource) {
+        super(context, resource);
     }
 
-    @Override
-    public int getCount(){
-        return results.size();
-    }
+    /*public MapPlaceAutoSuggestAdapter(List<MapAddressItem> mapList){
+       this.mapList=mapList;
+       mapListFull=new ArrayList<>(mapList);
 
+    }*/
+
+
+    @NonNull
     @Override
-    public String getItem(int pos){
-        return results.get(pos);
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        if(convertView==null){
+            convertView= LayoutInflater.from(getContext()).inflate(
+                    R.layout.map_autocomplete_row, parent, false
+            );
+        }
+
+        TextView auto_name=convertView.findViewById(R.id.auto_name);
+        TextView auto_subName=convertView.findViewById(R.id.auto_subName);
+
+        MapAddressItem mapAddressItem=getItem(position);
+
+        if(mapAddressItem!=null){
+            auto_name.setText(mapAddressItem.getName());
+            auto_subName.setText(mapAddressItem.getSub_name());
+        }
+        return convertView;
     }
 
     @Override
     public Filter getFilter(){
-        Filter filter=new Filter(){
+        return mapFilter;
+    }
 
+    Filter mapFilter=new Filter(){
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults=new FilterResults();
-                if(constraint!=null){
-                    results= TMapAdressParser.autoComplete(constraint.toString());
+               List<MapAddressItem> filterResults=new ArrayList<>();
+              //  FilterResults filterResults=new FilterResults();
 
-                    filterResults.values=results;
-                    filterResults.count=results.size();
-                }
-                return filterResults;
+           //     if(constraint==null||constraint.length()==0){
+             //       filterResults.addAll(mapListFull);
+               // }
+               // else{
+                 if(constraint!=null){
+                    filterResults= TMapAdressParser.autoComplete(constraint.toString());
+
+
+                    for(MapAddressItem item:filterResults){
+                        System.out.println("Filter name : "+item.getName());
+                        System.out.println("SubName : "+item.getSub_name());
+                        }
+
+                    }
+
+
+                FilterResults results=new FilterResults();
+                results.values=filterResults;
+                results.count=filterResults.size();
+
+                return results;
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                if(results!=null && results.count>0){
-                    notifyDataSetChanged();
-                }
-                else{
-                    notifyDataSetInvalidated();
-                }
 
+                addAll((List)results.values);
+                notifyDataSetChanged();
             }
-        };
-        return filter;
+
+        @Override
+        public CharSequence convertResultToString(Object resultValue) {
+            return ((MapAddressItem)resultValue).getName();
+        }
+
+
+    };
+
+
+
+
+    /*@NonNull
+    @Override
+    public MapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return null;
     }
 
+    @Override
+    public void onBindViewHolder(@NonNull MapViewHolder holder, int position) {
 
+    }
 
-
+    @Override
+    public int getItemCount() {
+        return mapList.size();
+    }*/
 }

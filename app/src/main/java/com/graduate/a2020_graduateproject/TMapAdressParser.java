@@ -18,55 +18,30 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TMapAdressParser {
-    public ArrayList<String> autoComplete(String input){
+    public ArrayList<MapAddressItem> autoComplete(String input){
 
-        ArrayList<String> arrayList=new ArrayList();
+        ArrayList<MapAddressItem> arrayList=new ArrayList();
         HttpURLConnection httpURLConnection=null;
         InputStream inputStream = null;
         String data="";
 
         StringBuilder jsonResult=new StringBuilder();
 
-      //  String tUrl=getUrl(input);
-        //DownloadTask downloadTask=new DownloadTask();
-        //downloadTask.execute(tUrl);
-
-/*  google map
+    /*  google map
         StringBuilder stringBuilder=new StringBuilder("https://maps.googleapis.com/maps/api/place/autocomplete/json?");
         stringBuilder.append("input="+input);
         stringBuilder.append("&key=AIzaSyANE7MTnzzpaQ08SsN9quflkstM-cC1tIw");
-*/
-////// TMap
+    */
+
+    ////// TMap
         StringBuilder stringBuilder=new StringBuilder("https://apis.openapi.sk.com/tmap/pois?version=1");
         stringBuilder.append("&searchKeyword="+input);
         stringBuilder.append("&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a");
 
         ///https://apis.openapi.sk.com/tmap/pois?version=1&searchKeyword=%EA%B5%AC%EC%9D%98%EC%97%AD&appKey=l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a
 
-  /*      try {
-            System.out.println("Full url : "+stringBuilder.toString());
 
-            URL url=new URL(stringBuilder.toString());
-            httpURLConnection=(HttpURLConnection)url.openConnection();
-            InputStreamReader inputStreamReader=new InputStreamReader(httpURLConnection.getInputStream());
 
-            int read;
-
-            char[] buffer=new char[1024];
-            while((read=inputStreamReader.read(buffer))!=-1){
-                jsonResult.append(buffer, 0,read);
-            }
-
-        } catch (MalformedURLException e) {
-            System.out.println("MalformedURLException!!!");
-        }catch (IOException e){
-            System.out.println("IOException!!!");
-        }finally {
-            if(httpURLConnection!=null){
-                httpURLConnection.disconnect();
-            }
-        }
-*/
         try{
             URL downloadUrl = new URL(stringBuilder.toString());
 
@@ -95,10 +70,6 @@ public class TMapAdressParser {
             httpURLConnection.disconnect();
         }
 
-//        System.out.println("downloadURL data : "+jsonResult.toString());
-
-
-
         try{
             JSONObject jsonObject=new JSONObject(jsonResult.toString());
             System.out.println("jsonObject : "+jsonObject.toString());
@@ -109,13 +80,16 @@ public class TMapAdressParser {
             System.out.println("poi.length() : "+poi.length());
             for(int i=0;i<poi.length();i++){
 
-             //   arrayList.add(poi.getJSONObject(i).getString("name"));
                 String name=poi.getJSONObject(i).getString("name");
-                HashMap<String, String> hashMap=new HashMap<>();
-                hashMap.put("name", name);
-                System.out.println("TMapPlace api name : "+name);
+                String sub_name=poi.getJSONObject(i).getString("upperAddrName")+" "+poi.getJSONObject(i).getString("middleAddrName")+" "+poi.getJSONObject(i).getString("lowerAddrName");
+                double lat=Double.parseDouble(poi.getJSONObject(i).getString("noorLat"));
+                double lon=Double.parseDouble(poi.getJSONObject(i).getString("noorLon"));
 
-                arrayList.add(name);
+                MapAddressItem mapAddressItem=new MapAddressItem(name, sub_name, lat, lon);
+              //  System.out.println("TMapPlace api name : "+name);
+              //  System.out.println("TMapPlace api sub_name : "+sub_name);
+
+                arrayList.add(mapAddressItem);
             }
 
         }catch(JSONException e){

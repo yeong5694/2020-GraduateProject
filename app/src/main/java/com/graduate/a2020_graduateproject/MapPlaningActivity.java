@@ -8,8 +8,10 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -88,17 +90,21 @@ public class MapPlaningActivity  extends AppCompatActivity
     private Map<String, Object> MapInfo;
     private String Mapkey="";
 
-
+  //  private ArrayList<MapAddressItem> mapList;
+  //  private ArrayAdapter<MapAddressItem> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_planning_layout);
 
+      //  mapList=new ArrayList<>();
         /////AutoComplete
         AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto);
-        autoCompleteTextView.setAdapter(new MapPlaceAutoSuggestAdapter(MapPlaningActivity.this, android.R.layout.simple_list_item_1));
+        MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(this,1);
+        autoCompleteTextView.setAdapter(madapter);
         //////
+
 
 
         //// 지도 Fragment
