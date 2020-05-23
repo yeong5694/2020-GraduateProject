@@ -186,6 +186,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
                     return;
                 }
 
+                invited_room_id = decryptRoomId(invited_room_id);
+
 
                 invited_room_name = null;
                 invited_room_master_id = null;
@@ -202,13 +204,22 @@ public class MyTripRoomListActivity extends AppCompatActivity {
 
                             Log.e("snapshot KEY", snapshot.getKey());
 
-                            if(invited_room_id.equals(snapshot.getKey())){
+
+                            /// byte -> String 으로 변환하면서 무언가 바뀌는 듯
+                            // 복호화 한 문자열과 키값이 일치하지 않음
+                            AES aes = new AES();
+                            String key = aes.encrypt(snapshot.getKey());
+                            key = aes.decrypt(key);
+
+                            System.out.println("key = " + key);
+
+                            if(invited_room_id.equals(key)){
                                 Log.e("snapshot ROOM IS EXIST", invited_room_id);
 
                                 invited_room_name = snapshot.child("name").getValue().toString();
                                 invited_room_master_id = snapshot.child("master_id").getValue().toString();
 
-                                updateInvited(kakao_id, invited_room_id, invited_room_name, invited_room_master_id);
+                                updateInvited(kakao_id, snapshot.getKey(), invited_room_name, invited_room_master_id);
                                 Toast.makeText(getApplicationContext(), "갱신되었습니다", Toast.LENGTH_LONG).show();
 
                                 Log.e("snapshot ROOM INFO ", invited_room_name);
@@ -243,6 +254,14 @@ public class MyTripRoomListActivity extends AppCompatActivity {
     }
 
 
+    public String decryptRoomId(String encrypt_str){
+        AES aes = new AES();
+        String decrypt_str = aes.decrypt(encrypt_str);
+
+        System.out.println("decrypt_str = " + decrypt_str);
+
+        return decrypt_str;
+    }
 
     public void addMyTripRoom(Long kakao_id, String name){
 
@@ -253,7 +272,8 @@ public class MyTripRoomListActivity extends AppCompatActivity {
         String getTime = simpleDate.format(mDate);
 
         // 여행방 코드 정해야 함 (지금은 테스트 용)
-        String room_id = getTime + "master:"+ kakao_id; // 방 생성 시간 + 만든 사람 id 로 일단 테스트
+        //String room_id = getTime + "master:"+ kakao_id; // 방 생성 시간 + 만든 사람 id 로 일단 테스트
+        String room_id = getTime + kakao_id;
 
         // 전체 방 목록에 추가
         DatabaseReference tripRoomRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
