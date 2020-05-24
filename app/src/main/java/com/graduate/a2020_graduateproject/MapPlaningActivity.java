@@ -2,6 +2,8 @@ package com.graduate.a2020_graduateproject;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,7 +13,10 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +48,7 @@ import com.skt.Tmap.TMapPoint;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +64,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import noman.googleplaces.NRPlaces;
+import noman.googleplaces.PlaceType;
 import noman.googleplaces.PlacesListener;
 
 import static java.lang.Boolean.FALSE;
@@ -83,15 +91,18 @@ public class MapPlaningActivity  extends AppCompatActivity
 
     private Button button_update;
     private Button button_polly;
+    private Button button_save;
 
     static String TOPIC="";
     private String selected_room_id, day;
 
     private Map<String, Object> MapInfo;
     private String Mapkey="";
+    private TextView text_auto;
 
-  //  private ArrayList<MapAddressItem> mapList;
-  //  private ArrayAdapter<MapAddressItem> adapter;
+    private Geocoder geocoder;
+
+    private ImageView image_find;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,10 +111,72 @@ public class MapPlaningActivity  extends AppCompatActivity
 
       //  mapList=new ArrayList<>();
         /////AutoComplete
-        AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto);
+        text_auto=findViewById(R.id.text_auto);
+
+        AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto); //
         MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(this,1);
         autoCompleteTextView.setAdapter(madapter);
         //////
+
+        image_find=findViewById(R.id.image_find);
+        image_find.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String place=text_auto.getText().toString();
+                List<Address> addressList=null;
+
+
+                try {
+                    addressList=geocoder.getFromLocationName(
+                            place, 10 //장소, 최대 검색 결과 개수
+                    );
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println(addressList.get(0).toString());
+                String []Places=addressList.get(0).toString().split(",");
+                String address = Places[0].substring(Places[0].indexOf("\"") + 1,Places[0].length() - 2);
+
+                //위도, 경도 구하기
+                Double xpos=Double.parseDouble(Places[10].substring(Places[10].indexOf("=")+1));
+                Double ypos=Double.parseDouble(Places[12].substring(Places[12].indexOf("=")+1));
+
+                LatLng findlatLng=new LatLng(xpos, ypos);
+                MarkerOptions markerOptions=new MarkerOptions();
+                markerOptions.title(place);
+                markerOptions.position(findlatLng);
+
+                Marker marker=gMap.addMarker(markerOptions);
+                marker.showInfoWindow();
+
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(findlatLng, 15));
+
+                JSONObject json=new JSONObject();
+                try {
+                    json.put("lat", Double.toString(findlatLng.latitude));
+                    json.put("lng", Double.toString(findlatLng.longitude));
+                    json.put("name", place);
+                    json.put("isClick", "FALSE");
+                    json.put("isAllDelete", "FALSE");
+
+
+                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+
+                    //planningList.add(markerOptions.getPosition());
+                    //markerList.add(marker);
+
+
+
+                } catch (Exception e) {
+                    System.out.println("안보내짐....");
+                }
+
+
+
+
+            }
+        });
 
 
 
@@ -182,6 +255,7 @@ public class MapPlaningActivity  extends AppCompatActivity
 
         button_update=findViewById(R.id.button_update);
         button_polly=findViewById(R.id.button_polly);
+   //     button_save=findViewById(R.id.button_save);
 
 
 
@@ -190,10 +264,9 @@ public class MapPlaningActivity  extends AppCompatActivity
 
             @Override
             public void onClick(View v) {
-                ///mqtt->firebase 저장
-                ///삭제후
                 mapDataReference.child(Mapkey).child("map_info").removeValue();
 
+                gMap.clear();
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
                 for(int i=0;i<markerList.size();i++){
@@ -207,9 +280,46 @@ public class MapPlaningActivity  extends AppCompatActivity
               //
                 planningList.clear();
                 markerList.clear();
+
+                Toast.makeText(getApplicationContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
             }
         });
+/*
+        button_save.setOnClickListener(new Button.OnClickListener(){
 
+            @Override
+            public void onClick(View v) {
+                mapDataReference.child(Mapkey).child("map_info").removeValue();
+
+
+                DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
+                for(int i=0;i<markerList.size();i++){
+                    System.out.println("i  : "+i);
+                    System.out.println(" click key : "+Mapkey);
+                    MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude, markerList.get(i).getPosition().longitude, markerList.get(i).getTitle()).toMap();
+                    clickRef.push().setValue(MapInfo);
+
+                }
+
+                //
+                planningList.clear();
+                markerList.clear();
+
+                Intent intent =new Intent(getApplicationContext(), PlaningActivity.class);
+
+                try {
+                    mqttClient.disconnect();
+                    mqttClient.close();
+                    System.out.println("disconnect !! ");
+
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+                startActivity(intent);
+
+            }
+        });
+*/
         button_polly.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -253,6 +363,8 @@ public class MapPlaningActivity  extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap=googleMap;
+        geocoder=new Geocoder(this);
+
 
         //지도 클릭했을 때 마커 찍기
         gMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -267,6 +379,7 @@ public class MapPlaningActivity  extends AppCompatActivity
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
                 Marker marker=gMap.addMarker(markerOptions);
+                marker.showInfoWindow();
 
                 JSONObject json=new JSONObject();
                 try {
@@ -492,6 +605,7 @@ public class MapPlaningActivity  extends AppCompatActivity
                             lat=Double.parseDouble(json.getString("lat"));
                             lng=Double.parseDouble(json.getString("lng"));
                             name=json.getString("name");
+                            System.out.println("mqtt name : "+name);
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
                             isAllDelete=Boolean.parseBoolean(json.getString("isAllDelete"));
 
@@ -507,10 +621,15 @@ public class MapPlaningActivity  extends AppCompatActivity
                                     markerOptions.title(name);
                                     Marker resMarker=gMap.addMarker(markerOptions);
 
+                                    resMarker.showInfoWindow();
+
                                     planningList.add(resLat);
                                     markerList.add(resMarker);
                                     System.out.println("add - planningList size size : " + planningList.size());
                                     System.out.println("add - MarkerList size click : " + markerList.size());
+
+                                    Toast.makeText(getApplicationContext(), "마커가 추가되었습니다!", Toast.LENGTH_LONG).show();
+
                                 }
 
                                 else {
@@ -533,6 +652,8 @@ public class MapPlaningActivity  extends AppCompatActivity
 
                                         System.out.println("sub-resMarker Latlng : "+resLat);
                                         System.out.println("sub-removeMarker Latlng : "+removeMarker.getPosition());
+
+                                        Toast.makeText(getApplicationContext(), "마커가 삭제되었습니다!", Toast.LENGTH_LONG).show();
 
                                     }
                                 }

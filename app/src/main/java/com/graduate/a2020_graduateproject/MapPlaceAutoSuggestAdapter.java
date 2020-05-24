@@ -92,6 +92,7 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
+                clear();
                 addAll((List)results.values);
                 notifyDataSetChanged();
             }

@@ -9,38 +9,38 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"-->
 
-    <ImageView
-        android:id="@+id/imageView2"
+    <!--ImageView
+        android:id="@+id/imageView"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentLeft="true"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="10dp"
+        map:srcCompat="@android:drawable/presence_offline" /-->
 
-
-        map:srcCompat="@android:drawable/ic_search_category_default" />
 
 
     <AutoCompleteTextView
         android:id="@+id/text_auto"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginLeft="40dp"
+        android:layout_marginLeft="15dp"
         android:layout_marginRight="30dp"
         android:layout_weight="1"
+        android:paddingLeft="30dp"
         android:hint="Enter the place" />
 
-
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/image_find"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_alignParentRight="true"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        map:srcCompat="@android:drawable/presence_offline" />
+        map:srcCompat="@android:drawable/ic_search_category_default" />
+
 
     <fragment
         android:id="@+id/planningMap"
@@ -59,6 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
+
         android:text="직선" />
 
     <Button
@@ -68,4 +69,12 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:text="수정" />
+<!--
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="확인" />-->
 </RelativeLayout>
