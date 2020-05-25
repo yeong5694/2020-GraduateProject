@@ -36,6 +36,8 @@ import com.kakao.message.template.FeedTemplate;
 import com.kakao.message.template.LinkObject;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
+import com.kakao.usermgmt.UserManagement;
+import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
 import java.text.SimpleDateFormat;
@@ -343,6 +345,10 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         if(id == R.id.home) {
             // 뒤로 돌아가도록(홈화면 MainActivity로) 고쳐야 함
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
             startActivity(intent);
         }
         else if(id == R.id.trip_mates){
@@ -358,37 +364,10 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
 
         }
         else if(id == R.id.invite_trip_mates) {
-            // 기본적으로 구현해야 할 것
-            Map<String, String> serverCallbackArgs = new HashMap<String, String>();
-            serverCallbackArgs.put("user_id", "${current_user_id}");
-            serverCallbackArgs.put("product_id", "${shared_product_id}");
-            // 템플릿 생성
-            FeedTemplate params = FeedTemplate
-                    .newBuilder(ContentObject.newBuilder("Sharing Trips",
-                            "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
-                            LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
-                                    .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
-                            .setDescrption("여행방 id : "+ selected_room_id)
-                            .build())
-                    .addButton(new ButtonObject("앱에서 보기", LinkObject.newBuilder()
-                            .setWebUrl(KAKAO_BASE_LINK) //
-                            .setMobileWebUrl(KAKAO_BASE_LINK) //
-                            .setAndroidExecutionParams("key1=value1")
-                            .build()))
-                    .build();
 
-            KakaoLinkService.getInstance().sendDefault(this, params, serverCallbackArgs, new ResponseCallback<KakaoLinkResponse>() {
-                @Override
-                public void onFailure(ErrorResult errorResult) {
-                    Logger.e(errorResult.toString());
-                }
+            String room_id = encrypt_room_id(selected_room_id);
 
-                @Override
-                public void onSuccess(KakaoLinkResponse result) {
-                    // 템플릿 밸리데이션과 쿼터 체크가 성공적으로 끝남. 톡에서 정상적으로 보내졌는지 보장은 할 수 없다.
-                    // 전송 성공 유무는 서버콜백 기능을 이용하여야 한다.
-                }
-            });
+            createTemplate(room_id);
 
         }
         else if(id == R.id.chat) {
@@ -428,6 +407,8 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         }
         else if(id == R.id.logout) {
 
+            onClickLogout();
+
         }
 
         return true;
@@ -445,6 +426,55 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         return true;
     }
 
+    public String encrypt_room_id(String selected_room_id){
+
+        // selected_room_id 암호화
+
+        AES aes = new AES();
+
+
+        String encrypt_str = aes.encrypt(selected_room_id);
+
+        System.out.println("encrypt_str = " + encrypt_str);
+
+
+
+        return encrypt_str;
+
+    }
+    public void createTemplate(String room_id){
+        // 기본적으로 구현해야 할 것
+        Map<String, String> serverCallbackArgs = new HashMap<String, String>();
+        serverCallbackArgs.put("user_id", "${current_user_id}");
+        serverCallbackArgs.put("product_id", "${shared_product_id}");
+        // 템플릿 생성
+        FeedTemplate params = FeedTemplate
+                .newBuilder(ContentObject.newBuilder("여행초대코드",
+                        "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
+                        LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
+                                .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
+                        .setDescrption(room_id)
+                        .build())
+                .addButton(new ButtonObject("앱에서 보기", LinkObject.newBuilder()
+                        .setWebUrl(KAKAO_BASE_LINK) //
+                        .setMobileWebUrl(KAKAO_BASE_LINK) //
+                        .setAndroidExecutionParams("key1=value1")
+                        .build()))
+                .build();
+
+        KakaoLinkService.getInstance().sendDefault(this, params, serverCallbackArgs, new ResponseCallback<KakaoLinkResponse>() {
+            @Override
+            public void onFailure(ErrorResult errorResult) {
+                Logger.e(errorResult.toString());
+            }
+
+            @Override
+            public void onSuccess(KakaoLinkResponse result) {
+                // 템플릿 밸리데이션과 쿼터 체크가 성공적으로 끝남. 톡에서 정상적으로 보내졌는지 보장은 할 수 없다.
+                // 전송 성공 유무는 서버콜백 기능을 이용하여야 한다.
+            }
+        });
+    }
     public void exit_room(){ // 여행 구성원이 방 나가는 경우
 
 
@@ -595,6 +625,18 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
     }
 
 
+    /* 로그아웃 */
+    private void onClickLogout() {
+        UserManagement.getInstance().requestLogout(new LogoutResponseCallback() {
+            @Override
+            public void onCompleteLogout() {
+                Log.e("KakaoLogout ::", "로그아웃 합니다..");
+                final Intent intent = new Intent(TripRoomActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+    }
 
 
 
