@@ -25,21 +25,32 @@
         android:id="@+id/text_auto"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
         android:layout_weight="1"
         android:paddingLeft="30dp"
+        android:textSize="18dp"
         android:hint="Enter the place" />
 
     <ImageView
         android:id="@+id/image_find"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="12dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
+        map:srcCompat="@android:drawable/ic_search_category_default" />
+
+    <ImageView
+        android:id="@+id/image_delete"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_alignParentRight="true"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        map:srcCompat="@android:drawable/ic_search_category_default" />
+        map:srcCompat="@android:drawable/presence_offline" />
 
 
     <fragment

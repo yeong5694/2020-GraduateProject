@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
@@ -14,8 +15,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 //extends RecyclerView.Adapter<MapViewHolder>
 public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> implements Filterable {
@@ -26,13 +32,6 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
     public MapPlaceAutoSuggestAdapter(@NonNull Context context, int resource) {
         super(context, resource);
     }
-
-    /*public MapPlaceAutoSuggestAdapter(List<MapAddressItem> mapList){
-       this.mapList=mapList;
-       mapListFull=new ArrayList<>(mapList);
-
-    }*/
-
 
     @NonNull
     @Override
@@ -52,6 +51,8 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
             auto_name.setText(mapAddressItem.getName());
             auto_subName.setText(mapAddressItem.getSub_name());
         }
+
+
         return convertView;
     }
 
@@ -64,12 +65,7 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                List<MapAddressItem> filterResults=new ArrayList<>();
-              //  FilterResults filterResults=new FilterResults();
 
-           //     if(constraint==null||constraint.length()==0){
-             //       filterResults.addAll(mapListFull);
-               // }
-               // else{
                  if(constraint!=null){
                     filterResults= TMapAdressParser.autoComplete(constraint.toString());
 
@@ -77,7 +73,10 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
                     for(MapAddressItem item:filterResults){
                         System.out.println("Filter name : "+item.getName());
                         System.out.println("SubName : "+item.getSub_name());
-                        }
+                        System.out.println("Latlng : "+item.getLatitude()+item.getLongitude());
+
+
+                    }
 
                     }
 
@@ -107,8 +106,7 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
 
 
 
-
-    /*@NonNull
+/*@NonNull
     @Override
     public MapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return null;

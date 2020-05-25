@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -43,6 +44,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.skt.Tmap.TMapData;
+import com.skt.Tmap.TMapPOIItem;
 import com.skt.Tmap.TMapPoint;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -52,6 +55,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,6 +67,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import noman.googleplaces.NRPlaces;
 import noman.googleplaces.PlaceType;
@@ -102,7 +108,7 @@ public class MapPlaningActivity  extends AppCompatActivity
 
     private Geocoder geocoder;
 
-    private ImageView image_find;
+    private ImageView image_delete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,55 +122,39 @@ public class MapPlaningActivity  extends AppCompatActivity
         AutoCompleteTextView autoCompleteTextView=findViewById(R.id.text_auto); //
         MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(this,1);
         autoCompleteTextView.setAdapter(madapter);
-        //////
 
-        image_find=findViewById(R.id.image_find);
-        image_find.setOnClickListener(new View.OnClickListener() {
+        image_delete=findViewById(R.id.image_delete);
+
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
-            public void onClick(View v) {
-                String place=text_auto.getText().toString();
-                List<Address> addressList=null;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MapAddressItem mapAddressItem=madapter.getItem(position);
+                double apos=mapAddressItem.getLatitude();
+                double bpos=mapAddressItem.getLongitude();
 
+             //   Toast.makeText(getApplicationContext(), "Latlng : "+apos+" "+bpos, Toast.LENGTH_SHORT).show();
 
-                try {
-                    addressList=geocoder.getFromLocationName(
-                            place, 10 //장소, 최대 검색 결과 개수
-                    );
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                LatLng latLng=new LatLng(apos, bpos);
 
-                System.out.println(addressList.get(0).toString());
-                String []Places=addressList.get(0).toString().split(",");
-                String address = Places[0].substring(Places[0].indexOf("\"") + 1,Places[0].length() - 2);
-
-                //위도, 경도 구하기
-                Double xpos=Double.parseDouble(Places[10].substring(Places[10].indexOf("=")+1));
-                Double ypos=Double.parseDouble(Places[12].substring(Places[12].indexOf("=")+1));
-
-                LatLng findlatLng=new LatLng(xpos, ypos);
                 MarkerOptions markerOptions=new MarkerOptions();
-                markerOptions.title(place);
-                markerOptions.position(findlatLng);
+                markerOptions.position(latLng);
+                markerOptions.title(mapAddressItem.getName());
+                Marker adaptMarker=gMap.addMarker(markerOptions);
+                adaptMarker.showInfoWindow();
 
-                Marker marker=gMap.addMarker(markerOptions);
-                marker.showInfoWindow();
-
-                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(findlatLng, 15));
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
 
                 JSONObject json=new JSONObject();
                 try {
-                    json.put("lat", Double.toString(findlatLng.latitude));
-                    json.put("lng", Double.toString(findlatLng.longitude));
-                    json.put("name", place);
+                    json.put("lat", Double.toString(apos));
+                    json.put("lng", Double.toString(bpos));
+                    json.put("name", mapAddressItem.getName());
                     json.put("isClick", "FALSE");
                     json.put("isAllDelete", "FALSE");
 
 
                     mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
-
-                    //planningList.add(markerOptions.getPosition());
-                    //markerList.add(marker);
 
 
 
@@ -174,11 +164,16 @@ public class MapPlaningActivity  extends AppCompatActivity
 
 
 
-
             }
         });
 
+        image_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                text_auto.setText("");
 
+             }
+        });
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -281,7 +276,7 @@ public class MapPlaningActivity  extends AppCompatActivity
                 planningList.clear();
                 markerList.clear();
 
-                Toast.makeText(getApplicationContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "수정되었습니다!", Toast.LENGTH_SHORT).show();
             }
         });
 /*
@@ -628,7 +623,7 @@ public class MapPlaningActivity  extends AppCompatActivity
                                     System.out.println("add - planningList size size : " + planningList.size());
                                     System.out.println("add - MarkerList size click : " + markerList.size());
 
-                                    Toast.makeText(getApplicationContext(), "마커가 추가되었습니다!", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(), "마커가 추가되었습니다!", Toast.LENGTH_SHORT).show();
 
                                 }
 
@@ -653,7 +648,7 @@ public class MapPlaningActivity  extends AppCompatActivity
                                         System.out.println("sub-resMarker Latlng : "+resLat);
                                         System.out.println("sub-removeMarker Latlng : "+removeMarker.getPosition());
 
-                                        Toast.makeText(getApplicationContext(), "마커가 삭제되었습니다!", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(getApplicationContext(), "마커가 삭제되었습니다!", Toast.LENGTH_SHORT).show();
 
                                     }
                                 }
