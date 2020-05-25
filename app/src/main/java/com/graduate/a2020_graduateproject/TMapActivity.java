@@ -286,7 +286,7 @@ public class TMapActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    ///구글 api로부터 데이터를 다운로드
+
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
         //백그라운드에서 데이터 다운로드 수행
