@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-
         android:name=".GlobalApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -25,12 +24,12 @@
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-
         <activity
             android:name=".ChattingRoomActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize"></activity>
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+        <activity android:name=".MyCalendarActivity" />
         <activity android:name=".TripRoomFriendsActivity" />
-        <activity android:name=".PlaningActivity"/>
+        <activity android:name=".PlaningActivity" />
         <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <activity android:name=".KakaoFriendsInviteActivity">
@@ -66,18 +65,11 @@
         <activity android:name=".MapDistanceActivity" />
         <activity android:name=".MapFindRoadActivity" />
         <activity android:name=".TMapActivity" />
-
-        <activity android:name=".MapPlaningActivity" />
-
-
-        <!-- 주소 검색 -->
+        <activity android:name=".MapPlaningActivity" /> <!-- 주소 검색 -->
         <service
             android:name=".MapFetchAddressIntentService"
             android:exported="false" /> <!-- set_timerslack_ns write failed: Operation not permitted 오류 해결 -->
         <service android:name="org.eclipse.paho.android.service.MqttService" />
-
-
-
     </application>
 
 </manifest>

@@ -19,4 +19,11 @@
     <color name="colorOnSurface">#442c2e</color>
     <color name="colorOnBackground">#442c2e</color>
     <color name="colorOnError">#fffbfa</color>
+
+
+
+    <color name="lineColor">#f2f1f1</color>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+
 </resources>
