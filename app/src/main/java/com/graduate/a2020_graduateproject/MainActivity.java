@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -58,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips");
     private DatabaseReference mReference;
+
+    // 달력
+    private RecyclerView calendar;
 
 
     @Override

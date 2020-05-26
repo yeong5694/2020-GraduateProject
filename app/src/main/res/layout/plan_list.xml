@@ -18,7 +18,7 @@
             android:layout_weight="10"
             android:paddingLeft="10dp"
             android:text="일정"
-            android:textSize="36sp" />
+            android:textSize="30sp" />
 
         <ImageView
             android:id="@+id/drag_view"
