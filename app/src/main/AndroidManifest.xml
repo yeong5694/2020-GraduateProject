@@ -70,7 +70,6 @@
         <activity android:name=".MapPlaningActivity" />
         <activity android:name=".Map_realFindRoadActivity"/>
 
-
         <!-- 주소 검색 -->
         <service
             android:name=".MapFetchAddressIntentService"
