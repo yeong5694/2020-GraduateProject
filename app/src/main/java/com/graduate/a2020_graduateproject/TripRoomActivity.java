@@ -408,7 +408,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         }
 
         else if(id == R.id.planningMap) {
-            Intent intent = new Intent(TripRoomActivity.this, MapActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, Map_realFindRoadActivity.class);
             startActivity(intent);
         }
         else if(id == R.id.memo) {

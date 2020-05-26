@@ -20,7 +20,7 @@
             android:id="@+id/calendar"
             android:icon="@drawable/baseline_calendar_today_black_18dp"/>
 
-        <item android:title="지도"
+        <item android:title="길찾기"
             android:id="@+id/planningMap"
             android:icon="@drawable/baseline_place_black_18dp"/>
         <item android:title="메모"
