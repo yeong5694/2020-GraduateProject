@@ -450,7 +450,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         // 템플릿 생성
         FeedTemplate params = FeedTemplate
                 .newBuilder(ContentObject.newBuilder("여행초대코드",
-                        "http://mud-kage.kakao.co.kr/dn/NTmhS/btqfEUdFAUf/FjKzkZsnoeE4o19klTOVI1/openlink_640x640s.jpg",
+                        "",
                         LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                 .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
                         .setDescrption(room_id)
