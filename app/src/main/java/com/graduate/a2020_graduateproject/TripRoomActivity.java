@@ -345,11 +345,14 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         if(id == R.id.home) {
             // 뒤로 돌아가도록(홈화면 MainActivity로) 고쳐야 함
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
+
             intent.putExtra("kakao_id", kakao_id);
             intent.putExtra("kakao_email", kakao_email);
             intent.putExtra("kakao_name", kakao_name);
             intent.putExtra("kakao_thumnail", kakao_thumnail);
+
             startActivity(intent);
+
         }
         else if(id == R.id.trip_mates){
 
