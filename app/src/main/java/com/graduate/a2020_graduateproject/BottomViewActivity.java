@@ -9,11 +9,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentDay;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentMap;
 
-public class BottomActivityView extends AppCompatActivity {
+public class BottomViewActivity extends AppCompatActivity {
 
     private FragmentManager fragmentManager = getSupportFragmentManager();
     private FragmentDay fragmentDay = new FragmentDay();
@@ -39,6 +41,8 @@ public class BottomActivityView extends AppCompatActivity {
         day=intent.getExtras().getString("day");
         System.out.println("selected_room_id : "+selected_room_id+ " day : "+day);
     }
+
+
 
     class ItemSelectedListener implements BottomNavigationView.OnNavigationItemSelectedListener{
         @Override

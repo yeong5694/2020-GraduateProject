@@ -1,5 +1,6 @@
 package com.graduate.a2020_graduateproject.bottomNavigation;
 
+
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Address;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,7 +41,6 @@ import com.graduate.a2020_graduateproject.BottomViewActivity;
 import com.graduate.a2020_graduateproject.MapConstants;
 import com.graduate.a2020_graduateproject.MapFetchAddressIntentService;
 import com.graduate.a2020_graduateproject.MapPlaceAutoSuggestAdapter;
-import com.graduate.a2020_graduateproject.MapPlaningActivity;
 import com.graduate.a2020_graduateproject.MarkerInfo;
 import com.graduate.a2020_graduateproject.R;
 
@@ -58,7 +59,7 @@ import java.util.Map;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
-public class FragmentMap extends Fragment implements OnMapReadyCallback  {
+public class MapTest extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap gMap;
 
@@ -90,12 +91,11 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
     private ImageView image_find;
 
-
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         //View view = inflater.inflate(R.layout.fragment_map, container, false);
 
-        ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.map_planning_layout, container, false);
+        ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.fragment_map, container, false);
 
         /////AutoComplete
         text_auto = viewGroup.findViewById(R.id.text_auto);
@@ -159,19 +159,30 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     System.out.println("안보내짐....");
                 }
 
-                text_auto.setText("");
-
 
 
 
             }
         });
 
-
         //// 지도 Fragment
-        SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
+        SupportMapFragment mapFragment = (SupportMapFragment) getActivity().getSupportFragmentManager()
                 .findFragmentById(R.id.planningMap);
         mapFragment.getMapAsync(this);
+
+        ////////
+
+
+//        Fragment fg = FragmentMapChild.newInstance();
+//        FragmentTransaction childFt = getChildFragmentManager().beginTransaction();
+//        childFt.replace(R.id.planningMap, fg);
+//
+//        childFt.addToBackStack(null);
+//        childFt.commit();
+
+
+        /////////
+
 
         selected_room_id = ((BottomViewActivity) getActivity()).getSelected_room_id();
         day = ((BottomViewActivity) getActivity()).getDay();
@@ -228,13 +239,16 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                    System.out.println("마커정보를 가져오지 못함");
+
             }
         });
+
 
         ///mqtt로 전달하는 마커 저장
         planningList=new ArrayList<>();
         markerList=new ArrayList<>();
+
+
 
         button_update = viewGroup.findViewById(R.id.button_update);
         button_polly = viewGroup.findViewById(R.id.button_polly);
@@ -304,14 +318,11 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             }
         });
 
-
         return viewGroup;
-
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
         gMap=googleMap;
         geocoder=new Geocoder(getContext());
 
@@ -416,7 +427,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         });
     }
 
-
     //ResultReceiver->주소조회 결과를 처리하기 위한 인스턴스
     public void startIntentService(LatLng latLng){ //역지오코딩 실행
         resultReceiver=new AddressResultReceiver(new android.os.Handler());
@@ -510,6 +520,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
         return calDistance;
     }
+
+
 
 
 
