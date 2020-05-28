@@ -74,6 +74,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     //    private ArrayList<Boolean> isClickList;
     private MqttClient mqttClient;
 
+    private  ArrayList<LatLng> currentPlanningList;
+    private ArrayList<Marker> currentMarkerList;
 
     private Button button_update;
     private Button button_polly;
@@ -186,55 +188,80 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             e.printStackTrace();
         }
 
+        /// 파이어베이스에서 가져온 마커 정보들
+        currentPlanningList = new ArrayList<>();
+        currentMarkerList =new ArrayList<>();
+
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
-
-        mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
+        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Mapkey=snapshot.getKey();
-                    System.out.println("snapshot get key : "+Mapkey);
+                    Mapkey = snapshot.getKey();
+                    System.out.println("Mapkey : "+ Mapkey);
 
                 }
-                planningList.clear();
-                markerList.clear();
 
-                if (dataSnapshot.child(Mapkey).child("map_info") != null) {
-                    System.out.println("firebase에서 받아옴 ");
-                    for (DataSnapshot snapshot : dataSnapshot.child(Mapkey).child("map_info").getChildren()) {
+                DatabaseReference mapRef = mapDataReference.child(Mapkey).child("map_info");
+                mapRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                        //    String key = snapshot.getKey();
-                        //    System.out.println("snapshot key : "+key);
+                        currentPlanningList.clear();
+                        currentMarkerList.clear();
+                        gMap.clear();
 
-                        double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
-                        double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
-                        String fireName = snapshot.child("name").toString();
+                        System.out.println("------------ current_map_info ----------------------------");
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                            String key = snapshot.getKey();
+                            System.out.println("mapRef : key : "+ key);
+
+                            double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
+                            double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
+                            String fireName = snapshot.child("name").toString();
 
 
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        LatLng fireLatlng = new LatLng(fireLat, fireLng);
-                        markerOptions.position(fireLatlng);
-                        markerOptions.title(fireName);
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            LatLng fireLatlng = new LatLng(fireLat, fireLng);
+                            markerOptions.position(fireLatlng);
+                            markerOptions.title(fireName);
 
-                        Marker fireMarker = gMap.addMarker(markerOptions);
-                        planningList.add(fireLatlng);
-                        markerList.add(fireMarker);
+                            Marker fireMarker = gMap.addMarker(markerOptions);
+                            currentPlanningList.add(fireLatlng);
+                            currentMarkerList.add(fireMarker);
+
+                        }
+
+                        System.out.println("------------ current_map_info ----------------------------");
+
+                        // mqtt 에서 사용할 마커 정보들
+                        planningList = currentPlanningList; // 파이어베이스 정보 복사
+                        markerList = currentMarkerList;
+
                     }
-                }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        System.out.println("마커정보를 가져오지 못함");
+                    }
+                });
 
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                    System.out.println("마커정보를 가져오지 못함");
+                    System.out.println("파이어베이스에서 해당 day 키값 못찾음");
             }
         });
 
-        ///mqtt로 전달하는 마커 저장
-        planningList=new ArrayList<>();
-        markerList=new ArrayList<>();
+
+
+
+
 
         button_update = viewGroup.findViewById(R.id.button_update);
         button_polly = viewGroup.findViewById(R.id.button_polly);
@@ -245,20 +272,26 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
             @Override
             public void onClick(View v) {
-                mapDataReference.child(Mapkey).child("map_info").removeValue();
+
+                mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
 
                 gMap.clear();
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
+
                 for(int i=0;i<markerList.size();i++){
+
                     System.out.println("i  : "+i);
                     System.out.println(" click key : "+Mapkey);
-                    MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude, markerList.get(i).getPosition().longitude, markerList.get(i).getTitle()).toMap();
+                    MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude,
+                            markerList.get(i).getPosition().longitude,
+                            markerList.get(i).getTitle()).toMap();
+
                     clickRef.push().setValue(MapInfo);
 
                 }
 
-                //
+                // 마커정보 비우기
                 planningList.clear();
                 markerList.clear();
 
