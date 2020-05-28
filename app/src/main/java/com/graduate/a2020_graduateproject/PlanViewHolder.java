@@ -29,7 +29,8 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(parent, MapPlaningActivity.class);
+                ////////////////// BottomNavigationVIew로 이동
+                Intent intent = new Intent(parent, BottomActivityView.class);
                 intent.putExtra("selected_room_id", selected_room_id);
 
                 String day = day_text.getText().toString();
