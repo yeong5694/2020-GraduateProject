@@ -167,7 +167,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
 
-        Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
 
         setTitle(selected_room_name);
         nav_header_view = navigationView.getHeaderView(0);

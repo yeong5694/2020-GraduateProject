@@ -134,7 +134,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="50dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     android:orientation="horizontal">
@@ -162,20 +162,21 @@
                     <ImageView
                         android:id="@+id/planAdd"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
                         app:srcCompat="@drawable/baseline_playlist_add_black_18dp" />
 
                     <ImageView
                         android:id="@+id/planEdit"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_gravity="center"
                         app:srcCompat="@drawable/baseline_swap_vert_black_18dp" />
 
                     <ImageView
                         android:id="@+id/planEditFin"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_gravity="center"
                         app:srcCompat="@drawable/baseline_playlist_add_check_black_18dp" />
                 </LinearLayout>
