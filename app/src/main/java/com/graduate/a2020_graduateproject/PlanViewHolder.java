@@ -2,9 +2,7 @@ package com.graduate.a2020_graduateproject;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,7 +27,8 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(parent, MapPlaningActivity.class);
+                ////////////////// BottomNavigationVIew로 이동
+                Intent intent = new Intent(parent, BottomViewActivity.class);
                 intent.putExtra("selected_room_id", selected_room_id);
 
                 String day = day_text.getText().toString();

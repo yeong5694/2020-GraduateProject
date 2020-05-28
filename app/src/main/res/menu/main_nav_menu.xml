@@ -2,12 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-        <item android:title="내 여행방 목록"
-            android:id="@+id/myRooms"
-            android:icon="@drawable/baseline_bookmark_black_18dp"/>
-        <item android:title="친구"
-            android:id="@+id/friends"
-            android:icon="@drawable/baseline_people_black_18dp"/>
+
+        <item
+            android:id="@+id/myCalendar"
+            android:icon="@drawable/baseline_calendar_today_black_18dp"
+            android:title="캘린더" />
 
     </group>
 

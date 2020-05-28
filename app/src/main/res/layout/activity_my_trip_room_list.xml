@@ -97,11 +97,17 @@
     </LinearLayout>
 
 
+    <View
+        android:id="@+id/divider3"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorAccent"
+        android:background="@android:color/white"
         android:gravity="center"
         android:text="여행방 목록"
         android:textColor="@android:color/black"
@@ -116,8 +122,11 @@
 
         android:layout_height="match_parent"
 
+        android:layout_marginTop="10dp"
         android:choiceMode="singleChoice">
 
     </ListView>
+
+
 
 </LinearLayout>
