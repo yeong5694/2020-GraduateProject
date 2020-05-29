@@ -198,7 +198,8 @@ public class MapPlaningActivity  extends AppCompatActivity
         mapDataReference =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
 
-        mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
+//        mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
+        /*  mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -212,9 +213,6 @@ public class MapPlaningActivity  extends AppCompatActivity
                 if (dataSnapshot.child(Mapkey).child("map_info") != null) {
                     System.out.println("firebase에서 받아옴 ");
                     for (DataSnapshot snapshot : dataSnapshot.child(Mapkey).child("map_info").getChildren()) {
-
-                        //    String key = snapshot.getKey();
-                        //    System.out.println("snapshot key : "+key);
 
                         double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
                         double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
@@ -232,7 +230,6 @@ public class MapPlaningActivity  extends AppCompatActivity
                     }
                 }
 
-
             }
 
             @Override
@@ -240,7 +237,7 @@ public class MapPlaningActivity  extends AppCompatActivity
 
             }
         });
-
+*/
 
         ///mqtt로 전달하는 마커 저장
         planningList=new ArrayList<>();
@@ -272,7 +269,6 @@ public class MapPlaningActivity  extends AppCompatActivity
 
                 }
 
-              //
                 planningList.clear();
                 markerList.clear();
 
@@ -373,6 +369,8 @@ public class MapPlaningActivity  extends AppCompatActivity
                 markerOptions.title(addressOutput);
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
+                System.out.println("Click marker name : "+addressOutput);
+
                 Marker marker=gMap.addMarker(markerOptions);
                 marker.showInfoWindow();
 
@@ -386,11 +384,6 @@ public class MapPlaningActivity  extends AppCompatActivity
 
 
                     mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
-
-                    //planningList.add(markerOptions.getPosition());
-                    //markerList.add(marker);
-
-
 
                 } catch (Exception e) {
                     System.out.println("안보내짐....");
@@ -600,9 +593,12 @@ public class MapPlaningActivity  extends AppCompatActivity
                             lat=Double.parseDouble(json.getString("lat"));
                             lng=Double.parseDouble(json.getString("lng"));
                             name=json.getString("name");
-                            System.out.println("mqtt name : "+name);
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
                             isAllDelete=Boolean.parseBoolean(json.getString("isAllDelete"));
+
+                            System.out.println("mqtt lat, lng : "+lat+" "+lng);
+                            System.out.println("isClick "+isClick);
+                            System.out.println("mqtt name : "+name);
 
                             LatLng resLat=new LatLng(lat, lng);
                             if(isAllDelete){

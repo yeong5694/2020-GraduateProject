@@ -102,18 +102,21 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         /////AutoComplete
         text_auto = viewGroup.findViewById(R.id.text_auto);
 
+        planningList=new ArrayList<>();
+        markerList=new ArrayList<>();
+
+
         AutoCompleteTextView autoCompleteTextView = viewGroup.findViewById(R.id.text_auto); //
         MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(getContext(),1);
         autoCompleteTextView.setAdapter(madapter);
         //////
-
+/*
         image_find = viewGroup.findViewById(R.id.image_find);
         image_find.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String place=text_auto.getText().toString();
                 List<Address> addressList=null;
-
 
                 try {
                     addressList=geocoder.getFromLocationName(
@@ -163,12 +166,9 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 text_auto.setText("");
 
-
-
-
             }
         });
-
+*/
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
@@ -194,7 +194,47 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
-        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+            mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Mapkey=snapshot.getKey();
+                    System.out.println("snapshot get key : "+Mapkey);
+
+                }
+                planningList.clear();
+                markerList.clear();
+
+                if (dataSnapshot.child(Mapkey).child("map_info") != null) {
+                    System.out.println("firebase에서 받아옴 ");
+                    for (DataSnapshot snapshot : dataSnapshot.child(Mapkey).child("map_info").getChildren()) {
+
+                        double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
+                        double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
+                        String fireName = snapshot.child("name").toString();
+
+
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        LatLng fireLatlng = new LatLng(fireLat, fireLng);
+                        markerOptions.position(fireLatlng);
+                        markerOptions.title(fireName);
+
+                        Marker fireMarker = gMap.addMarker(markerOptions);
+                        planningList.add(fireLatlng);
+                        markerList.add(fireMarker);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+/*        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -211,9 +251,9 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                         currentPlanningList.clear();
                         currentMarkerList.clear();
-                        gMap.clear();
+//                        gMap.clear();
 
-                        System.out.println("------------ current_map_info ----------------------------");
+                        System.out.println("------------ current_map_info!!! ----------------------------");
 
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
@@ -257,12 +297,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     System.out.println("파이어베이스에서 해당 day 키값 못찾음");
             }
         });
-
-
-
-
-
-
+*/
         button_update = viewGroup.findViewById(R.id.button_update);
         button_polly = viewGroup.findViewById(R.id.button_polly);
         //     button_save=findViewById(R.id.button_save);
@@ -275,8 +310,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
 
-                gMap.clear();
-
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
                 for(int i=0;i<markerList.size();i++){
@@ -287,13 +320,14 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                             markerList.get(i).getPosition().longitude,
                             markerList.get(i).getTitle()).toMap();
 
+                    System.out.println("--- MapInfo Firebase로 ----"+markerList.get(i).getTitle());
                     clickRef.push().setValue(MapInfo);
 
                 }
 
                 // 마커정보 비우기
-                planningList.clear();
-                markerList.clear();
+             //   planningList.clear();
+             //   markerList.clear();
 
                 Toast.makeText(getContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
             }
