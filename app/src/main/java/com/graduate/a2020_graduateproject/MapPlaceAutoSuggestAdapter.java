@@ -100,8 +100,6 @@ public class MapPlaceAutoSuggestAdapter extends ArrayAdapter<MapAddressItem> imp
         public CharSequence convertResultToString(Object resultValue) {
             return ((MapAddressItem)resultValue).getName();
         }
-
-
     };
 
 
