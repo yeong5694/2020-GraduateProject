@@ -167,7 +167,7 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
 
-        Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
 
         setTitle(selected_room_name);
         nav_header_view = navigationView.getHeaderView(0);
@@ -345,11 +345,14 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         if(id == R.id.home) {
             // 뒤로 돌아가도록(홈화면 MainActivity로) 고쳐야 함
             Intent intent = new Intent(TripRoomActivity.this, MainActivity.class);
+
             intent.putExtra("kakao_id", kakao_id);
             intent.putExtra("kakao_email", kakao_email);
             intent.putExtra("kakao_name", kakao_name);
             intent.putExtra("kakao_thumnail", kakao_thumnail);
+
             startActivity(intent);
+
         }
         else if(id == R.id.trip_mates){
 

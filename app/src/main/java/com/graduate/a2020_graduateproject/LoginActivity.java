@@ -34,6 +34,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private SessionCallback callback;
 
+    private static Long kakao_id;
+    private static String kakao_thumnail;
+    private static String kakao_email;
+    private static String kakao_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void redirectMainActivity() {
         //final Intent intent = new Intent(this, SuccessLoginActivity.class);
         final Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("kakao_id", kakao_id);
+        intent.putExtra("kakao_email", kakao_email);
+        intent.putExtra("kakao_name", kakao_name);
+        intent.putExtra("kakao_thumnail", kakao_thumnail);
         startActivity(intent);
         finish();
     }
@@ -151,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(MeV2Response result) {
 
-                        //kakao_id = result.getId();
+                        kakao_id = result.getId();
                         Log.i("KAKAO_API", "사용자 아이디: " + result.getId());
 
                         UserAccount kakaoAccount = result.getKakaoAccount();
@@ -162,6 +170,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             if (email != null) {
                                 Log.i("KAKAO_API", "email: " + email);
+                                kakao_email = email;
 
                             } else if (kakaoAccount.emailNeedsAgreement() == OptionalBoolean.TRUE) {
                                 // 동의 요청 후 이메일 획득 가능
@@ -186,6 +195,17 @@ public class LoginActivity extends AppCompatActivity {
                                 // 프로필 획득 불가
                             }
 
+
+                            // 로그인 정보 저장
+                            kakao_thumnail = profile.getThumbnailImageUrl();
+                            if( kakao_thumnail == null){
+                                kakao_thumnail = "no thumnail";
+                            }
+                            if( kakao_email == null){
+                                kakao_email = "no email";
+                            }
+
+                            kakao_name = profile.getNickname();
 
                             updateUser(result.getId(), profile.getNickname(), kakaoAccount.getEmail(), profile.getThumbnailImageUrl()); // 파이어베이스에 저장
                             redirectMainActivity();
