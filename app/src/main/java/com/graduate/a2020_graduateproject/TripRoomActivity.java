@@ -47,7 +47,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class TripRoomActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
+public class TripRoomActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
 
@@ -401,6 +401,8 @@ public class TripRoomActivity extends AppCompatActivity  implements NavigationVi
         }
         else if(id == R.id.gallery) {
             Intent intent = new Intent(TripRoomActivity.this, ShareGalleryActivity.class);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
         }
         else if(id == R.id.exit){

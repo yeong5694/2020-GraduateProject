@@ -1,28 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".ShareGalleryActivity">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@id/container_layout"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
-        <com.google.android.material.appbar.AppBarLayout
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/main_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="?attr/actionBarSize"/>
+    </com.google.android.material.appbar.AppBarLayout>
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/main_toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize" />
-        </com.google.android.material.appbar.AppBarLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <!--
+    <GridView
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/appbar"
+        android:layout_marginTop="36dp"
+        android:numColumns="3"
+        android:verticalSpacing="5dp"
+        android:horizontalSpacing="5dp"/>-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/appbar"
+        android:layout_marginTop="36dp"/>
 
+    <!--
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -46,45 +60,45 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/upload_button"
             android:layout_alignParentStart="true"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp" />-->
 
+
+    <!--</RelativeLayout>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <!--
         <Button
             android:id="@+id/upload_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="16dp"
-            android:text="firebase upload" />
+            android:layout_gravity="bottom|end"
+            android:layout_margin="10dp"
+            android:text="firebase upload"/>-->
 
         <Button
             android:id="@+id/createFolder_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="166dp"
-            android:layout_marginBottom="16dp"
-            android:text="save image" />
-
-    </RelativeLayout>
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/container_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" >
+            android:layout_gravity="bottom|end"
+            android:layout_margin="10dp"
+            android:text="save image"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/uploadFab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="32dp"
+            android:layout_margin="20dp"
+            android:layout_alignParentRight="true"
             android:clickable="true"
             android:src="@drawable/ic_add_black_24dp"
             app:backgroundTint="@color/colorPrimary"
             app:fabSize="normal"
             app:rippleColor="@color/colorPrimaryDark" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
