@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.graduate.a2020_graduateproject">
-
     <!-- 인터넷 사용 권한 -->
     <uses-permission android:name="android.permission.INTERNET" /> <!-- 정확한 상세 주소 가져오도록 통합 위치 정보 제공업체 사용 설정 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 읽기 권한 -->
