@@ -38,6 +38,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.graduate.a2020_graduateproject.BottomViewActivity;
 import com.graduate.a2020_graduateproject.MapConstants;
 import com.graduate.a2020_graduateproject.MapFetchAddressIntentService;
+import com.graduate.a2020_graduateproject.MapInfoIndex;
 import com.graduate.a2020_graduateproject.MapPlaceAutoSuggestAdapter;
 import com.graduate.a2020_graduateproject.MapPlaningActivity;
 import com.graduate.a2020_graduateproject.MarkerInfo;
@@ -68,7 +69,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     private String addressOutput="";
 
     private Polyline polyline;
-    private ArrayList<LatLng> planningList;
     private ArrayList<Marker> markerList;
     private Boolean flag=FALSE;
     //    private ArrayList<Boolean> isClickList;
@@ -91,6 +91,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     private Geocoder geocoder;
 
     private ImageView image_find;
+    private ImageView image_delete;
 
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -102,73 +103,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         /////AutoComplete
         text_auto = viewGroup.findViewById(R.id.text_auto);
 
-        planningList=new ArrayList<>();
         markerList=new ArrayList<>();
 
 
         AutoCompleteTextView autoCompleteTextView = viewGroup.findViewById(R.id.text_auto); //
         MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(getContext(),1);
         autoCompleteTextView.setAdapter(madapter);
-        //////
-/*
-        image_find = viewGroup.findViewById(R.id.image_find);
-        image_find.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String place=text_auto.getText().toString();
-                List<Address> addressList=null;
-
-                try {
-                    addressList=geocoder.getFromLocationName(
-                            place, 10 //장소, 최대 검색 결과 개수
-                    );
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                System.out.println(addressList.get(0).toString());
-                String []Places=addressList.get(0).toString().split(",");
-                String address = Places[0].substring(Places[0].indexOf("\"") + 1,Places[0].length() - 2);
-
-                //위도, 경도 구하기
-                Double xpos=Double.parseDouble(Places[10].substring(Places[10].indexOf("=")+1));
-                Double ypos=Double.parseDouble(Places[12].substring(Places[12].indexOf("=")+1));
-
-                LatLng findlatLng=new LatLng(xpos, ypos);
-                MarkerOptions markerOptions=new MarkerOptions();
-                markerOptions.title(place);
-                markerOptions.position(findlatLng);
-
-                Marker marker=gMap.addMarker(markerOptions);
-                marker.showInfoWindow();
-
-                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(findlatLng, 15));
-
-                JSONObject json=new JSONObject();
-                try {
-                    json.put("lat", Double.toString(findlatLng.latitude));
-                    json.put("lng", Double.toString(findlatLng.longitude));
-                    json.put("name", place);
-                    json.put("isClick", "FALSE");
-                    json.put("isAllDelete", "FALSE");
-
-
-                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
-
-                    //planningList.add(markerOptions.getPosition());
-                    //markerList.add(marker);
-
-
-
-                } catch (Exception e) {
-                    System.out.println("안보내짐....");
-                }
-
-                text_auto.setText("");
-
-            }
-        });
-*/
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
@@ -188,15 +128,10 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             e.printStackTrace();
         }
 
-        /// 파이어베이스에서 가져온 마커 정보들
-        currentPlanningList = new ArrayList<>();
-        currentMarkerList =new ArrayList<>();
-
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
-
-
             mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -204,17 +139,18 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     System.out.println("snapshot get key : "+Mapkey);
 
                 }
-                planningList.clear();
                 markerList.clear();
+                DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
 
-                if (dataSnapshot.child(Mapkey).child("map_info") != null) {
+                if (mapInfoSnapshot != null) {
                     System.out.println("firebase에서 받아옴 ");
-                    for (DataSnapshot snapshot : dataSnapshot.child(Mapkey).child("map_info").getChildren()) {
+                    for (DataSnapshot snapshot : mapInfoSnapshot.getChildren()) {
 
                         double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
                         double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
-                        String fireName = snapshot.child("name").toString();
+                        String fireName = snapshot.child("name").getValue().toString();
 
+                        System.out.println("firebase에서 불러온 Nmae : "+fireName);
 
                         MarkerOptions markerOptions = new MarkerOptions();
                         LatLng fireLatlng = new LatLng(fireLat, fireLng);
@@ -222,7 +158,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerOptions.title(fireName);
 
                         Marker fireMarker = gMap.addMarker(markerOptions);
-                        planningList.add(fireLatlng);
                         markerList.add(fireMarker);
                     }
                 }
@@ -234,77 +169,21 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
             }
         });
-/*        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Mapkey = snapshot.getKey();
-                    System.out.println("Mapkey : "+ Mapkey);
-
-                }
-
-                DatabaseReference mapRef = mapDataReference.child(Mapkey).child("map_info");
-                mapRef.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        currentPlanningList.clear();
-                        currentMarkerList.clear();
-//                        gMap.clear();
-
-                        System.out.println("------------ current_map_info!!! ----------------------------");
-
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                            String key = snapshot.getKey();
-                            System.out.println("mapRef : key : "+ key);
-
-                            double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
-                            double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
-                            String fireName = snapshot.child("name").toString();
 
 
-                            MarkerOptions markerOptions = new MarkerOptions();
-                            LatLng fireLatlng = new LatLng(fireLat, fireLng);
-                            markerOptions.position(fireLatlng);
-                            markerOptions.title(fireName);
-
-                            Marker fireMarker = gMap.addMarker(markerOptions);
-                            currentPlanningList.add(fireLatlng);
-                            currentMarkerList.add(fireMarker);
-
-                        }
-
-                        System.out.println("------------ current_map_info ----------------------------");
-
-                        // mqtt 에서 사용할 마커 정보들
-                        planningList = currentPlanningList; // 파이어베이스 정보 복사
-                        markerList = currentMarkerList;
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        System.out.println("마커정보를 가져오지 못함");
-                    }
-                });
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                    System.out.println("파이어베이스에서 해당 day 키값 못찾음");
-            }
-        });
-*/
         button_update = viewGroup.findViewById(R.id.button_update);
         button_polly = viewGroup.findViewById(R.id.button_polly);
-        //     button_save=findViewById(R.id.button_save);
+        image_delete=viewGroup.findViewById(R.id.image_delete);
+
+        image_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                text_auto.setText("");
+            }
+        });
 
 
         button_update.setOnClickListener(new Button.OnClickListener(){
-
             @Override
             public void onClick(View v) {
 
@@ -312,35 +191,30 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
+                ArrayList<Marker> routeList=dijkstra(markerList);
+
                 for(int i=0;i<markerList.size();i++){
 
                     System.out.println("i  : "+i);
                     System.out.println(" click key : "+Mapkey);
-                    MapInfo=new MarkerInfo(markerList.get(i).getPosition().latitude,
-                            markerList.get(i).getPosition().longitude,
-                            markerList.get(i).getTitle()).toMap();
 
-                    System.out.println("--- MapInfo Firebase로 ----"+markerList.get(i).getTitle());
+                    MapInfo=new MapInfoIndex(routeList.get(i).getPosition().latitude,
+                            routeList.get(i).getPosition().longitude,
+                            routeList.get(i).getTitle(), i+1).toMap();
+
+                    System.out.println("--- MapInfo Firebase로 ----"+routeList.get(i).getTitle());
                     clickRef.push().setValue(MapInfo);
-
                 }
-
-                // 마커정보 비우기
-             //   planningList.clear();
-             //   markerList.clear();
 
                 Toast.makeText(getContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
             }
         });
+
         button_polly.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //ArrayList<LatLng> dijkstraList = new ArrayList<>();
-                ArrayList<LatLng> dijkstraList=dijkstra(planningList);
-                /*
-                for(int i=0;i<markerList.size();i++){
-                    dijkstraList.add(markerList.get(i).getPosition());
-                }*/
+                ArrayList<Marker> dijkstraList=dijkstra(markerList);
 
                 System.out.println("onClick dijstraList.length : " + dijkstraList.size());
 
@@ -352,7 +226,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 if(!flag){
                     for (int i = 0; i < dijkstraList.size(); i++) {
-                        polylineOptionsDistance.add(dijkstraList.get(i));
+                        polylineOptionsDistance.add(dijkstraList.get(i).getPosition());
                     }
 //                polylineOptionsDistance.addAll(dijkstraList);
 
@@ -434,7 +308,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 try {
                     json.put("lat", Double.toString(0.0));
                     json.put("lng", Double.toString(0.0));
-                    json.put("name", addressOutput);
+                    json.put("name", "");
                     json.put("isClick", "TRUE");
                     json.put("isAllDelete", "TRUE");
 
@@ -444,7 +318,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     System.out.println("안보내짐....");
                 }
 
-                planningList.clear();
                 markerList.clear();
 
                 if(polyline!=null){
@@ -474,7 +347,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     System.out.println("안보내짐....");
                 }
 
-                planningList.remove(marker.getPosition());
                 markerList.remove(marker);
 
 
@@ -509,29 +381,30 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         }
     }
 
-    public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
-        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
-        ArrayList<LatLng> LatDistance=new ArrayList<>();
+    public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
+        double weight[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+
+        ArrayList<Marker> LatDistance=new ArrayList<>();
         for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
             for(int j=0;j<list.size();j++){
                 if(i==j){
-                    a[i][j]=0;
+                    weight[i][j]=0;
                 }
                 else{
-                    a[i][j]=calculate(list.get(i), list.get(j));
-                    System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
-                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
+                    weight[i][j]=calculate(list.get(i), list.get(j));
+                    System.out.println( list.get(i).getPosition().latitude+" "+list.get(i).getPosition().longitude);
+                    System.out.println(i+" + "+j+" calculate 값 : "+weight[i][j]);
                 }
             }
         }
 
         int start=0;
-        double[] distance=a[start].clone();
-        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+        double[] distance=weight[start].clone();
+        boolean[] visited=new boolean[weight.length]; //방문한 곳 기록
 
-        System.out.println("a.length : "+a.length);
+        System.out.println("weight.length : "+weight.length);
 
-        for(int i=0;i<a.length;i++){
+        for(int i=0;i<weight.length;i++){
             int minIndex=-1;
             double min=10000000;
 
@@ -548,8 +421,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
-                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
-                    distance[k]=distance[minIndex]+a[minIndex][k];
+                if(!visited[k] && distance[k]>distance[minIndex]+weight[minIndex][k]){
+                    distance[k]=distance[minIndex]+weight[minIndex][k];
                 }
             }
         }
@@ -557,19 +430,19 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
     }
 
-    public double calculate(LatLng origin, LatLng destination){
+    public double calculate(Marker origin, Marker destination){
         //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
         double calDistance;
         double radius=6371; //지구 반지름
         double toRadian=Math.PI/180.0;
 
-        double deltaLat=Math.abs(origin.latitude-destination.latitude)*toRadian;
-        double deltaLog=Math.abs(origin.longitude-destination.longitude)*toRadian;
+        double deltaLat=Math.abs(origin.getPosition().latitude-destination.getPosition().latitude)*toRadian;
+        double deltaLog=Math.abs(origin.getPosition().longitude-destination.getPosition().longitude)*toRadian;
 
         double sinDeltaLat=Math.sin(deltaLat/2);
         double sinDeltaLog=Math.sin(deltaLog/2);
 
-        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.latitude*toRadian)*Math.cos(destination.latitude*toRadian)*Math.pow(sinDeltaLog,2));
+        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.getPosition().latitude*toRadian)*Math.cos(destination.getPosition().latitude*toRadian)*Math.pow(sinDeltaLog,2));
 
         calDistance=2*radius*Math.asin(root);
 
@@ -628,7 +501,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                             LatLng resLat=new LatLng(lat, lng);
                             if(isAllDelete){
                                 gMap.clear();
-                                planningList.clear();
                                 markerList.clear();
                             }
                             else {
@@ -639,9 +511,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                                     resMarker.showInfoWindow();
 
-                                    planningList.add(resLat);
                                     markerList.add(resMarker);
-                                    System.out.println("add - planningList size size : " + planningList.size());
                                     System.out.println("add - MarkerList size click : " + markerList.size());
 
                                     Toast.makeText(getContext(), "마커가 추가되었습니다!", Toast.LENGTH_LONG).show();
@@ -663,8 +533,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                                             removeMarker.remove();
 
                                             markerList.remove(removeMarker);
-
-                                            planningList.remove(removeMarker.getPosition());
 
                                             System.out.println("sub-resMarker Latlng : "+resLat);
                                             System.out.println("sub-removeMarker Latlng : "+removeMarker.getPosition());
