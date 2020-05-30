@@ -452,6 +452,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         }
 
         int start=0;
+
+        // -------------------- 서녕아 여기 좀 고쳣어 ------------
         double[] distance = null;
         boolean[] visited = null;
 
@@ -465,6 +467,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         else{
             System.out.println("weight.length : "+weight.length);
         }
+
+        // -------------------------------------- ------------
 
 
         for(int i=0;i<weight.length;i++){
