@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:title="HOME"
-        android:id="@+id/nome"
+        android:id="@+id/home"
         android:icon="@drawable/baseline_home_black_18dp"/>
 
     <group android:checkableBehavior="single">
@@ -19,11 +19,9 @@
         <item android:title="여행 캘린더"
             android:id="@+id/calendar"
             android:icon="@drawable/baseline_calendar_today_black_18dp"/>
-        <item android:title="일정"
-            android:id="@+id/plan"
-            android:icon="@drawable/baseline_event_black_18dp"/>
+
         <item android:title="지도"
-            android:id="@+id/map"
+            android:id="@+id/planningMap"
             android:icon="@drawable/baseline_place_black_18dp"/>
         <item android:title="메모"
             android:id="@+id/memo"

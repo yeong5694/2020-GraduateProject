@@ -1,15 +1,14 @@
 package com.graduate.a2020_graduateproject;
 
-import android.content.Intent;
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MotionEventCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -21,25 +20,77 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class PlanAdapter extends BaseAdapter {
+public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
+        implements PlanItemTouchHelperCallback.onItemMoveListener {
+    // implements PlanItemTouchHelperCallback.ItemTouchHelperAdapter
 
-    private ArrayList<PlanListViewItem> planListViewItems = new ArrayList<PlanListViewItem>();
+    public interface OnStartDragListener{
+        void  onStartDrag(PlanViewHolder holder);
+    }
+
+    private ArrayList<PlanItem> planItems = new ArrayList<PlanItem>();
     private String selected_room_id;
+
+    private Context mContext;
+    private OnStartDragListener mStartDragListener;
+
+
+
+
 
     public PlanAdapter(String selected_room_id){
         this.selected_room_id = selected_room_id;
-
-    }
-    @Override
-    public int getCount() {
-        return planListViewItems.size();
     }
 
-    @Override
-    public Object getItem(int i) {
-        return planListViewItems.get(i);
+    public PlanAdapter(String selected_room_id, Context context, OnStartDragListener startDragListener){
+        this.selected_room_id = selected_room_id;
+        mContext = context;
+        mStartDragListener = startDragListener;
     }
+
+
+
+
+    @NonNull
+    @Override
+    public PlanViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(
+                parent.getContext()
+        ).inflate(R.layout.plan_list, parent, false);
+        return new PlanViewHolder(v, parent.getContext(), selected_room_id);
+    }
+
+
+    @Override
+    public void onBindViewHolder(@NonNull PlanViewHolder holder, int position) {
+
+        PlanItem item = planItems.get(position);
+
+        holder.day_text.setText("Day" + item.getDay());
+
+        //// 일단 안씀
+        holder.drag_view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(MotionEventCompat.getActionMasked(motionEvent) == MotionEvent.ACTION_DOWN){
+                    mStartDragListener.onStartDrag(holder);
+                }
+                return false;
+            }
+        });
+        holder.drag_view.setVisibility(View.GONE);
+
+
+
+
+
+    }
+
+
 
     @Override
     public long getItemId(int i) {
@@ -47,99 +98,56 @@ public class PlanAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        mViewHolder viewHolder;
-        if(convertView == null){
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.plan_list,parent,false);
-            viewHolder = new mViewHolder();
-
-            viewHolder.day_text = convertView.findViewById(R.id.day_text);
-            viewHolder.edit_index = convertView.findViewById(R.id.edit_index);
-
-
-            convertView.setTag(viewHolder);
-        }else{
-            viewHolder = (mViewHolder)convertView.getTag();
-        }
-        viewHolder.day_text.setText("Day"+planListViewItems.get(position).getName());
-        viewHolder.edit_index.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Log.e("button", viewHolder.day_text.getText().toString());
-            }
-        });
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e("itemClick", viewHolder.day_text.getText().toString());
-
-
-
-                Intent intent = new Intent(parent.getContext(), MapActivity.class);
-                intent.putExtra("selected_room_id", selected_room_id);
-                intent.putExtra("day", viewHolder.day_text.getText().toString());
-
-                parent.getContext().startActivity(intent);
-            }
-        });
-        convertView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                        .child(selected_room_id);
-                Query rmQuery = removeRef.child("schedule_list").orderByChild("day").equalTo(planListViewItems.get(position).getName());
-                rmQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                            snapshot.getRef().removeValue();
-                        }
-                        // 나머지 업데이트
-                        sort_and_update(planListViewItems.get(position).getName());
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-
-                return false;
-            }
-        });
-
-
-        return convertView;
-
+    public int getItemCount() {
+        return planItems.size();
     }
 
-    public void sort_and_update(String rm_day){
+    public void change(){
 
-       // ArrayList<Schedule> schedules = new ArrayList<>(); // 일정들
+        ArrayList<PlanItem> tempItems = new ArrayList<PlanItem>();
+
+        int d = 1;
+        for(PlanItem item : planItems){
+
+            Log.e("item key ",item.getKey());
+            Log.e("item day ", item.getDay());
+            item.setDay(Integer.toString(d));
+            tempItems.add(item);
+            Log.e("temp item key ",item.getKey());
+            Log.e("temp item day ", item.getDay());
+            d++;
+
+
+
+
+        }
 
         DatabaseReference orderRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
         orderRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               // schedules.clear();
-                int i=1;
+
+
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
 
                     Log.e("key",snapshot.getKey() );
+//                    Log.e("day",snapshot.child("day").getValue().toString() +
+//                            " --> " + tempItems.get(position).getDay());
 
-                    String beforeDay = snapshot.child("day").getValue().toString();
-                    snapshot.child("day").getRef().setValue(Integer.toString(i));
 
+                    Log.e(" before day", snapshot.child("day").getValue().toString());
+                    //snapshot.child("day").getRef().setValue(tempItems.get(position).getDay());
 
-                    i++;
+                    for(PlanItem item : tempItems){
+                        if(item.getKey().equals(snapshot.getKey())){
+                            snapshot.child("day").getRef().setValue(item.getDay());
+                            Log.e("after day", item.getDay());
+                            break;
 
-                    Log.e("before",beforeDay+" --> "+snapshot.child("day").getValue().toString() );
-
-                    //schedules.add(schedule);
+                        }
+                    }
                 }
             }
 
@@ -152,24 +160,106 @@ public class PlanAdapter extends BaseAdapter {
 
     }
 
-    public void add(PlanListViewItem item){
 
-        planListViewItems.add(item);
+
+    public void sort_and_update(){
+
+
+
+        DatabaseReference orderRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                .child("schedule_list");
+        orderRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                int i=1;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+
+                    Log.e("key",snapshot.getKey() );
+
+                    //String beforeDay = snapshot.child("day").getValue().toString();
+                    snapshot.child("day").getRef().setValue(Integer.toString(i));
+
+
+                    i++;
+
+                    //Log.e("before",beforeDay+" --> "+snapshot.child("day").getValue().toString() );
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
+    public void add(PlanItem item){
+
+        planItems.add(item);
+        //notifyDataSetChanged();
 
     }
 
     public void clear(){
-        planListViewItems.clear();
-    }
-
-    private class mViewHolder{
-        TextView day_text;
-        ImageButton edit_index;
-
-
-
+        planItems.clear();
 
     }
+
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(planItems, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(planItems, i, i - 1);
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition);
+
+
+      return true;
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+
+        //planItems.remove(position);
+
+        // 파이어베이스에서 삭제
+        DatabaseReference removeRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id);
+        Query rmQuery = removeRef.child("schedule_list").orderByChild("day").equalTo(planItems.get(position).getDay());
+        rmQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                    snapshot.getRef().removeValue(); // 파이어베이스에서 삭제
+                }
+
+                // 나머지 업데이트
+                sort_and_update();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //planItems.remove(position);
+        //notifyItemRemoved(position);
+    }
+
+
 
 
 }

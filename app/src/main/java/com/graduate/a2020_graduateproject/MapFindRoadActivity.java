@@ -1,7 +1,6 @@
 package com.graduate.a2020_graduateproject;
 
 import android.graphics.Color;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +16,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.skt.Tmap.TMapTapi;
+
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -46,9 +47,16 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                 .findFragmentById(R.id.map_findroad);
         mapFragment.getMapAsync(this);
 
+
+        ///tmap app 지도 사용하지 않고, 연동만
+        TMapTapi tmaptapi = new TMapTapi(this);
+        tmaptapi.setSKTMapAuthentication ("l7xx12628330ec6a4ad4ba9b01e1a8e0ea5a");
+
+
+
         listPoints=new ArrayList<>();
 
-        findRoad_Btn=findViewById(R.id.findroad_button);
+        findRoad_Btn=findViewById(R.id.button_update);
         findRoad_Btn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -216,7 +224,7 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
     }
 
 
-    private String getUrl(LatLng origin, LatLng dest, String mode){
+    public String getUrl(LatLng origin, LatLng dest, String mode){
 
         //출발지
         String originUrl="origin="+origin.latitude+","+origin.longitude;
@@ -367,15 +375,12 @@ public class MapFindRoadActivity extends AppCompatActivity implements OnMapReady
                         System.out.println("distance, duration point.get : "+ distance +" " +duration);
                     }
                     else{
-
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-
                     points.add(position);
                 }
                 }
-
                 polylineOptions.addAll(points);
                 polylineOptions.width(12);
                 polylineOptions.color(Color.YELLOW);

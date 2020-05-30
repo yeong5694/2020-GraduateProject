@@ -3,36 +3,34 @@ package com.graduate.a2020_graduateproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-public class PlaningActivity extends AppCompatActivity {
+public class PlaningActivity extends AppCompatActivity
+implements  PlanAdapter.OnStartDragListener{
 
     // 로그인 정보
     private Long kakao_id;
@@ -43,16 +41,25 @@ public class PlaningActivity extends AppCompatActivity {
     private String selected_room_name; // 여행방 이름
     private String selected_room_id; // 여행방 id
 
+    private static String TAG = "PlaningActivity";
+
     private Toolbar toolbar;
 
     private TextView schedule_txt;
     private TextView schedule_end_txt;
-    private Button add_btn;
+    private ImageView planEdit;
+    private ImageView planEditFin;
+    private ImageView add;
+    private TextView description;
 
     private DatabaseReference scheduleRef;
 
-    private ListView planListView;
+    private RecyclerView planRecyclerView;
+    private RecyclerView.Adapter planRecycleAdapter;
+    private RecyclerView.LayoutManager planLayoutManager;
+
     private PlanAdapter planAdapter;
+    private ItemTouchHelper mItemTouchHelper;
     private ArrayList<String> arrayIndex = new ArrayList<String>();
 
     Calendar fromCal = Calendar.getInstance();
@@ -60,6 +67,7 @@ public class PlaningActivity extends AppCompatActivity {
 
     private DatabaseReference fromRef;
     private DatabaseReference toRef;
+
 
     DatePickerDialog.OnDateSetListener fromDatePicker = new DatePickerDialog.OnDateSetListener() {
         @Override
@@ -174,9 +182,32 @@ public class PlaningActivity extends AppCompatActivity {
             }
         });
 
-        planAdapter = new PlanAdapter(selected_room_id);
-        planListView = findViewById(R.id.scheduleListView);
-        planListView.setAdapter(planAdapter);
+
+        planRecyclerView = findViewById(R.id.planRecyclerView);
+        //planAdapter = new PlanAdapter(selected_room_id);
+
+        planAdapter = new PlanAdapter(selected_room_id,this,this);
+
+
+        planLayoutManager = new LinearLayoutManager(this);
+        planRecyclerView.setLayoutManager(planLayoutManager);
+        planRecyclerView.setAdapter(planAdapter);
+
+//        ItemTouchHelper.Callback callback =  new PlanItemTouchHelperCallback(planAdapter);
+//        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+//        touchHelper.attachToRecyclerView(planRecyclerView);
+
+        PlanItemTouchHelperCallback mCallback = new PlanItemTouchHelperCallback(planAdapter);
+        mCallback.setMintem(false); // 드래그 안되게
+        mCallback.setMintem2(true); // 스와핑 되게
+
+
+        mItemTouchHelper = new ItemTouchHelper((mCallback));
+        mItemTouchHelper.attachToRecyclerView(planRecyclerView);
+
+
+
+
 
         scheduleRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
@@ -195,50 +226,88 @@ public class PlaningActivity extends AppCompatActivity {
 
 
 
-        add_btn = findViewById(R.id.add_btn);
-        add_btn.setOnClickListener(new View.OnClickListener() {
+
+        add = findViewById(R.id.planAdd);
+        add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                         .child("schedule_list");
 
-                int d = planAdapter.getCount() +1;
+                int d = planAdapter.getItemCount() +1;
 
                 ref.push().setValue(new Schedule(Integer.toString(d)));
+            }
+        });
+        description = findViewById(R.id.descriptionText);
+        description.setText("밀어서 삭제");
 
 
+        planEdit = findViewById(R.id.planEdit);
+        planEditFin = findViewById(R.id.planEditFin);
+        planEditFin.setVisibility(View.INVISIBLE);
+
+        planEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                planEdit.setVisibility(View.INVISIBLE);
+                planEditFin.setVisibility(View.VISIBLE);
+                description.setText("드래그해서 순서변경");
+                add.setVisibility(View.INVISIBLE);
+
+                mCallback.setMintem(true); // 드래그 되게
+                mCallback.setMintem2(false); // 스와핑 안되게
+            }
+        });
+        planEditFin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.e(TAG,"plan edit fin");
+                mCallback.setMintem(false); // 드래그 안되게
+                mCallback.setMintem2(true); // 스와핑 되게
+                planEdit.setVisibility(View.VISIBLE);
+                planEditFin.setVisibility(View.INVISIBLE);
+                add.setVisibility(View.VISIBLE);
+                description.setText("밀어서 삭제");
+
+                planAdapter.change();
+
+                Toast.makeText(getApplicationContext(), "변경되었습니다", Toast.LENGTH_LONG).show();
             }
         });
 
 
-
-
     }
+
+
 
     public void sort_list(){
       scheduleRef.orderByChild("day").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                Log.e(TAG,"day 기준으로 내림차순 정렬 -- ");
+
                 planAdapter.clear();
-                arrayIndex.clear();
+                //arrayIndex.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 
                     String key = snapshot.getKey();
 
                     String day =  snapshot.child("day").getValue().toString();
-                    Log.e("day",day);
-
-                    PlanListViewItem planItem = new PlanListViewItem(day);
 
 
-                    arrayIndex.add(key);
+                    PlanItem planItem = new PlanItem(day,key);
+
+
+                    //arrayIndex.add(key);
                     planAdapter.add(planItem);
                 }
 
 
                 planAdapter.notifyDataSetChanged();
-                planListView.setSelection(planAdapter.getCount()-1);
+                //planRecyclerView.setSelection(planAdapter.getCount()-1);
             }
 
             @Override
@@ -249,5 +318,8 @@ public class PlaningActivity extends AppCompatActivity {
     }
 
 
-
+    @Override
+    public void onStartDrag(PlanViewHolder holder) {
+        mItemTouchHelper.startDrag(holder);
+    }
 }

@@ -8,22 +8,138 @@
     tools:context=".MainActivity"
     android:id="@+id/drawer_layout">
 
+
+
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/main_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBackground"
+                android:orientation="vertical">
+
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingBottom="10dp">
+
+
+                    <EditText
+
+                        android:id="@+id/newRoomName_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="방이름 입력"
+                        android:inputType="text" />
+
+                    <Button
+                        android:id="@+id/newRoom_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="방 만들기" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingRight="10dp"
+                    android:paddingBottom="10dp">
+
+
+                    <EditText
+
+                        android:id="@+id/invited_text"
+
+                        android:layout_width="match_parent"
+
+                        android:layout_height="wrap_content"
+
+                        android:layout_weight="1"
+
+                        android:hint="공유받은 여행코드 입력"
+
+                        android:inputType="text" />
+
+
+                    <Button
+
+                        android:id="@+id/invited_btn"
+
+                        android:layout_width="wrap_content"
+
+                        android:layout_height="wrap_content"
+
+                        android:text="추가" />
+
+
+                </LinearLayout>
+
+
+                <View
+                    android:id="@+id/divider3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/white"
+                    android:gravity="center"
+                    android:text="여행방 목록"
+                    android:textColor="@android:color/black"
+                    android:textColorLink="@color/colorPrimary"
+                    android:textSize="24sp" />
+
+                <ListView
+
+                    android:id="@+id/room_list"
+
+                    android:layout_width="match_parent"
+
+                    android:layout_height="match_parent"
+
+                    android:layout_margin="10dp"
+                    android:layout_marginTop="10dp"
+                    android:choiceMode="singleChoice">
+
+                </ListView>
+            </LinearLayout>
 
 
         </com.google.android.material.appbar.AppBarLayout>
+
+
+
+
+      
+
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
