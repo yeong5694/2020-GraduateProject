@@ -33,5 +33,9 @@ public class MapInfoItem {
         return name;
     }
 
+    public void setIndex(String index){
+        this.index = index;
+    }
+
 
 }

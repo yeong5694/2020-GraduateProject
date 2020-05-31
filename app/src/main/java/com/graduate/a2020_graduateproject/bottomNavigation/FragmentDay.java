@@ -32,6 +32,8 @@ import com.graduate.a2020_graduateproject.PlanItem;
 import com.graduate.a2020_graduateproject.PlanItemTouchHelperCallback;
 import com.graduate.a2020_graduateproject.R;
 
+import java.util.ArrayList;
+
 public class FragmentDay extends Fragment {
 
 
@@ -130,21 +132,7 @@ public class FragmentDay extends Fragment {
 
                         mapAdapter.clear();
 
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            String mapInfoKey = snapshot.getKey();
-                            System.out.println("mapInfokey : " + mapInfoKey);
-
-                            //String index =  snapshot.child("index").getValue().toString();
-                            String latitude = snapshot.child("latitude").getValue().toString();
-                            String longitude = snapshot.child("longitude").getValue().toString();
-                            String name = snapshot.child("name").getValue().toString();
-
-                            MapInfoItem newItem = new MapInfoItem(mapInfoKey, null, latitude, longitude, name);
-                            System.out.println(newItem);
-
-                            mapAdapter.add(newItem);
-
-                        }
+                        sort_list();
 
                         if(mapAdapter.getItemCount() == 0){
                             descriptionText.setVisibility(View.VISIBLE);
@@ -180,30 +168,40 @@ public class FragmentDay extends Fragment {
 
     public void change(){
         Log.e("FragmentDay", "수정 완료 버튼 클릭, 순서변경");
-        Toast.makeText(getContext(), "변경되었습니다", Toast.LENGTH_LONG).show();
+        if(mapAdapter.getItemCount() != 0){
+            mapAdapter.change(mapDataReference,Mapkey);
+            Toast.makeText(getContext(), "변경되었습니다", Toast.LENGTH_LONG).show();
+        }
+        else{
+            Toast.makeText(getContext(), "일정이 없습니다", Toast.LENGTH_LONG).show();
+        }
+
+
+
     }
 
     public void sort_list(){
 
-        mapDataReference.child(Mapkey).orderByChild("map_info").addListenerForSingleValueEvent(new ValueEventListener() {
+        mapDataReference.child(Mapkey).child("map_info").orderByChild("index").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 mapAdapter.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                    String key = snapshot.getKey();
+                    String mapInfoKey = snapshot.getKey();
+                    System.out.println("mapInfokey : " + mapInfoKey);
 
                     String index =  snapshot.child("index").getValue().toString();
                     String latitude = snapshot.child("latitude").getValue().toString();
                     String longitude = snapshot.child("longitude").getValue().toString();
                     String name = snapshot.child("name").getValue().toString();
 
-                    MapInfoItem newItem = new MapInfoItem(key, index, latitude, longitude, name);
-                    System.out.println(newItem);
+                    MapInfoItem newItem = new MapInfoItem(mapInfoKey, index, latitude, longitude, name);
+                    //System.out.println(newItem);
 
                     mapAdapter.add(newItem);
+
                 }
 
 
