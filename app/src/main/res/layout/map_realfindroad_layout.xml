@@ -45,18 +45,18 @@
 
             <Spinner
                 android:id="@+id/spinner"
-                android:layout_width="200dp"
+                android:layout_width="250dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
             <AutoCompleteTextView
-                android:id="@+id/text_auto"
+                android:id="@+id/text_start"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginRight="50dp"
+                android:layout_marginRight="35dp"
                 android:layout_weight="1"
                 android:drawableRight="@android:drawable/presence_offline"
-                android:hint="Enter the place"
+                android:hint="출발지"
                 android:paddingLeft="20dp"
                 android:textSize="18dp" />
 
@@ -69,23 +69,23 @@
             android:orientation="horizontal">
 
             <AutoCompleteTextView
-                android:id="@+id/text_secauto"
+                android:id="@+id/text_dest"
                 android:layout_width="300dp"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="100dp"
-                android:layout_marginRight="5dp"
+                android:layout_marginLeft="125dp"
+
                 android:layout_weight="1"
                 android:drawableRight="@android:drawable/presence_offline"
-                android:hint="Enter the place"
+                android:hint="도착지"
                 android:paddingLeft="20dp"
                 android:textSize="18dp" />
 
             <ImageView
                 android:id="@+id/image_findroad"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="10dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="8dp"
                 map:srcCompat="@android:drawable/ic_search_category_default" />
 
 
