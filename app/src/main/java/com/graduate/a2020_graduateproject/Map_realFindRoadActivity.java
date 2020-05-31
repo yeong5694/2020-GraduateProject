@@ -5,11 +5,13 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -22,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -63,8 +66,13 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private Spinner spinner;
     private ArrayAdapter<String> adapter;
 
+    private ArrayList<LatLng> clickList;
+    ArrayList<TMapPoint> tMapPoints;
+
     private DatabaseReference mapDataReference=null;
     private String Mapkey="";
+
+    private Button button_find;
 
     private String selected_room_id;
     @Override
@@ -81,13 +89,20 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         text_start=findViewById(R.id.text_start);
         text_dest=findViewById(R.id.text_dest);
         spinner=findViewById(R.id.spinner);
+        button_find=findViewById(R.id.button_find);
+        button_find.setVisibility(View.GONE);
+
+        clickList=new ArrayList<>();
+        tMapPoints=new ArrayList<>();
 
         Intent intent = getIntent();
         selected_room_id=intent.getExtras().getString("selected_room_id");
       //  day=intent.getExtras().getString("day");
         item=new ArrayList();
-        item.add("신규");
+        item.add("선택");
         item.add("마커");
+
+
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
@@ -223,11 +238,98 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
+
+        button_find.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if(button_find.getText().equals("길찾기")) {
+                    if (clickList.size() < 1) {
+                        Toast.makeText(getApplicationContext(), "마커를 클릭해주세요", Toast.LENGTH_LONG).show();
+                    }
+                    else if (clickList.size() == 1) {
+                        Toast.makeText(getApplicationContext(), "도착할 곳을 클릭해주세요", Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        ArrayList<LatLng> dijkstraList = dijkstra(clickList);
+
+
+                        for (int i = 0; i < dijkstraList.size(); i++) {
+                            tMapPoints.add(new TMapPoint(dijkstraList.get(i).latitude, dijkstraList.get(i).longitude));
+                            System.out.println("tMapPoints " + i + "번째 값 : " + tMapPoints);
+                        }
+
+                        for (int i = 0; i < dijkstraList.size() - 1; i++) {
+                            String shortpolyUrl = getUrl(tMapPoints.get(i), tMapPoints.get(i + 1));
+                            System.out.println("dijkstraList.get(i), dijkstraList.get(i+1) : " + shortpolyUrl);
+                            DownloadTask downloadTask = new DownloadTask();
+                            downloadTask.execute(shortpolyUrl);
+
+                        }
+                        button_find.setText("지우기");
+                    }
+                 }
+                else{
+                    gMap.clear();
+                    clickList.clear();
+                    tMapPoints.clear();
+                    button_find.setText("길찾기");
+                }
+
+            }
+        });
+
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(spinner.getItemAtPosition(position).equals("선택")){
+                    autoCompleteDestTextView.setVisibility(View.VISIBLE);
+                    autoCompleteStartTextView.setVisibility(View.VISIBLE);
+                    image_find.setVisibility(View.VISIBLE);
+
+                }
+
+                if(spinner.getItemAtPosition(position).equals("마커")){
+                    autoCompleteDestTextView.setVisibility(View.GONE);
+                    autoCompleteStartTextView.setVisibility(View.GONE);
+                    image_find.setVisibility(View.GONE);
+                    button_find.setVisibility(View.VISIBLE);
+
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap=googleMap;
+
+        gMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+
+                if(spinner.getSelectedItem().equals("마커")) {
+
+                            clickList.add(latLng);
+                            MarkerOptions markerOptions = new MarkerOptions();
+                            markerOptions.position(latLng);
+                            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                            Marker marker = gMap.addMarker(markerOptions);
+                            marker.showInfoWindow();
+                        }
+                  }
+            });
+
     }
 
     private String getUrl(TMapPoint origin, TMapPoint dest){
@@ -393,4 +495,72 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         }
     }
 
+    public ArrayList<LatLng> dijkstra(ArrayList<LatLng> list){
+        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+        ArrayList<LatLng> LatDistance=new ArrayList<>();
+        for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
+            for(int j=0;j<list.size();j++){
+                if(i==j){
+                    a[i][j]=0;
+                }
+                else{
+                    a[i][j]=calculate(list.get(i), list.get(j));
+                    System.out.println( list.get(i).latitude+" "+list.get(i).longitude);
+                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
+                }
+            }
+        }
+
+        int start=0;
+        double[] distance=a[start].clone();
+        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+
+        System.out.println("a.length : "+a.length);
+
+        for(int i=0;i<a.length;i++){
+            int minIndex=-1;
+            double min=10000000;
+
+            for(int j=0;j<distance.length;j++){
+                if(!visited[j] && min>distance[j]){
+                    minIndex=j;
+                    min=distance[j];
+                }
+            }
+
+            visited[minIndex]=true;
+            LatDistance.add(list.get(minIndex));
+
+            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
+
+            for(int k=0;k<distance.length;k++){
+                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
+                    distance[k]=distance[minIndex]+a[minIndex][k];
+                }
+            }
+        }
+        return LatDistance;
+
+    }
+
+    public double calculate(LatLng origin, LatLng destination){
+        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
+        double calDistance;
+        double radius=6371; //지구 반지름
+        double toRadian=Math.PI/180.0;
+
+        double deltaLat=Math.abs(origin.latitude-destination.latitude)*toRadian;
+        double deltaLog=Math.abs(origin.longitude-destination.longitude)*toRadian;
+
+        double sinDeltaLat=Math.sin(deltaLat/2);
+        double sinDeltaLog=Math.sin(deltaLog/2);
+
+        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.latitude*toRadian)*Math.cos(destination.latitude*toRadian)*Math.pow(sinDeltaLog,2));
+
+        calDistance=2*radius*Math.asin(root);
+
+        System.out.println("calDistance : "+calDistance);
+
+        return calDistance;
+    }
 }

@@ -107,4 +107,12 @@
 
         />
 
+    <Button
+        android:id="@+id/button_find"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="길찾기" />
+
 </RelativeLayout>
