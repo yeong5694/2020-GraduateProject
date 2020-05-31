@@ -2,7 +2,6 @@ package com.graduate.a2020_graduateproject.bottomNavigation;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -42,8 +40,6 @@ import com.graduate.a2020_graduateproject.MapConstants;
 import com.graduate.a2020_graduateproject.MapFetchAddressIntentService;
 import com.graduate.a2020_graduateproject.MapInfoIndex;
 import com.graduate.a2020_graduateproject.MapPlaceAutoSuggestAdapter;
-import com.graduate.a2020_graduateproject.MapPlaningActivity;
-import com.graduate.a2020_graduateproject.MarkerInfo;
 import com.graduate.a2020_graduateproject.R;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -53,9 +49,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.Boolean.FALSE;
@@ -103,12 +97,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         ViewGroup viewGroup = (ViewGroup) inflater.inflate(R.layout.map_planning_layout, container, false);
 
         /////AutoComplete
-        text_auto = viewGroup.findViewById(R.id.text_auto);
+        text_auto = viewGroup.findViewById(R.id.text_start);
 
         markerList=new ArrayList<>();
 
 
-        AutoCompleteTextView autoCompleteTextView = viewGroup.findViewById(R.id.text_auto); //
+        AutoCompleteTextView autoCompleteTextView = viewGroup.findViewById(R.id.text_start); //
         MapPlaceAutoSuggestAdapter madapter=new MapPlaceAutoSuggestAdapter(getContext(),1);
         autoCompleteTextView.setAdapter(madapter);
 
@@ -240,12 +234,20 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
-                ArrayList<Marker> routeList=dijkstra(markerList);
+
 
                 System.out.println("-- 수정 버튼 클릭 ---------------------------------------------------");
 
-                for(int i=0;i<markerList.size();i++){
 
+                ArrayList<Marker> routeList=new ArrayList<>();
+                if(markerList.size()<2){
+                    routeList=markerList;
+                }
+                else {
+                    routeList=dijkstra(markerList);
+                }
+              
+                for(int i=0;i<markerList.size();i++){
                     System.out.println("i  : "+i);
                     //System.out.println(" click key : "+Mapkey);
 
@@ -317,33 +319,44 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 startIntentService(latLng);
 
-                MarkerOptions markerOptions=new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title(addressOutput);
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-                Marker marker=gMap.addMarker(markerOptions);
-                marker.showInfoWindow();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        System.out.println("click한 Latlng : "+ latLng.latitude+" "+latLng.longitude);
+                        System.out.println("click한 주소 : "+addressOutput);
+                        MarkerOptions markerOptions=new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title(addressOutput);
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-                JSONObject json=new JSONObject();
-                try {
-                    json.put("lat", Double.toString(latLng.latitude));
-                    json.put("lng", Double.toString(latLng.longitude));
-                    json.put("name", addressOutput);
-                    json.put("isClick", "FALSE");
-                    json.put("isAllDelete", "FALSE");
+                        Marker marker=gMap.addMarker(markerOptions);
+                        marker.showInfoWindow();
+
+                        JSONObject json=new JSONObject();
+                        try {
+                            json.put("lat", Double.toString(latLng.latitude));
+                            json.put("lng", Double.toString(latLng.longitude));
+                            json.put("name", addressOutput);
+                            json.put("isClick", "FALSE");
+                            json.put("isAllDelete", "FALSE");
 
 
-                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+                            System.out.println("mqtt 보내기 전 name : "+addressOutput);
+                            mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
 
-                    //planningList.add(markerOptions.getPosition());
-                    //markerList.add(marker);
+                            //planningList.add(markerOptions.getPosition());
+                            //markerList.add(marker);
 
 
 
-                } catch (Exception e) {
-                    System.out.println("안보내짐....");
-                }
+                        } catch (Exception e) {
+                            System.out.println("안보내짐....");
+                        }
+
+                    }
+                }, 350);
+
 
 
 //                System.out.println("planningList add size : "+planningList.size());
@@ -561,9 +574,14 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                             lat=Double.parseDouble(json.getString("lat"));
                             lng=Double.parseDouble(json.getString("lng"));
                             name=json.getString("name");
+
                             System.out.println("mqtt name : "+name);
+
                             isClick=Boolean.parseBoolean(json.getString("isClick"));
                             isAllDelete=Boolean.parseBoolean(json.getString("isAllDelete"));
+
+                            System.out.println("mqtt isClick : "+isClick);
+                            System.out.println("mqtt isAllDelete : "+isAllDelete);
 
                             LatLng resLat=new LatLng(lat, lng);
                             if(isAllDelete){
@@ -586,7 +604,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                                 }
 
                                 else {
-
                                     System.out.println("markerList size reMarker : "+markerList.size());
                                     for(int i=0;i<markerList.size();i++){
                                         if(resLat.equals(markerList.get(i).getPosition())) {
@@ -624,4 +641,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             }
         });
     }
+
+
+
 }

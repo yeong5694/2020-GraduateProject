@@ -22,7 +22,7 @@
 
 
     <AutoCompleteTextView
-        android:id="@+id/text_auto"
+        android:id="@+id/text_start"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginLeft="40dp"
