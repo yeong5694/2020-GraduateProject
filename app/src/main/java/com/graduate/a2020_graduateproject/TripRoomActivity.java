@@ -394,6 +394,8 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
         else if(id == R.id.planningMap) {
             Intent intent = new Intent(TripRoomActivity.this, Map_realFindRoadActivity.class);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
         }
         else if(id == R.id.memo) {
