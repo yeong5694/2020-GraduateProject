@@ -165,8 +165,8 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
 
         //imageView = findViewById(R.id.selected_imageView);
         //progressBar = findViewById(R.id.progress_bar);
-        firebaseUploadButton = findViewById(R.id.upload_button);
-        saveImageButton = findViewById(R.id.createFolder_button);
+        //firebaseUploadButton = findViewById(R.id.upload_button);
+        saveImageButton = findViewById(R.id.saveImage_button);
 
 
         //////// 외부저장소 공용 영역에 사진 업로드 버튼
@@ -321,6 +321,8 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
 
             ////// ★ 여기서 화면의 RecyclerView의 이미지에 image_uri를 연결을 해줘야 화면에 뜰 것 같은데ㅠㅅㅠ ★ ///////
 
+            //galleryAdapter.setOnItemClickListener(this);
+
             /*
             Glide.with(this)
                     .load(image_uri)
@@ -367,6 +369,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                 Bitmap imageToBitmap = BitmapFactory.decodeStream(in);  // Save to bitmap
 
                 //imageList.add(imageToBitmap);
+
 
                 //galleryAdapter = new GalleryAdapter(this, imageList);
                 //recyclerView.setAdapter(galleryAdapter);
