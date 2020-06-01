@@ -42,7 +42,7 @@ public class MapInfoAdapter extends RecyclerView.Adapter<MapInfoViewHolder>
     public void onBindViewHolder(@NonNull MapInfoViewHolder holder, int position) {
 
         MapInfoItem item = mapInfoItems.get(position);
-        holder.setPlace_text(item.getName() + "idx:"+item.getIndex()); // 나중에 name 집어넣기
+        holder.setPlace_text(item.getName() ); // 나중에 name 집어넣기
 
 
     }
