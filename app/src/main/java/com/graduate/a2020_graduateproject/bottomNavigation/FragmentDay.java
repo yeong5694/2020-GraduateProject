@@ -36,7 +36,7 @@ import java.util.ArrayList;
 
 public class FragmentDay extends Fragment {
 
-
+///////// gggg
     private Toolbar toolbar;
 
     private String day;
