@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -246,7 +247,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 else {
                     routeList=dijkstra(markerList);
                 }
-              
+
                 for(int i=0;i<markerList.size();i++){
                     System.out.println("i  : "+i);
                     //System.out.println(" click key : "+Mapkey);
