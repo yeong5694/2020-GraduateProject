@@ -9,6 +9,7 @@ import android.os.ResultReceiver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -34,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.graduate.a2020_graduateproject.BottomViewActivity;
+import com.graduate.a2020_graduateproject.MapAddressItem;
 import com.graduate.a2020_graduateproject.MapConstants;
 import com.graduate.a2020_graduateproject.MapFetchAddressIntentService;
 import com.graduate.a2020_graduateproject.MapInfoIndex;
@@ -137,14 +140,14 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
 
                 if (mapInfoSnapshot != null) {
-                    System.out.println("firebase에서 받아옴 ");
+                    System.out.println("firebase에서 받아옴 --------------------------------------");
                     for (DataSnapshot snapshot : mapInfoSnapshot.getChildren()) {
 
                         double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
                         double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
                         String fireName = snapshot.child("name").getValue().toString();
 
-                        System.out.println("firebase에서 불러온 Nmae : "+fireName);
+                        //System.out.println("firebase에서 불러온 Nmae : "+fireName);
 
                         MarkerOptions markerOptions = new MarkerOptions();
                         LatLng fireLatlng = new LatLng(fireLat, fireLng);
@@ -153,7 +156,11 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                         Marker fireMarker = gMap.addMarker(markerOptions);
                         markerList.add(fireMarker);
+
+                        System.out.println(fireMarker);
+
                     }
+                    System.out.println("-------------------------------------------------------");
                 }
 
             }
@@ -177,6 +184,49 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         });
 
 
+        autoCompleteTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MapAddressItem mapAddressItem=madapter.getItem(position);
+                double apos=mapAddressItem.getLatitude();
+                double bpos=mapAddressItem.getLongitude();
+
+                //   Toast.makeText(getApplicationContext(), "Latlng : "+apos+" "+bpos, Toast.LENGTH_SHORT).show();
+
+                LatLng latLng=new LatLng(apos, bpos);
+
+                MarkerOptions markerOptions=new MarkerOptions();
+                markerOptions.position(latLng);
+                markerOptions.title(mapAddressItem.getName());
+                Marker adaptMarker=gMap.addMarker(markerOptions);
+                adaptMarker.showInfoWindow();
+
+                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
+                JSONObject json=new JSONObject();
+                try {
+                    json.put("lat", Double.toString(apos));
+                    json.put("lng", Double.toString(bpos));
+                    json.put("name", mapAddressItem.getName());
+                    json.put("isClick", "FALSE");
+                    json.put("isAllDelete", "FALSE");
+
+
+                    mqttClient.publish(TOPIC, new MqttMessage(json.toString().getBytes()));
+
+
+
+                } catch (Exception e) {
+                    System.out.println("안보내짐....");
+                }
+
+
+
+            }
+        });
+
+
         button_update.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v) {
@@ -185,6 +235,11 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
+
+
+                System.out.println("-- 수정 버튼 클릭 ---------------------------------------------------");
+
+
                 ArrayList<Marker> routeList=new ArrayList<>();
                 if(markerList.size()<2){
                     routeList=markerList;
@@ -192,17 +247,20 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 else {
                     routeList=dijkstra(markerList);
                 }
+
                 for(int i=0;i<markerList.size();i++){
                     System.out.println("i  : "+i);
-                    System.out.println(" click key : "+Mapkey);
+                    //System.out.println(" click key : "+Mapkey);
 
                     MapInfo=new MapInfoIndex(routeList.get(i).getPosition().latitude,
                             routeList.get(i).getPosition().longitude,
                             routeList.get(i).getTitle(), i+1).toMap();
+                    System.out.println(MapInfo);
 
-                    System.out.println("--- MapInfo Firebase로 ----"+routeList.get(i).getTitle());
+                    //System.out.println("--- MapInfo Firebase로 ----"+routeList.get(i).getTitle());
                     clickRef.push().setValue(MapInfo);
                 }
+                System.out.println("-----------------------------------------------------");
 
                 Toast.makeText(getContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
             }
@@ -408,10 +466,24 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         }
 
         int start=0;
-        double[] distance=weight[start].clone();
-        boolean[] visited=new boolean[weight.length]; //방문한 곳 기록
 
-        System.out.println("weight.length : "+weight.length);
+        // -------------------- 서녕아 여기 좀 고쳣어 ------------
+        double[] distance = null;
+        boolean[] visited = null;
+
+        if(weight.length != 0){
+
+            System.out.println("weight.length : "+weight.length);
+
+            distance=weight[start].clone();
+            visited=new boolean[weight.length]; //방문한 곳 기록
+        }
+        else{
+            System.out.println("weight.length : "+weight.length);
+        }
+
+        // -------------------------------------- ------------
+
 
         for(int i=0;i<weight.length;i++){
             int minIndex=-1;
