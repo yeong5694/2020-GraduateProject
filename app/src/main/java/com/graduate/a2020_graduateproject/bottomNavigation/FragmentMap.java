@@ -247,7 +247,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 else {
                     routeList=dijkstra(markerList);
                 }
-              
+
                 for(int i=0;i<markerList.size();i++){
                     System.out.println("i  : "+i);
                     //System.out.println(" click key : "+Mapkey);
