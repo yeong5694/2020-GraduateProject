@@ -148,6 +148,9 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                 for(DataSnapshot postDataSnapshot : dataSnapshot.getChildren()) {
                     Upload upload = postDataSnapshot.getValue(Upload.class);
                     upload.setKey(postDataSnapshot.getKey());
+                    Log.e("key", postDataSnapshot.getKey());
+
+                    //String imgUrl = postDataSnapshot.getKey().child("imageUrl").getValue().toString(); 이렇게 해보래!
 
                     //String imageUrl = postDataSnapshot.child("imageUrl").getValue().toString();
 
