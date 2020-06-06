@@ -14,7 +14,6 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
 
     public TextView  day_text;
     public ImageView drag_view;
-    public View divider;
 
     public PlanViewHolder(@NonNull View itemView, Context parent, String selected_room_id) {
         super(itemView);
@@ -22,7 +21,6 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
 
         drag_view = itemView.findViewById(R.id.drag_view);
 
-        divider = itemView.findViewById(R.id.divider);
 
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override

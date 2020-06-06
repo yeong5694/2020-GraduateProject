@@ -28,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.graduate.a2020_graduateproject.memo.memoActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.ButtonObject;
@@ -399,6 +400,15 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
             startActivity(intent);
         }
         else if(id == R.id.memo) {
+
+            Intent intent = new Intent(TripRoomActivity.this, memoActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
 
         }
         else if(id == R.id.gallery) {
