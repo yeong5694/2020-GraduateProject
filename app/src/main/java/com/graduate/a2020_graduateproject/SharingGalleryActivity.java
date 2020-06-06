@@ -28,6 +28,8 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -47,7 +49,7 @@ import java.util.Objects;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class SharingGalleryActivity extends AppCompatActivity {//implements GalleryAdapter.OnItemClickListener {
+public class SharingGalleryActivity extends AppCompatActivity implements GalleryAdapter.OnItemClickListener {
 
     private static final int PICK_IMAGE_REQUEST = 1;
 
@@ -61,7 +63,6 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
 
     private RecyclerView recyclerView;
     private GalleryAdapter galleryAdapter;
-    //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();  // 2020-06-04 09:46
     private ArrayList<Upload> imageList;
 
     private FirebaseStorage firebaseStorage;
@@ -107,11 +108,71 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
             }
         });
 
+        firebaseStorage = FirebaseStorage.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
         databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips/gallery_list").child(selected_room_id);
+
+        dbListener = databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                imageList.clear();
+
+                for(DataSnapshot postDataSnapshot : dataSnapshot.getChildren()) {
+                    Upload upload = postDataSnapshot.getValue(Upload.class);
+                    upload.setKey(postDataSnapshot.getKey());
+                    Log.e("key", postDataSnapshot.getKey());
+
+                    //String imgUrl = postDataSnapshot.getKey().child("imageUrl").getValue().toString(); 이렇게 해보래!
+
+                    //String imageUrl = postDataSnapshot.child("imageUrl").getValue().toString();
+
+                    imageList.add(upload);
+                }
+
+                galleryAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(SharingGalleryActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
     // onCreate() 여기까지 //
 
+    @Override
+    public void onItemClick(int position) {
+        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onWhatEverClick(int position) {
+        Toast.makeText(this, "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeleteClick(int position) {
+        //Toast.makeText(this, "Delete click at position: " + position, Toast.LENGTH_SHORT).show();
+        Upload selectedItem = imageList.get(position);
+        String selectedKey = selectedItem.getKey();
+
+        StorageReference imageRef = firebaseStorage.getReferenceFromUrl(selectedItem.getImageUrl());
+        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                databaseReference.child(selectedKey).removeValue();
+                Toast.makeText(SharingGalleryActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        databaseReference.removeEventListener(dbListener);
+    }
 
 
 

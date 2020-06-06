@@ -9,8 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -22,10 +20,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     private Context context;
     //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();
-    private ArrayList<Upload> imageList = new ArrayList<Upload>();
-    /*
+    //private ArrayList<Upload> imageList = new ArrayList<Upload>();
+
     private ArrayList<Upload> imageList;
-    private OnItemClickListener listener;*/ // 2020-06-04 09:47
+    //private AdapterView.OnItemClickListener listener; // 2020-06-04 09:47
+    private OnItemClickListener listener;
 
     //public GalleryAdapter(Context context, ArrayList<Bitmap> imageList) {
     public GalleryAdapter(Context context, ArrayList<Upload> imageList) {   // 2020-06-04 09:47
@@ -60,9 +59,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             Glide.with(context)
                     .load(uploadCurrent.getImageUrl())
                     .into(holder.imageView);
-            /*
-            Glide.with(viewHolder.profile_image).load(userItems.get(position).getThumbnail())
-                    .error(R.drawable.kakao_default_profile_image).into(viewHolder.profile_image);* /
         }
         else {
             Toast.makeText(context, "Upload object not exist", Toast.LENGTH_SHORT).show();
@@ -77,8 +73,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     }
 
     // ViewHolder는 화면에 표시될 아이템 뷰를 저장하는 객체
-    public class ViewHolder extends RecyclerView.ViewHolder {
-            //implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
         public ImageView imageView;
 
         public ViewHolder(View itemView) {
@@ -86,8 +81,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
             imageView = itemView.findViewById(R.id.image);
 
-//            itemView.setOnClickListener(this);
-//            itemView.setOnCreateContextMenuListener(this);
+            itemView.setOnClickListener(this);
+            itemView.setOnCreateContextMenuListener(this);
 
             /*
             // 아이템 클릭 이벤트 처리
@@ -99,7 +94,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             });*/
         }
 
-        /*
         @Override
         public void onClick(View v) {
             if(listener != null) {
@@ -136,10 +130,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
                 }
             }
             return false;
-        }*/     // 2020-06-04 09:49
+        }     // 2020-06-04 09:49
     }
 
-    /*
+
     public interface OnItemClickListener {
         void onItemClick(int position);
         void onWhatEverClick(int position);
@@ -148,82 +142,5 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
-    }*/     // 2020-06-04 09:49
+    }     // 2020-06-04 09:49
 }
-/*
-public class GalleryAdapter extends BaseAdapter {
-
-    private Context context;
-    //private LayoutInflater layoutInflater;
-
-    //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();
-    private ArrayList<Upload> imageList = new ArrayList<Upload>();
-
-    //public GalleryAdapter(Context context, ArrayList<Bitmap> imageList) {
-    public GalleryAdapter(Context context, ArrayList<Upload> imageList) {
-        this.context = context;
-        this.imageList = imageList;
-        //this.layoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    }
-
-    @Override
-    public int getCount() {
-        return imageList.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return imageList.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
-
-        if(convertView == null){
-            convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_image_item,parent,false);
-            viewHolder = new ViewHolder();
-            viewHolder.imageView = convertView.findViewById(R.id.image);
-
-            convertView.setTag(viewHolder);
-        }
-        else {
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-
-        viewHolder.imageView.setImageBitmap(imageList.get(position));
-
-        return convertView;
-    }
-
-
-    // ViewHolder는 화면에 표시될 아이템 뷰를 저장하는 객체
-    private class ViewHolder{   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
-        ImageView imageView;
-    }
-
-/*
-    // ViewHolder는 화면에 표시될 아이템 뷰를 저장하는 객체
-    private class ViewHolder extends RecyclerView.ViewHolder {   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
-        ImageView imageView;
-
-        ViewHolder(View itemView) {
-            super(itemView);
-
-            imageView = itemView.findViewById(R.id.imageView);
-
-            // 아이템 클릭 이벤트 처리
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                }
-            });
-        }
-    }* /
-}*/
