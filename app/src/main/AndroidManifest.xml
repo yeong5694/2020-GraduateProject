@@ -22,7 +22,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="q">
-        <activity android:name=".memo.memoAddActivity"></activity>
+        <activity android:name=".memo.memoAddActivity" />
         <activity android:name=".memo.memoActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <!-- Android 10 이상을 타겟팅하는 경우, 기존의 범위 지정 저장소를 사용하려면 android:requestLegacyExternalStorage="true"로 설정 -->
         <!-- Add Provider -->
