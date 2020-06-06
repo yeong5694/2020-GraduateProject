@@ -1,80 +1,50 @@
 package com.graduate.a2020_graduateproject;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.FirebaseApiNotAvailableException;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Locale;
 import java.util.Objects;
 
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-public class ShareGalleryActivity extends AppCompatActivity implements GalleryAdapter.OnItemClickListener {
+public class SharingGalleryActivity extends AppCompatActivity {//implements GalleryAdapter.OnItemClickListener {
 
     private static final int PICK_IMAGE_REQUEST = 1;
 
@@ -91,8 +61,8 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
     //private GridView gridView;
     private RecyclerView recyclerView;
     private GalleryAdapter galleryAdapter;
-    //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();
-    private ArrayList<Upload> imageList;
+    private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();  // 2020-06-04 09:46
+    //private ArrayList<Upload> imageList;
 
     private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
@@ -124,16 +94,15 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
 
         imageList = new ArrayList<>();
 
-        galleryAdapter = new GalleryAdapter(ShareGalleryActivity.this, imageList);
+        galleryAdapter = new GalleryAdapter(SharingGalleryActivity.this, imageList);
         recyclerView.setAdapter(galleryAdapter);
 
-        galleryAdapter.setOnItemClickListener(ShareGalleryActivity.this);
-
+//        galleryAdapter.setOnItemClickListener(SharingGalleryActivity.this);
+/*
         firebaseStorage = FirebaseStorage.getInstance();
 
         storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
@@ -162,7 +131,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(ShareGalleryActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(SharingGalleryActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -193,7 +162,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                 }
             }
         });
-
+*/  // 2020-06-04 09:43
 
         //////// 핸드폰 기기의 저장소에서 여행방 갤러리에 사진 업로드 버튼 (우측 하단의 동그란 + 버튼)
 
@@ -203,16 +172,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             public void onClick(View v) {
 
                 openFileChooser();  // 저장소(갤러리) 연결해서 이미지 선택
-/*
-                // 여기에 쓰면 안 되나봐!!
-                //uploadFile();
-                // 바로 firebase에 업로드 되도록
-                if(uploadTask != null && uploadTask.isInProgress()) {
-                    Toast.makeText(ShareGalleryActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    uploadFile();   // ?
-                }*/
+
             }
         });
 
@@ -263,12 +223,13 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             }
         });*/
 
-
+//        Upload upload = new Upload(Integer.toString(R.drawable.trip_image_1));
+//        imageList.add(upload);    //2020-06-04 12:19
 
     }
     // onCreate() 여기까지 //
 
-
+/*
     @Override
     public void onItemClick(int position) {
         Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
@@ -290,7 +251,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             @Override
             public void onSuccess(Void aVoid) {
                 databaseReference.child(selectedKey).removeValue();
-                Toast.makeText(ShareGalleryActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SharingGalleryActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -300,7 +261,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
         super.onDestroy();
         databaseReference.removeEventListener(dbListener);
     }
-
+*/
 
 
 
@@ -321,6 +282,11 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             image_uri = data.getData();
+
+            /*
+            Upload upload = new Upload(image_uri.toString());
+            imageList.add(upload);
+            */  //2020-06-06 12:55
 
             ////// ★ 여기서 화면의 RecyclerView의 이미지에 image_uri를 연결을 해줘야 화면에 뜰 것 같은데ㅠㅅㅠ ★ ///////
 
@@ -357,7 +323,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                     .into(imageList.set(index, uploadCurrent));*/
             //imageList.set(index, uploadCurrent);
 
-            //galleryAdapter = new GalleryAdapter(ShareGalleryActivity.this, imageList);
+            //galleryAdapter = new GalleryAdapter(SharingGalleryActivity.this, imageList);
             //recyclerView.setAdapter(galleryAdapter);
 
             //Upload upload = new Upload(image_uri.toString());
@@ -371,34 +337,35 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                 InputStream in = getContentResolver().openInputStream(image_uri);   // Open uri inputStream to read bitmap
                 Bitmap imageToBitmap = BitmapFactory.decodeStream(in);  // Save to bitmap
 
-                //imageList.add(imageToBitmap);
+                imageList.add(imageToBitmap);
+                galleryAdapter.notifyDataSetChanged();
 
 
                 //galleryAdapter = new GalleryAdapter(this, imageList);
                 //recyclerView.setAdapter(galleryAdapter);
-                //galleryAdapter = new GalleryAdapter(ShareGalleryActivity.this, imageList);
+                //galleryAdapter = new GalleryAdapter(SharingGalleryActivity.this, imageList);
                 //recyclerView.setAdapter(galleryAdapter);
 
 
                 in.close();
                 //saveImage(imageToBitmap, "demo");   // 핸드폰 저장소에 이미지를 저장하는 함수 호출
-                saveImage(imageToBitmap);   // 핸드폰 저장소에 이미지를 저장하는 함수 호출
+//                saveImage(imageToBitmap);   // 핸드폰 저장소에 이미지를 저장하는 함수 호출
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             if(uploadTask != null && uploadTask.isInProgress()) {
-                Toast.makeText(ShareGalleryActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SharingGalleryActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
             }
             else {
-                uploadFile();
+                //uploadFile();
             }
-
+    //2020-06-04 12:20
         }
     }
 
 
-
+/*
     ////////
     // Firebase Storage - /upload_images 폴더 아래, '여행방 이름 폴더' 안에 업로드됨
     // Firebase Realtime Database - sharing_trips 아래 'gallery_list'에 여행방 별로 업로드한 사진 저장됨
@@ -416,7 +383,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             uploadTask = fileReference.putFile(image_uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(ShareGalleryActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SharingGalleryActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
                     Upload upload = new Upload(taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
                     //Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
                     String uploadId = databaseReference.push().getKey();
@@ -425,7 +392,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(ShareGalleryActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SharingGalleryActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -450,7 +417,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
             ... 공용 폴더 안의 미디어 파일(사진/동영상/오디오)들은 MediaStore를 통해 읽을 수 있음
             ... 사진 파일을 찾고 싶으면 공용 폴더 아래의 모든 파일 탐색 X, MediaStore에 쿼리를 하여 Uri 객체를 얻어 사용
             ... 기본적으로 외부저장소 공용 영역의 /Pictures 아래 저장됨
-            */
+            * /
             final String relativePath = Environment.DIRECTORY_PICTURES + "/SharingTrips";
             // 해당 경로가 없을 때 생성해주는지.. 폴더를 만들어줘야 하는지!
 
@@ -500,5 +467,5 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                 Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
             }
         }
-    }
+    }*/    //2020-06-04 12:21
 }

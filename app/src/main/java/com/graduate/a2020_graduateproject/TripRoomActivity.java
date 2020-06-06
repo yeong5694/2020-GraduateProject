@@ -402,7 +402,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
         }
         else if(id == R.id.gallery) {
-            Intent intent = new Intent(TripRoomActivity.this, ShareGalleryActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, SharingGalleryActivity.class);
             intent.putExtra("selected_room_name", selected_room_name);
             intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
