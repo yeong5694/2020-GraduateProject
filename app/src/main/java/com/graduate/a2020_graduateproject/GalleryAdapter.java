@@ -21,14 +21,14 @@ import java.util.ArrayList;
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHolder> {
 
     private Context context;
-    private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();
-    //private ArrayList<Upload> imageList = new ArrayList<Upload>();
+    //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();
+    private ArrayList<Upload> imageList = new ArrayList<Upload>();
     /*
     private ArrayList<Upload> imageList;
     private OnItemClickListener listener;*/ // 2020-06-04 09:47
 
-    public GalleryAdapter(Context context, ArrayList<Bitmap> imageList) {
-    //public GalleryAdapter(Context context, ArrayList<Upload> imageList) {   // 2020-06-04 09:47
+    //public GalleryAdapter(Context context, ArrayList<Bitmap> imageList) {
+    public GalleryAdapter(Context context, ArrayList<Upload> imageList) {   // 2020-06-04 09:47
         this.context = context;
         this.imageList = imageList;
     }
@@ -44,13 +44,16 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        // Upload uploadCurrent = imageList.get(position);  //2020-06-06 12:54
+        Upload uploadCurrent = imageList.get(position);  //2020-06-06 12:54
 
-        /*Glide.with(context)
+        Glide.with(context)
                 .load(uploadCurrent.getImageUrl())
-                .into(holder.imageView);*/  // 2020-06-04 09:48
-       holder.imageView.setImageBitmap(imageList.get(position));
+                .into(holder.imageView);  // 2020-06-04 09:48
         //holder.imageView.setImageURI(imageUri);
+
+
+        //holder.imageView.setImageBitmap(imageList.get(position));
+
 
         /*
         if(uploadCurrent != null) {

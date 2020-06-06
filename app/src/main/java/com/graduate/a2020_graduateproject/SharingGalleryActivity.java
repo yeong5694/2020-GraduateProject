@@ -53,16 +53,13 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
 
     private Toolbar toolbar;
     private FloatingActionButton uploadButton;
-    //private ImageView imageView;
-    //private ProgressBar progressBar;
     private Button firebaseUploadButton;
     private Button saveImageButton;
 
-    //private GridView gridView;
     private RecyclerView recyclerView;
     private GalleryAdapter galleryAdapter;
-    private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();  // 2020-06-04 09:46
-    //private ArrayList<Upload> imageList;
+    //private ArrayList<Bitmap> imageList = new ArrayList<Bitmap>();  // 2020-06-04 09:46
+    private ArrayList<Upload> imageList;
 
     private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
@@ -165,7 +162,7 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
 */  // 2020-06-04 09:43
 
         //////// 핸드폰 기기의 저장소에서 여행방 갤러리에 사진 업로드 버튼 (우측 하단의 동그란 + 버튼)
-
+/*
         uploadButton = findViewById(R.id.uploadFab);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -175,7 +172,9 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
 
             }
         });
+*/  // 2020-06-06 17:23
 
+        openFileChooser();
 
         //////// Firebase Storage
 
@@ -269,10 +268,22 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
 
     // 저장소 액세스 프레임워크(SAF)를 사용하여 갤러리 호출
     private void openFileChooser() {
+        /*
         Intent intent = new Intent();
         intent.setType("image/*");  // 이미지 타입의 intent
         intent.setAction(Intent.ACTION_GET_CONTENT); // intent 액션 지정
         startActivityForResult(intent, PICK_IMAGE_REQUEST); // 액티비티를 실행하고 그 액티비티로부터 결과를 수신
+        */
+
+        /*
+        // 이렇게 하면 여행방 갤러리를 누르면 /Pictures/SharingTrips 경로의 모든 이미지가 새로운 인텐트로 열림
+        Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        //String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/Camera";   // 특정 경로!!
+        String targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/SharingTrips";
+        targetUri = targetUri.buildUpon().appendQueryParameter("bucketId", String.valueOf(targetDir.toLowerCase().hashCode())).build();
+        Intent intent = new Intent(Intent.ACTION_VIEW, targetUri);
+        startActivity(intent);
+        */
     }
 
     // startActivityForResult()로부터 수신한 결과는 onActivityResult()에 전달
@@ -283,10 +294,10 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             image_uri = data.getData();
 
-            /*
+
             Upload upload = new Upload(image_uri.toString());
             imageList.add(upload);
-            */  //2020-06-06 12:55
+              //2020-06-06 12:55
 
             ////// ★ 여기서 화면의 RecyclerView의 이미지에 image_uri를 연결을 해줘야 화면에 뜰 것 같은데ㅠㅅㅠ ★ ///////
 
@@ -337,7 +348,7 @@ public class SharingGalleryActivity extends AppCompatActivity {//implements Gall
                 InputStream in = getContentResolver().openInputStream(image_uri);   // Open uri inputStream to read bitmap
                 Bitmap imageToBitmap = BitmapFactory.decodeStream(in);  // Save to bitmap
 
-                imageList.add(imageToBitmap);
+                //imageList.add(imageToBitmap);
                 galleryAdapter.notifyDataSetChanged();
 
 
