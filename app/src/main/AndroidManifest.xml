@@ -53,16 +53,7 @@
             android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity android:name=".MyCalendarActivity" />
         <activity android:name=".TripRoomFriendsActivity" />
-        <activity android:name=".PlaningActivity" />
-        <activity android:name=".MyTripRoomListActivity" />
         <activity android:name=".ShareGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
-        <activity android:name=".KakaoFriendsInviteActivity">
-            <intent-filter>
-                <data
-                    android:host="@string/kakaolink_host"
-                    android:scheme="@string/kakao_scheme" />
-            </intent-filter>
-        </activity>
         <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
