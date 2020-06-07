@@ -73,14 +73,14 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<Upload> imageList;
 
-//    private FirebaseStorage firebaseStorage;
-    private FirebaseStorage storage;
+    private FirebaseStorage firebaseStorage;
+//    private FirebaseStorage storage;
     private FirebaseDatabase database;
-//    private StorageReference storageReference;
+    private StorageReference storageReference;
     private DatabaseReference databaseReference;
 //    private ValueEventListener dbListener;
 
-//    private StorageTask uploadTask;
+    private StorageTask uploadTask;
 
     // 선택한 여행방 정보
     private String selected_room_name; // 여행방 이름
@@ -119,10 +119,10 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             }
         });
 
-        storage = FirebaseStorage.getInstance();
+//        storage = FirebaseStorage.getInstance();
         database = FirebaseDatabase.getInstance();
 //        firebaseStorage = FirebaseStorage.getInstance();
-//        storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
+        storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
         databaseReference = database.getReference().child("sharing_trips").child("gallery_list").child(selected_room_id);
 
 
@@ -195,14 +195,24 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-            imagePath =  getPath(data.getData());
-            File file = new File(imagePath);
+//            imagePath = getPath(data.getData());
+//            File file = new File(imagePath);
 
-            Upload upload = new Upload(Uri.fromFile(file).toString());
+//            Upload upload = new Upload(Uri.fromFile(file).toString());
+            image_uri = data.getData();
+
+
+            Upload upload = new Upload(image_uri.toString());
             imageList.add(upload);
             adapter.notifyDataSetChanged();
 
-            uploadFile(imagePath);
+//            uploadFile(imagePath);
+            if(uploadTask != null && uploadTask.isInProgress()) {
+                Toast.makeText(SharingGalleryActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                uploadFile();
+            }
         }
 
 
@@ -249,7 +259,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         return cursor.getString(index);
     }
 
-
+/*
     private void uploadFile(String uri) {
 
         StorageReference storageRef = storage.getReferenceFromUrl("gs://graduationproject-43709.appspot.com");
@@ -285,8 +295,8 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             }
         });
     }
+*/
 
-/*
     ////////
     // Firebase Storage - /upload_images 폴더 아래, '여행방 이름 폴더' 안에 업로드됨
     // Firebase Realtime Database - sharing_trips 아래 'gallery_list'에 여행방 별로 업로드한 사진 저장됨
@@ -309,7 +319,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                     //Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
 //                    String uploadId = databaseReference.push().getKey();
 //                    databaseReference.child(uploadId).setValue(upload);
-                    databaseReference.setValue(upload);
+                    databaseReference.push().setValue(upload);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -324,7 +334,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     }
 
 
-
+/*
     //////// 외부저장소 공용 영역(/Pictures 아래) 접근, 이미지 저장
 
     //private void saveImage(Bitmap bitmap, String name) throws IOException {
