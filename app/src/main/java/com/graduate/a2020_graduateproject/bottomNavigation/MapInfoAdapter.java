@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.graduate.a2020_graduateproject.PlanItem;
 import com.graduate.a2020_graduateproject.PlanViewHolder;
@@ -23,10 +25,13 @@ public class MapInfoAdapter extends RecyclerView.Adapter<MapInfoViewHolder>
         implements MapInfoItemTouchHelperCallback.onItemMoveListener {
 
     private String selected_room_id;
+    private String day;
+    private String Mapkey;
     private ArrayList<MapInfoItem> mapInfoItems = new ArrayList<>();
 
-    public MapInfoAdapter(String selected_room_id){
+    public MapInfoAdapter(String selected_room_id, String day){
         this.selected_room_id = selected_room_id;
+        this.day = day;
     }
 
     @NonNull
@@ -42,7 +47,7 @@ public class MapInfoAdapter extends RecyclerView.Adapter<MapInfoViewHolder>
     public void onBindViewHolder(@NonNull MapInfoViewHolder holder, int position) {
 
         MapInfoItem item = mapInfoItems.get(position);
-        holder.setPlace_text(item.getName()); // 나중에 name 집어넣기
+        holder.setPlace_text(item.getName() + "idx:"+item.getIndex()); // 나중에 name 집어넣기
 
 
     }
@@ -79,8 +84,86 @@ public class MapInfoAdapter extends RecyclerView.Adapter<MapInfoViewHolder>
 
     @Override
     public void onItemDismiss(int position) {
+
+        DatabaseReference rmRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                .child("schedule_list");
+        rmRef.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Mapkey = snapshot.getKey();
+                    System.out.println("mapinfoadatper day key : " + Mapkey);
+
+                }
+
+                Query rmquery = rmRef.child(Mapkey).child("map_info").orderByChild("index").equalTo(mapInfoItems.get(position).getIndex());
+                rmquery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            String rmkey= snapshot.getKey();
+                            System.out.println("rmkey : " + rmkey);
+
+                            snapshot.getRef().removeValue(); // firebase에서 삭제
+
+                        }
+
+                        sort_and_update(rmRef, Mapkey);
+
+
+
+
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        System.out.println("마커정보를 가져오지 못함");
+                    }
+                });
+
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                System.out.println("파이어베이스에서 해당 day 키값 못찾음");
+            }
+        });
+
+
+
         return;
     }
+
+    public void sort_and_update(DatabaseReference ref, String key){
+
+        Query idxquery = ref.child(key).child("map_info").orderByChild("index");
+        idxquery.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int i=1;
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String mapInfoKey = snapshot.getKey();
+                    System.out.println("sort_and_update map info key : " + mapInfoKey);
+
+                    snapshot.child("index").getRef().setValue(Integer.toString(i));
+                    i++;
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
     public void change(DatabaseReference ref, String day){
 
