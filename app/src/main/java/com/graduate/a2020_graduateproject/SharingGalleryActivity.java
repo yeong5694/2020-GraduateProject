@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.loader.content.CursorLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -69,7 +70,8 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<Upload> imageList;
 
-    private FirebaseStorage firebaseStorage;
+//    private FirebaseStorage firebaseStorage;
+    private FirebaseStorage storage;
     private StorageReference storageReference;
     private DatabaseReference databaseReference;
     private ValueEventListener dbListener;
@@ -110,9 +112,10 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             }
         });
 
+        storage = FirebaseStorage.getInstance();
 //        firebaseStorage = FirebaseStorage.getInstance();
-        storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
-        databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips").child("gallery_list").child(selected_room_id);
+//        storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
+//        databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips").child("gallery_list").child(selected_room_id);
 /*
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -239,6 +242,34 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        //System.out.println(data.getData());
+        //System.out.println(getPath(data.getData()));
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://graduationproject-43709.appspot.com");
+
+            Uri file = Uri.fromFile(new File(getPath(data.getData())));
+            StorageReference riversRef = storageRef.child("upload_images/" + selected_room_name + "/" + file.getLastPathSegment());
+            uploadTask = riversRef.putFile(file);
+
+            // Register observers to listen for when the download is done or if it fails
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                    // ...
+                }
+            });
+        }
+
+
+/*
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             image_uri = data.getData();
 
@@ -267,6 +298,18 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             }
     //2020-06-04 12:20
         }
+ */
+    }
+    public String getPath(Uri uri){
+        String [] projection = { MediaStore.Images.Media.DATA };
+        CursorLoader cursorLoader = new CursorLoader(this, uri, projection, null, null, null);
+
+        Cursor cursor = cursorLoader.loadInBackground ();
+        int index = cursor.getColumnIndexOrThrow (MediaStore.Images.Media.DATA);
+
+        cursor.moveToFirst();
+
+        return cursor.getString(index);
     }
 
     ////////
