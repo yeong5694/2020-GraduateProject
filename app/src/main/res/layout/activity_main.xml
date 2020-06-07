@@ -112,7 +112,7 @@
                     android:layout_height="wrap_content"
                     android:background="@android:color/white"
                     android:gravity="center"
-                    android:text="여행방 목록"
+                    android:text="여행 목록"
                     android:textColor="@android:color/black"
                     android:textColorLink="@color/colorPrimary"
                     android:textSize="24sp" />
