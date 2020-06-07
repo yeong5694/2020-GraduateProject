@@ -149,6 +149,7 @@ public class ShareGalleryActivity extends AppCompatActivity implements GalleryAd
                     Upload upload = postDataSnapshot.getValue(Upload.class);
                     upload.setKey(postDataSnapshot.getKey());
 
+
                     //String imageUrl = postDataSnapshot.child("imageUrl").getValue().toString();
 
                     imageList.add(upload);
