@@ -71,16 +71,16 @@ public class FragmentDay extends Fragment {
         day_textview.setText("Day"+day);
 
         descriptionText = viewGroup.findViewById(R.id.descriptionText);
-        descriptionText.setVisibility(View.INVISIBLE); //
 
         mapRecyclerView = viewGroup.findViewById(R.id.mapRecyclerView);
-        mapAdapter = new MapInfoAdapter(selected_room_id);
+        mapAdapter = new MapInfoAdapter(selected_room_id, day);
         mapLayoutManager = new LinearLayoutManager(getContext());
         mapRecyclerView.setLayoutManager(mapLayoutManager);
         mapRecyclerView.setAdapter(mapAdapter);
 
         MapInfoItemTouchHelperCallback mCallback = new MapInfoItemTouchHelperCallback(mapAdapter);
         mCallback.setMintem(false); // 드래그 안되게
+        mCallback.setMintem2(true); // 삭제 되게
 
         mItemTouchHelper = new ItemTouchHelper((mCallback));
         mItemTouchHelper.attachToRecyclerView(mapRecyclerView);
@@ -91,8 +91,10 @@ public class FragmentDay extends Fragment {
         edit_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mCallback.setMintem2(false);
                 edit_btn.setVisibility(View.GONE); // 안보이게
                 editFin_btn.setVisibility(View.VISIBLE);
+                descriptionText.setText("드래그해서 순서를 변경하세요.");
 
                 mCallback.setMintem(true); // 드래그 활성화
 
@@ -105,7 +107,10 @@ public class FragmentDay extends Fragment {
                 edit_btn.setVisibility(View.VISIBLE);
                 editFin_btn.setVisibility(View.GONE);
 
+                descriptionText.setText("밀어서 삭제하세요.");
+
                 mCallback.setMintem(false); // 드래그 락
+                mCallback.setMintem2(true);
 
                 change();
 
@@ -134,15 +139,6 @@ public class FragmentDay extends Fragment {
 
                         sort_list();
 
-                        if(mapAdapter.getItemCount() == 0){
-                            descriptionText.setVisibility(View.VISIBLE);
-                            descriptionText.setText("일정이 없습니다.");
-                        }
-                        else{
-                            descriptionText.setVisibility(View.INVISIBLE);
-                        }
-
-                        mapAdapter.notifyDataSetChanged();
 
 
                     }
@@ -180,6 +176,8 @@ public class FragmentDay extends Fragment {
 
     }
 
+
+
     public void sort_list(){
 
         mapDataReference.child(Mapkey).child("map_info").orderByChild("index").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -202,6 +200,13 @@ public class FragmentDay extends Fragment {
 
                     mapAdapter.add(newItem);
 
+                }
+
+                if(mapAdapter.getItemCount() == 0){
+                    descriptionText.setText("일정이 없습니다.");
+                }
+                else{
+                    descriptionText.setText("밀어서 삭제하세요.");
                 }
 
 

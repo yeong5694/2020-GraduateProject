@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject.bottomNavigation;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,13 +13,13 @@ import com.graduate.a2020_graduateproject.R;
 public class MapInfoViewHolder extends RecyclerView.ViewHolder {
 
     private TextView place_text;
-    private View divider;
+    private ImageView nextView;
 
     public MapInfoViewHolder(@NonNull View itemView) {
         super(itemView);
 
         place_text = itemView.findViewById(R.id.place_text);
-        divider = itemView.findViewById(R.id.divider);
+        nextView = itemView.findViewById(R.id.nextView);
     }
 
     public void setPlace_text(String text){

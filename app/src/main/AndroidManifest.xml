@@ -22,15 +22,16 @@
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
         tools:targetApi="q">
+        <activity android:name=".memo.memoAddActivity" />
+        <activity android:name=".memo.memoActivity" />
         <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <!-- Android 10 이상을 타겟팅하는 경우, 기존의 범위 지정 저장소를 사용하려면 android:requestLegacyExternalStorage="true"로 설정 -->
-
         <!-- Add Provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.graduate.a2020_graduateproject.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false" >
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/path" /> <!-- add paths -->
@@ -46,25 +47,16 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
         </activity>
-        <activity android:name=".GalleryImageViewerActivity"></activity>
+        <activity android:name=".GalleryImageViewerActivity" />
         <activity
             android:name=".ChattingRoomActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity android:name=".MyCalendarActivity" />
         <activity android:name=".TripRoomFriendsActivity" />
-        <activity android:name=".PlaningActivity" />
-        <activity android:name=".MyTripRoomListActivity" />
-        <activity android:name=".SharingGalleryActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
-        <activity android:name=".KakaoFriendsInviteActivity">
-            <intent-filter>
-                <data
-                    android:host="@string/kakaolink_host"
-                    android:scheme="@string/kakao_scheme" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".ShareGalleryActivity" />
+        <activity android:name=".TripRoomActivity" />
+        <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="@string/kakao_app_key" />
