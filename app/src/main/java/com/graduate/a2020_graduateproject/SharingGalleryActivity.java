@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.loader.content.CursorLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentResolver;
@@ -65,16 +66,21 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     private Button firebaseUploadButton;
     private Button saveImageButton;
 
+//    private RecyclerView recyclerView;
+//    //private RecyclerView.Adapter galleryAdapter;
+//    private RecyclerView.Adapter adapter;
+//    //    private GalleryAdapter adapter;
+//    //private GalleryAdapter galleryAdapter;
+//    private RecyclerView.LayoutManager layoutManager;
+//    private ArrayList<Upload> imageList;
+
     private RecyclerView recyclerView;
-    //private RecyclerView.Adapter galleryAdapter;
-    private RecyclerView.Adapter adapter;
-//    private GalleryAdapter adapter;
-    //private GalleryAdapter galleryAdapter;
+    private UploadAdapter uploadAdapter;
     private RecyclerView.LayoutManager layoutManager;
-    private ArrayList<Upload> imageList;
+
 
     private FirebaseStorage firebaseStorage;
-//    private FirebaseStorage storage;
+    //    private FirebaseStorage storage;
     private FirebaseDatabase database;
     private StorageReference storageReference;
     private DatabaseReference databaseReference;
@@ -98,16 +104,22 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         setTitle("갤러리");
+//
+//        recyclerView = findViewById(R.id.recyclerView);
+//        recyclerView.setHasFixedSize(true); // 리사이클러뷰 기존 성능 강화
+//        layoutManager = new GridLayoutManager(this, 3);
+//        recyclerView.setLayoutManager(layoutManager);
+//
+//        imageList = new ArrayList<>();  // Upload 객체를 담을 ArrayList. 어댑터 쪽으로 전달
+//
+//        adapter = new GalleryAdapter(this, imageList);
+//        recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
 
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setHasFixedSize(true); // 리사이클러뷰 기존 성능 강화
-        layoutManager = new GridLayoutManager(this, 3);
+        uploadAdapter = new UploadAdapter();
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-
-        imageList = new ArrayList<>();  // Upload 객체를 담을 ArrayList. 어댑터 쪽으로 전달
-
-        adapter = new GalleryAdapter(this, imageList);
-        recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
+        recyclerView.setAdapter(uploadAdapter);
 
         uploadButton = findViewById(R.id.uploadFab);
         uploadButton.setOnClickListener(new View.OnClickListener() {
@@ -126,23 +138,32 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         databaseReference = database.getReference().child("sharing_trips").child("gallery_list").child(selected_room_id);
 
 
-/*  // 여기 주석 풀면 갤러리에서 선택한 이미지가 현재 파이어베이스 리얼타임 디비에 들어있는 데이터 개수 다음 칸에 보였다가 사라짐..
+  // 여기 주석 풀면 갤러리에서 선택한 이미지가 현재 파이어베이스 리얼타임 디비에 들어있는 데이터 개수 다음 칸에 보였다가 사라짐..
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Firebase Database의 데이터를 받아오는 곳
-                imageList.clear();
+                //imageList.clear();
+                uploadAdapter.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {  // 반복문으로 데이터 리스트 추출
                     // Firebase로부터 Database로부터 가져온 데이터를 Upload 클래스에 담아주고, 얘를 ArrayList에 담아서 어댑터로 넘겨주는...
-                    Upload upload = snapshot.getValue(Upload.class);    // 만들었던 Upload 객체에 데이터를 담는다
+                    //Upload upload = snapshot.getValue(Upload.class);    // 만들었던 Upload 객체에 데이터를 담는다
                     String key = snapshot.getKey();
                     System.out.println(key);
-                    imageList.add(upload);  // 담은 데이터들을 배열리스트에 넣고 리사이클러뷰로 보낼 준비
+                    //imageList.add(upload);  // 담은 데이터들을 배열리스트에 넣고 리사이클러뷰로 보낼 준비
+
+                    String imageUrl = snapshot.child("imageUrl").getValue().toString();
+
+                    Upload newItem = new Upload(imageUrl, key);
+
+                    uploadAdapter.add(newItem);
+
                 }
 
                 // 수정하면 항상 어댑터 쪽에 새로고침을 해줘야 반영이 됨
-                adapter.notifyDataSetChanged();  // 리스트 저장 및 새로고침
+                //adapter.notifyDataSetChanged();  // 리스트 저장 및 새로고침
+                uploadAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -151,9 +172,9 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 Log.e("SharingGalleryActivity", String.valueOf(databaseError.toException())); // 에러문 출력
             }
         });
-*/
-        adapter = new GalleryAdapter(this, imageList);
-        recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
+
+        //adapter = new GalleryAdapter(this, imageList);
+        //recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
 
 
 
@@ -203,8 +224,12 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
 
             Upload upload = new Upload(image_uri.toString());
-            imageList.add(upload);
-            adapter.notifyDataSetChanged();
+            /////////// 아래두줄 내가 주석해놨어
+            /////////// 여기서 파이어베이스에 사진 업로드 하는건가?
+            /////////// 이제 어댑터는 안건들여도 돼
+//            imageList.add(upload);
+//            adapter.notifyDataSetChanged();
+
 
 //            uploadFile(imagePath);
             if(uploadTask != null && uploadTask.isInProgress()) {
