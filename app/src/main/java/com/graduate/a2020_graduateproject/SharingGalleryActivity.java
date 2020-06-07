@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -57,6 +58,8 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     private OutputStream outputStream;
     private Uri image_uri;
 
+    private String imagePath;
+
     private Toolbar toolbar;
     private FloatingActionButton uploadButton;
     private Button firebaseUploadButton;
@@ -72,11 +75,12 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
 //    private FirebaseStorage firebaseStorage;
     private FirebaseStorage storage;
-    private StorageReference storageReference;
+    private FirebaseDatabase database;
+//    private StorageReference storageReference;
     private DatabaseReference databaseReference;
-    private ValueEventListener dbListener;
+//    private ValueEventListener dbListener;
 
-    private StorageTask uploadTask;
+//    private StorageTask uploadTask;
 
     // 선택한 여행방 정보
     private String selected_room_name; // 여행방 이름
@@ -102,6 +106,9 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
         imageList = new ArrayList<>();  // Upload 객체를 담을 ArrayList. 어댑터 쪽으로 전달
 
+        adapter = new GalleryAdapter(this, imageList);
+        recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
+
         uploadButton = findViewById(R.id.uploadFab);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,10 +120,13 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         });
 
         storage = FirebaseStorage.getInstance();
+        database = FirebaseDatabase.getInstance();
 //        firebaseStorage = FirebaseStorage.getInstance();
 //        storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
-//        databaseReference = FirebaseDatabase.getInstance().getReference("sharing_trips").child("gallery_list").child(selected_room_id);
-/*
+        databaseReference = database.getReference().child("sharing_trips").child("gallery_list").child(selected_room_id);
+
+
+/*  // 여기 주석 풀면 갤러리에서 선택한 이미지가 현재 파이어베이스 리얼타임 디비에 들어있는 데이터 개수 다음 칸에 보였다가 사라짐..
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -126,10 +136,8 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {  // 반복문으로 데이터 리스트 추출
                     // Firebase로부터 Database로부터 가져온 데이터를 Upload 클래스에 담아주고, 얘를 ArrayList에 담아서 어댑터로 넘겨주는...
                     Upload upload = snapshot.getValue(Upload.class);    // 만들었던 Upload 객체에 데이터를 담는다
-
-                    upload.setKey(snapshot.getKey());
-                    Log.e("key", snapshot.getKey());
-
+                    String key = snapshot.getKey();
+                    System.out.println(key);
                     imageList.add(upload);  // 담은 데이터들을 배열리스트에 넣고 리사이클러뷰로 보낼 준비
                 }
 
@@ -146,73 +154,13 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 */
         adapter = new GalleryAdapter(this, imageList);
         recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
-/*
-        dbListener = databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                imageList.clear();
-
-                for(DataSnapshot postDataSnapshot : dataSnapshot.getChildren()) {
-                    Upload upload = postDataSnapshot.getValue(Upload.class);
-                    upload.setKey(postDataSnapshot.getKey());
-                    Log.e("key", postDataSnapshot.getKey());
-
-                    //String imgUrl = postDataSnapshot.getKey().child("imageUrl").getValue().toString(); 이렇게 해보래!
-
-                    //String imageUrl = postDataSnapshot.child("imageUrl").getValue().toString();
-
-//                    openFileChooser();
-                    imageList.add(upload);
-                }
-
-                galleryAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(SharingGalleryActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-*/
 
 
     }
     // onCreate() 여기까지 //
 
-/*
-    @Override
-    public void onItemClick(int position) {
-        Toast.makeText(this, "Normal click at position: " + position, Toast.LENGTH_SHORT).show();
-    }
 
-    @Override
-    public void onWhatEverClick(int position) {
-        Toast.makeText(this, "Whatever click at position: " + position, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDeleteClick(int position) {
-        //Toast.makeText(this, "Delete click at position: " + position, Toast.LENGTH_SHORT).show();
-        Upload selectedItem = imageList.get(position);
-        String selectedKey = selectedItem.getKey();
-
-        StorageReference imageRef = firebaseStorage.getReferenceFromUrl(selectedItem.getImageUrl());
-        imageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                databaseReference.child(selectedKey).removeValue();
-                Toast.makeText(SharingGalleryActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        databaseReference.removeEventListener(dbListener);
-    }
-*/
 
 
     //////// 핸드폰 기기의 저장소에서 사진을 선택하여 현재 여행방 갤러리에 선택한 이미지 보이기
@@ -247,25 +195,14 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-            StorageReference storageRef = storage.getReferenceFromUrl("gs://graduationproject-43709.appspot.com");
+            imagePath =  getPath(data.getData());
+            File file = new File(imagePath);
 
-            Uri file = Uri.fromFile(new File(getPath(data.getData())));
-            StorageReference riversRef = storageRef.child("upload_images/" + selected_room_name + "/" + file.getLastPathSegment());
-            uploadTask = riversRef.putFile(file);
+            Upload upload = new Upload(Uri.fromFile(file).toString());
+            imageList.add(upload);
+            adapter.notifyDataSetChanged();
 
-            // Register observers to listen for when the download is done or if it fails
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                    // ...
-                }
-            });
+            uploadFile(imagePath);
         }
 
 
@@ -312,6 +249,44 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         return cursor.getString(index);
     }
 
+
+    private void uploadFile(String uri) {
+
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://graduationproject-43709.appspot.com");
+
+        Uri file = Uri.fromFile(new File(uri));
+        StorageReference riversRef = storageRef.child("upload_images/" + selected_room_name + "/" + file.getLastPathSegment());
+        UploadTask uploadTask = riversRef.putFile(file);
+
+        // Register observers to listen for when the download is done or if it fails
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                //@SuppressWarnings("VisibleForTests")
+                //Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                Task<Uri> downloadUrl = taskSnapshot.getStorage().getDownloadUrl();
+
+                //Upload upload = new Upload(downloadUrl.toString());
+                //imageList.add(upload);
+                //adapter.notifyDataSetChanged();
+
+                Upload upload = new Upload(downloadUrl.toString());
+                //Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
+//                    String uploadId = databaseReference.push().getKey();
+//                    databaseReference.child(uploadId).setValue(upload);
+                //.getReference("sharing_trips").child("gallery_list").child(selected_room_id);
+                database.getReference("sharing_trips").child("gallery_list").child(selected_room_id).push().setValue(upload);
+            }
+        });
+    }
+
+/*
     ////////
     // Firebase Storage - /upload_images 폴더 아래, '여행방 이름 폴더' 안에 업로드됨
     // Firebase Realtime Database - sharing_trips 아래 'gallery_list'에 여행방 별로 업로드한 사진 저장됨
@@ -364,7 +339,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             ... 공용 폴더 안의 미디어 파일(사진/동영상/오디오)들은 MediaStore를 통해 읽을 수 있음
             ... 사진 파일을 찾고 싶으면 공용 폴더 아래의 모든 파일 탐색 X, MediaStore에 쿼리를 하여 Uri 객체를 얻어 사용
             ... 기본적으로 외부저장소 공용 영역의 /Pictures 아래 저장됨
-            */
+            * /
             final String relativePath = Environment.DIRECTORY_PICTURES + "/SharingTrips";
             // 해당 경로가 없을 때 생성해주는지.. 폴더를 만들어줘야 하는지!
 
@@ -414,7 +389,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
             }
         }
-    }
+    }*/
 
 /*
     public void getImageList() {
