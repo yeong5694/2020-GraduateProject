@@ -7,8 +7,9 @@ public class Upload {
     private String imageUrl;
     private String key;
 
-    public Upload() {
-        // empty constructor needed
+    public Upload(String imageUrl, String key) {
+        this.imageUrl = imageUrl;
+        this.key = key;
     }
 
     /*
