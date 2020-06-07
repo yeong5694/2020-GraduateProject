@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
     private ArrayList<Upload> imageList;
     //private AdapterView.OnItemClickListener listener; // 2020-06-04 09:47
-    private OnItemClickListener listener;
+//    private OnItemClickListener listener;
 
     //public GalleryAdapter(Context context, ArrayList<Bitmap> imageList) {
     public GalleryAdapter(Context context, ArrayList<Upload> imageList) {   // 2020-06-04 09:47
@@ -32,24 +33,32 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
         this.imageList = imageList;
     }
 
-    // onCreateViewHolder() - viewType 형태의 아이템 뷰를 위한 뷰홀더 객체 생성하여 리턴
+    // RecyclerView가 어댑터에 연결된 후 onCreateViewHolder()에서 최초로 ViewHolder 생성
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.gallery_image_item, parent,false);
-        return new ViewHolder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.gallery_image_item, parent, false);
+        ViewHolder holder = new ViewHolder(view);
+        return holder;
     }
 
     // onBindViewHolder() - position에 해당하는 데이터를 뷰홀더의 아이템뷰에 표시
+    // 실제로 각 아이템들에 대한 매칭을 시켜주는 역할
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
+/*
         Upload uploadCurrent = imageList.get(position);  //2020-06-06 12:54
 
         Glide.with(context)
                 .load(uploadCurrent.getImageUrl())
                 .into(holder.imageView);  // 2020-06-04 09:48
         //holder.imageView.setImageURI(imageUri);
+*/
 
+        Glide.with(holder.imageView)
+                .load(imageList.get(position).getImageUrl())
+                .into(holder.imageView);
 
         //holder.imageView.setImageBitmap(imageList.get(position));
 
@@ -69,11 +78,12 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     // getItemCount() - 전체 데이터 갯수 리턴
     @Override
     public int getItemCount() {
-        return imageList.size();
+//        return imageList.size();
+        return (imageList != null ? imageList.size() : 0);   // 'imageList != null'이 참이면 'imageList.size()' 리턴, 거짓이면 0 리턴
     }
 
     // ViewHolder는 화면에 표시될 아이템 뷰를 저장하는 객체
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
+    public class ViewHolder extends RecyclerView.ViewHolder { //implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {   // 어댑터를 통해 만들어진 각 아이템 뷰를 ViewHolder 객체에 저장하고
         public ImageView imageView;
 
         public ViewHolder(View itemView) {
@@ -81,8 +91,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
 
             imageView = itemView.findViewById(R.id.image);
 
-            itemView.setOnClickListener(this);
-            itemView.setOnCreateContextMenuListener(this);
+//            itemView.setOnClickListener(this);
+//            itemView.setOnCreateContextMenuListener(this);
 
             /*
             // 아이템 클릭 이벤트 처리
@@ -94,6 +104,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             });*/
         }
 
+/*
         @Override
         public void onClick(View v) {
             if(listener != null) {
@@ -131,9 +142,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             }
             return false;
         }     // 2020-06-04 09:49
+*/
     }
 
-
+/*
     public interface OnItemClickListener {
         void onItemClick(int position);
         void onWhatEverClick(int position);
@@ -143,4 +155,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }     // 2020-06-04 09:49
+*/
+
 }
