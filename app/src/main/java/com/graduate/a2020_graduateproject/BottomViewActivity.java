@@ -12,13 +12,23 @@ import android.view.WindowManager;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentChat;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentDay;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentMap;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
+
+import java.util.ArrayList;
 
 
 public class BottomViewActivity extends AppCompatActivity {
@@ -38,6 +48,7 @@ public class BottomViewActivity extends AppCompatActivity {
 
     private MqttClient mqttClient;
     private static String TOPIC;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +97,9 @@ public class BottomViewActivity extends AppCompatActivity {
 
         try {
             mqttClient.subscribe(TOPIC);
+
+            DatabaseReference mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                    .child("schedule_list");
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -133,4 +147,5 @@ public class BottomViewActivity extends AppCompatActivity {
     public MqttClient getMqttClient(){
         return mqttClient;
     }
+
 }
