@@ -17,6 +17,10 @@ import com.graduate.a2020_graduateproject.bottomNavigation.FragmentChat;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentDay;
 import com.graduate.a2020_graduateproject.bottomNavigation.FragmentMap;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+
+
 public class BottomViewActivity extends AppCompatActivity {
 
     private FragmentManager fragmentManager = getSupportFragmentManager();
@@ -32,6 +36,8 @@ public class BottomViewActivity extends AppCompatActivity {
     private String selected_room_id;
     private String day;
 
+    private MqttClient mqttClient;
+    private static String TOPIC;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,34 @@ public class BottomViewActivity extends AppCompatActivity {
         selected_room_id=intent.getExtras().getString("selected_room_id");
         day=intent.getExtras().getString("day");
         System.out.println("selected_room_id : "+selected_room_id+ " day : "+day);
+
+
+
+        try {
+            mqttClient=new MqttClient("tcp://3.224.178.67:1883", MqttClient.generateClientId(), null);
+            System.out.println("ConnectMqtt() 시작");  //탄력적 ip 3.224.178.67
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            System.out.println("ConnectMqtt() 연결 준비" +MqttClient.generateClientId());
+            mqttClient.connect();
+            System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+
+
+        TOPIC="Map/"+selected_room_id+"/"+day;
+
+        try {
+            mqttClient.subscribe(TOPIC);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -94,5 +128,9 @@ public class BottomViewActivity extends AppCompatActivity {
 
     public String getDay(){
         return day;
+    }
+
+    public MqttClient getMqttClient(){
+        return mqttClient;
     }
 }
