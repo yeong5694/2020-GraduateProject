@@ -54,13 +54,6 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
         this.kakao_name = kakao_name;
     }
 
-    public PlanAdapter(String selected_room_id, Context context, OnStartDragListener startDragListener){
-        this.selected_room_id = selected_room_id;
-        mContext = context;
-        mStartDragListener = startDragListener;
-    }
-
-
 
 
     @NonNull
