@@ -240,7 +240,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         planRecyclerView = findViewById(R.id.planRecyclerView);
         //planAdapter = new PlanAdapter(selected_room_id);
 
-        planAdapter = new PlanAdapter(selected_room_id);
+        planAdapter = new PlanAdapter(selected_room_id, kakao_id, kakao_email, kakao_thumnail, kakao_name );
 
 
         planLayoutManager = new LinearLayoutManager(this);

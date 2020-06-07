@@ -15,7 +15,8 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
     public TextView  day_text;
     public ImageView drag_view;
 
-    public PlanViewHolder(@NonNull View itemView, Context parent, String selected_room_id) {
+    public PlanViewHolder(@NonNull View itemView, Context parent, String selected_room_id, Long kakao_id, String kakao_email,
+                          String kakao_name, String kakao_thumnail) {
         super(itemView);
         day_text = itemView.findViewById(R.id.day_text);
 
@@ -28,6 +29,10 @@ public class PlanViewHolder extends RecyclerView.ViewHolder {
                 ////////////////// BottomNavigationVIew로 이동
                 Intent intent = new Intent(parent, BottomViewActivity.class);
                 intent.putExtra("selected_room_id", selected_room_id);
+                intent.putExtra("kakao_id", kakao_id);
+                intent.putExtra("kakao_email", kakao_email);
+                intent.putExtra("kakao_name", kakao_name);
+                intent.putExtra("kakao_thumnail", kakao_thumnail);
 
                 String day = day_text.getText().toString();
                 String[] days = day.split("Day");

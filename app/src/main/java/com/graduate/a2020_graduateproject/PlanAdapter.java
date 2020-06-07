@@ -34,6 +34,10 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
 
     private ArrayList<PlanItem> planItems = new ArrayList<PlanItem>();
     private String selected_room_id;
+    private Long kakao_id;
+    private String kakao_email;
+    private String kakao_thumnail;
+    private String kakao_name;
 
     private Context mContext;
     private OnStartDragListener mStartDragListener;
@@ -42,8 +46,12 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
 
 
 
-    public PlanAdapter(String selected_room_id){
+    public PlanAdapter(String selected_room_id, Long kakao_id, String kakao_email, String kakao_thumnail, String kakao_name){
         this.selected_room_id = selected_room_id;
+        this.kakao_id = kakao_id;
+        this.kakao_email = kakao_email;
+        this.kakao_thumnail = kakao_thumnail;
+        this.kakao_name = kakao_name;
     }
 
     public PlanAdapter(String selected_room_id, Context context, OnStartDragListener startDragListener){
@@ -61,7 +69,8 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanViewHolder>
         View v = LayoutInflater.from(
                 parent.getContext()
         ).inflate(R.layout.plan_list, parent, false);
-        return new PlanViewHolder(v, parent.getContext(), selected_room_id);
+        return new PlanViewHolder(v, parent.getContext(), selected_room_id, kakao_id, kakao_email, kakao_name,
+                kakao_thumnail);
     }
 
 

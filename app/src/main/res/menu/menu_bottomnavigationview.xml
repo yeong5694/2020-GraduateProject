@@ -9,5 +9,9 @@
         android:id="@+id/mapItem"
         android:icon="@drawable/baseline_place_black_18dp"
         android:title="지도" />
+    <item
+        android:id="@+id/chatItem"
+        android:icon="@drawable/baseline_chat_black_18dp"
+        android:title="채팅" />
 
 </menu>
