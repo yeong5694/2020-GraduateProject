@@ -536,15 +536,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
     private void connectMqtt() throws  Exception{
 
-        System.out.println("ConnectMqtt() 시작");  /// 192.168.0.5   18.204.210.252 tcp://192.168.56.1:1883 //탄력적 ip 3.224.178.67
-        mqttClient=new MqttClient("tcp://3.224.178.67:1883", MqttClient.generateClientId(), null);
-        System.out.println("ConnectMqtt() 연결 준비" +MqttClient.generateClientId());
-
-        mqttClient.connect();
-
-        System.out.println("ConnectMqtt() 연결" +MqttClient.generateClientId());
-
-        mqttClient.subscribe(TOPIC);
+        mqttClient = ((BottomViewActivity) getActivity()).getMqttClient();
 
         mqttClient.setCallback(new MqttCallback() {
             @Override
@@ -642,6 +634,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             }
         });
     }
+
+
 
 
 
