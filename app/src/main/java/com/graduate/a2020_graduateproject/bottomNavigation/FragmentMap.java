@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject.bottomNavigation;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Geocoder;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -137,6 +138,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 }
                 markerList.clear();
+
                 DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
 
                 if (mapInfoSnapshot != null) {

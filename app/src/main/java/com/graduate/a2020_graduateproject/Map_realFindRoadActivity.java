@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -61,16 +62,31 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private TMapPoint tMapStart;
     private TMapPoint tMapDest;
     private ArrayList item;
-    private Drawable firstXImage;
 
     private Spinner spinner;
+
+    private Spinner spinner_start;
+    private Spinner spinner_dest;
+
     private ArrayAdapter<String> adapter;
+
+//    private MapStartAdapter startEditAdapter;
+//    private MapStartAdapter destEditAdapter;
+
+    private ArrayList startList;
+    private ArrayList destList;
+
+    private ArrayList<MapInfoIndex> startInfoList;
+    private ArrayList<MapInfoIndex> destInfoList;
+
 
     private ArrayList<LatLng> clickList;
     ArrayList<TMapPoint> tMapPoints;
 
     private DatabaseReference mapDataReference=null;
     private String Mapkey="";
+    private String DayKey="";
+
 
     private Button button_find;
 
@@ -88,9 +104,20 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         text_start=findViewById(R.id.text_start);
         text_dest=findViewById(R.id.text_dest);
+
+        spinner_start=findViewById(R.id.spinner_start);
+        spinner_dest=findViewById(R.id.spinner_dest);
+
         spinner=findViewById(R.id.spinner);
+
         button_find=findViewById(R.id.button_find);
         button_find.setVisibility(View.GONE);
+
+        startList=new ArrayList<>();
+        destList=new ArrayList<>();
+
+        startInfoList=new ArrayList<>();
+        destInfoList=new ArrayList<>();
 
         clickList=new ArrayList<>();
         tMapPoints=new ArrayList<>();
@@ -107,7 +134,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
         mapDataReference.addListenerForSingleValueEvent(new ValueEventListener() {
-
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 int count=0;
@@ -119,30 +145,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                for(int i=0;i<count;i++){
                    item.add("DAY "+(i+1));
                }
-
-
-//                DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
-
-  /*              if (mapInfoSnapshot != null) {
-                    System.out.println("firebase에서 받아옴 ");
-                    for (DataSnapshot snapshot : mapInfoSnapshot.getChildren()) {
-
-                        double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
-                        double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
-                        String fireName = snapshot.child("name").getValue().toString();
-
-                        System.out.println("firebase에서 불러온 Nmae : "+fireName);
-
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        LatLng fireLatlng = new LatLng(fireLat, fireLng);
-                        markerOptions.position(fireLatlng);
-                        markerOptions.title(fireName);
-
-                        Marker fireMarker = gMap.addMarker(markerOptions);
-                        markerList.add(fireMarker);
-                    }
-                }
-*/
             }
 
             @Override
@@ -156,22 +158,29 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         adapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, item);
         spinner.setAdapter(adapter);
 
+        final MapStartAdapter startEditAdapter=new MapStartAdapter(this,1, startInfoList);
+        spinner_start.setAdapter(startEditAdapter);
+
+        final MapStartAdapter destEditAdapter=new MapStartAdapter(this,1, destInfoList);
+        spinner_dest.setAdapter(destEditAdapter);
 
 
 
         AutoCompleteTextView autoCompleteStartTextView=findViewById(R.id.text_start); //
-        MapPlaceAutoSuggestAdapter startAdapter=new MapPlaceAutoSuggestAdapter(this,1);
-        autoCompleteStartTextView.setAdapter(startAdapter);
+        final MapPlaceAutoSuggestAdapter[] startAdapter = {new MapPlaceAutoSuggestAdapter(this, 1)};
+        autoCompleteStartTextView.setAdapter(startAdapter[0]);
 
         AutoCompleteTextView autoCompleteDestTextView=findViewById(R.id.text_dest); //
         MapPlaceAutoSuggestAdapter destAdapter=new MapPlaceAutoSuggestAdapter(this,1);
         autoCompleteDestTextView.setAdapter(destAdapter);
 
+        spinner_start.setVisibility(View.GONE);
+        spinner_dest.setVisibility(View.GONE);
 
         autoCompleteStartTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MapAddressItem mapAddressItem=startAdapter.getItem(position);
+                MapAddressItem mapAddressItem= startAdapter[0].getItem(position);
                 double apos=mapAddressItem.getLatitude();
                 double bpos=mapAddressItem.getLongitude();
 
@@ -283,6 +292,8 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+
                 if(spinner.getItemAtPosition(position).equals("선택")){
                     autoCompleteDestTextView.setVisibility(View.VISIBLE);
                     autoCompleteStartTextView.setVisibility(View.VISIBLE);
@@ -290,11 +301,95 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
                 }
 
-                if(spinner.getItemAtPosition(position).equals("마커")){
+                else if(spinner.getItemAtPosition(position).equals("마커")){
                     autoCompleteDestTextView.setVisibility(View.GONE);
                     autoCompleteStartTextView.setVisibility(View.GONE);
                     image_find.setVisibility(View.GONE);
                     button_find.setVisibility(View.VISIBLE);
+
+                }
+
+               else{
+
+                    autoCompleteDestTextView.setVisibility(View.GONE);
+                    autoCompleteStartTextView.setVisibility(View.GONE);
+
+                    spinner_start.setVisibility(View.VISIBLE);
+                    spinner_dest.setVisibility(View.VISIBLE);
+
+                    String findDay=spinner.getItemAtPosition(position).toString();
+                    System.out.println("findDay : "+findDay);
+
+                    String day=findDay.split(" ")[1].toString();
+
+                    System.out.println("findDay : "+findDay+" day : "+day);
+
+                    mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                            .child("schedule_list");
+                    mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
+
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+//                            startList.clear();
+//                            destList.clear();
+                            startInfoList.clear();
+                            destInfoList.clear();
+
+                            int cnt=0;
+                            System.out.println("dataSnapshot.getCHildCount() : "+dataSnapshot.getChildrenCount());
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                cnt+=1;
+                               DayKey = snapshot.getKey();
+                               System.out.println("snapshot daykey : " + DayKey);
+
+                            }
+
+
+                            System.out.println("cnt : "+cnt+"DayKey : "+DayKey);
+                            DataSnapshot daySnapshot=dataSnapshot.child(DayKey).child("map_info");
+
+                              if (daySnapshot != null) {
+                                  System.out.println("firebase에서 day 받아옴 ");
+
+                                  for (DataSnapshot snapshot : daySnapshot.getChildren()) {
+                                      System.out.println("snapshot 받아오기");
+
+                                      double dayLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
+                                      double dayLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
+                                      String dayName = snapshot.child("name").getValue().toString();
+                                      int dayIndex = Integer.parseInt(snapshot.child("index").getValue().toString());
+
+                                      System.out.println("daySnapShot : " + dayLat + dayLng + dayName + dayIndex);
+                                   //   startList.add(dayName);
+                                   //   destList.add(dayName);
+                                      MapInfoIndex mapInfo=new MapInfoIndex(dayLat, dayLng, dayName, dayIndex);
+                                      startInfoList.add(mapInfo);
+                                      destInfoList.add(mapInfo);
+
+//                                      startList.add(mapInfo);
+  //                                    destList.add(mapInfo.name);
+
+                                //          startList.add(new MapInfoIndex(dayLat, dayLng, dayName, dayIndex));
+                                  //        destList.add(new MapInfoIndex(dayLat, dayLng, dayName, dayIndex));
+                                  }
+                                  startEditAdapter.notifyDataSetChanged();
+                                  destEditAdapter.notifyDataSetChanged();
+                              }
+
+
+
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+
 
                 }
             }
@@ -304,9 +399,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
             }
         });
-
-
-
 
     }
 
@@ -563,4 +655,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         return calDistance;
     }
+
+
 }
