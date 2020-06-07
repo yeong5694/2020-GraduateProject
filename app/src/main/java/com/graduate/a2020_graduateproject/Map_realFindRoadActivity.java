@@ -70,12 +70,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
     private ArrayAdapter<String> adapter;
 
-//    private MapStartAdapter startEditAdapter;
-//    private MapStartAdapter destEditAdapter;
-
-    private ArrayList startList;
-    private ArrayList destList;
-
     private ArrayList<MapInfoIndex> startInfoList;
     private ArrayList<MapInfoIndex> destInfoList;
 
@@ -113,9 +107,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         button_find=findViewById(R.id.button_find);
         button_find.setVisibility(View.GONE);
 
-        startList=new ArrayList<>();
-        destList=new ArrayList<>();
-
         startInfoList=new ArrayList<>();
         destInfoList=new ArrayList<>();
 
@@ -124,10 +115,9 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         selected_room_id=intent.getExtras().getString("selected_room_id");
-      //  day=intent.getExtras().getString("day");
+
         item=new ArrayList();
         item.add("선택");
-        item.add("마커");
 
 
 
@@ -158,12 +148,69 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         adapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, item);
         spinner.setAdapter(adapter);
 
+        startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
+        destInfoList.add(new MapInfoIndex(0,0,"도착지", 0));
+
+
         final MapStartAdapter startEditAdapter=new MapStartAdapter(this,1, startInfoList);
         spinner_start.setAdapter(startEditAdapter);
 
         final MapStartAdapter destEditAdapter=new MapStartAdapter(this,1, destInfoList);
         spinner_dest.setAdapter(destEditAdapter);
 
+
+        spinner_start.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinner_start.getSelectedItem().toString().equals("출발지")) {
+                    Toast.makeText(getApplicationContext(), "출발지를 선택해주세요!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    MapInfoIndex startMapInfo = startEditAdapter.getItem(position);
+                    double slat = startMapInfo.latitude;
+                    double slng = startMapInfo.longitude;
+
+                    LatLng sLatlng = new LatLng(slat, slng);
+                    MarkerOptions smarkerOption = new MarkerOptions();
+                    smarkerOption.position(sLatlng);
+                    smarkerOption.title(startMapInfo.getName());
+                    Marker startMarker = gMap.addMarker(smarkerOption);
+                    startMarker.showInfoWindow();
+
+                    tMapStart = new TMapPoint(slat, slng);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        spinner_dest.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinner_dest.getSelectedItem().toString().equals("도착지")) {
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    MapInfoIndex destMapInfo = startEditAdapter.getItem(position);
+                    double dlat = destMapInfo.latitude;
+                    double dlng = destMapInfo.longitude;
+
+                    LatLng dLatlng = new LatLng(dlat, dlng);
+                    MarkerOptions dmarkerOption = new MarkerOptions();
+                    dmarkerOption.position(dLatlng);
+                    dmarkerOption.title(destMapInfo.getName());
+                    Marker destMarker = gMap.addMarker(dmarkerOption);
+                    destMarker.showInfoWindow();
+
+                    tMapDest = new TMapPoint(dlat, dlng);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
 
         AutoCompleteTextView autoCompleteStartTextView=findViewById(R.id.text_start); //
@@ -219,12 +266,26 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         image_find.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(TextUtils.isEmpty(text_start.getText())){
-                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요", Toast.LENGTH_SHORT).show();
+
+
+                MapInfoIndex empty_start=(MapInfoIndex) spinner_start.getSelectedItem();
+                MapInfoIndex empty_dest=(MapInfoIndex) spinner_dest.getSelectedItem();
+
+
+                if(TextUtils.isEmpty(text_start.getText()) && spinner_start.getVisibility()==View.GONE){
+                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요1", Toast.LENGTH_SHORT).show();
                 }
-                else if(TextUtils.isEmpty(text_dest.getText())){
-                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요", Toast.LENGTH_SHORT).show();
+                else if(text_start.getVisibility()==View.GONE&& empty_start.name.equals("출발지") ){
+                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요2", Toast.LENGTH_SHORT).show();
                 }
+
+                else if(TextUtils.isEmpty(text_dest.getText()) && spinner_dest.getVisibility()==View.GONE){
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요1", Toast.LENGTH_SHORT).show();
+                }
+                else if(text_dest.getVisibility()==View.GONE && empty_dest.name.equals("도착지") ){
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요2", Toast.LENGTH_SHORT).show();
+                }
+
                 else {
                     gMap.clear();
                     LatLng startLng = new LatLng(tMapStart.getLatitude(), tMapStart.getLongitude());
@@ -247,7 +308,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
-
+/*
         button_find.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -288,28 +349,25 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
-
+*/
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-
                 if(spinner.getItemAtPosition(position).equals("선택")){
+
                     autoCompleteDestTextView.setVisibility(View.VISIBLE);
                     autoCompleteStartTextView.setVisibility(View.VISIBLE);
+
+                    spinner_start.setVisibility(View.GONE);
+                    spinner_dest.setVisibility(View.GONE);
+
                     image_find.setVisibility(View.VISIBLE);
 
                 }
-
-                else if(spinner.getItemAtPosition(position).equals("마커")){
-                    autoCompleteDestTextView.setVisibility(View.GONE);
-                    autoCompleteStartTextView.setVisibility(View.GONE);
-                    image_find.setVisibility(View.GONE);
-                    button_find.setVisibility(View.VISIBLE);
-
-                }
-
                else{
+                   autoCompleteStartTextView.setText("");
+                   autoCompleteDestTextView.setText("");
 
                     autoCompleteDestTextView.setVisibility(View.GONE);
                     autoCompleteStartTextView.setVisibility(View.GONE);
@@ -321,7 +379,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                     System.out.println("findDay : "+findDay);
 
                     String day=findDay.split(" ")[1].toString();
-
                     System.out.println("findDay : "+findDay+" day : "+day);
 
                     mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
@@ -330,11 +387,12 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-//                            startList.clear();
-//                            destList.clear();
                             startInfoList.clear();
                             destInfoList.clear();
+
+                            startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
+                            destInfoList.add(new MapInfoIndex(0,0,"도착지", 0));
+
 
                             int cnt=0;
                             System.out.println("dataSnapshot.getCHildCount() : "+dataSnapshot.getChildrenCount());
@@ -343,9 +401,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                                 cnt+=1;
                                DayKey = snapshot.getKey();
                                System.out.println("snapshot daykey : " + DayKey);
-
                             }
-
 
                             System.out.println("cnt : "+cnt+"DayKey : "+DayKey);
                             DataSnapshot daySnapshot=dataSnapshot.child(DayKey).child("map_info");
@@ -362,25 +418,14 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                                       int dayIndex = Integer.parseInt(snapshot.child("index").getValue().toString());
 
                                       System.out.println("daySnapShot : " + dayLat + dayLng + dayName + dayIndex);
-                                   //   startList.add(dayName);
-                                   //   destList.add(dayName);
                                       MapInfoIndex mapInfo=new MapInfoIndex(dayLat, dayLng, dayName, dayIndex);
                                       startInfoList.add(mapInfo);
                                       destInfoList.add(mapInfo);
 
-//                                      startList.add(mapInfo);
-  //                                    destList.add(mapInfo.name);
-
-                                //          startList.add(new MapInfoIndex(dayLat, dayLng, dayName, dayIndex));
-                                  //        destList.add(new MapInfoIndex(dayLat, dayLng, dayName, dayIndex));
                                   }
                                   startEditAdapter.notifyDataSetChanged();
                                   destEditAdapter.notifyDataSetChanged();
                               }
-
-
-
-
                         }
 
                         @Override
@@ -388,9 +433,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
                         }
                     });
-
-
-
                 }
             }
 
@@ -401,6 +443,9 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         });
 
     }
+
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {

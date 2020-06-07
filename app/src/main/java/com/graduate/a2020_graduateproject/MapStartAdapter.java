@@ -69,4 +69,5 @@ public class MapStartAdapter extends ArrayAdapter<MapInfoIndex>  {
     public long getItemId(int position) {
         return position;
     }
+
 }
