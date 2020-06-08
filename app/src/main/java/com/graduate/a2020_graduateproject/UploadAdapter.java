@@ -20,9 +20,7 @@ public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
     @NonNull
     @Override
     public UploadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(
-                parent.getContext()
-        ).inflate(R.layout.gallery_image_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_image_item, parent, false);
         return new UploadViewHolder(v);
     }
 
@@ -31,8 +29,10 @@ public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
 
         // 여기서 이미지 띄우면 되는데 imgage url이 "com.google.android~" 여서 안뜨는데 ㅜㅠ 뭐로 바꿔야해? ㅜㅠ
         // load()여기에 넣으면 돼
-        Glide.with(holder.image).load(uploadItems.get(position).getImageUrl())
-                .error(R.drawable.kakao_default_profile_image).into(holder.image);
+        Glide.with(holder.image)
+                .load(uploadItems.get(position).getImageUrl())
+                .error(R.drawable.kakao_default_profile_image)
+                .into(holder.image);
 
 
     }
