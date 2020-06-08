@@ -68,7 +68,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
-        setTitle("갤러리");
+        setTitle(selected_room_name + " 갤러리");
 
         recyclerView = findViewById(R.id.recyclerView);
         uploadAdapter = new UploadAdapter();
