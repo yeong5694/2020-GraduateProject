@@ -53,6 +53,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Stack;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -125,7 +126,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
-            mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -157,6 +158,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerList.add(fireMarker);
 
                         System.out.println(fireMarker);
+
+                    }
+                    if(markerList.size()>0){
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerList.get(0).getPosition(), 15));
+                    }
+                    else{
 
                     }
                     System.out.println("-------------------------------------------------------");
@@ -230,7 +237,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             @Override
             public void onClick(View v) {
 
-               mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
+                mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
@@ -329,8 +336,10 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerOptions.position(latLng);
                         markerOptions.title(addressOutput);
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
                         Marker marker=gMap.addMarker(markerOptions);
+
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
                         marker.showInfoWindow();
 
                         JSONObject json=new JSONObject();
@@ -447,40 +456,55 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         }
     }
 
+
     public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
 
-        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+        double weight[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
 
         ArrayList<Marker> LatDistance=new ArrayList<>();
 
         for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
             for(int j=0;j<list.size();j++){
                 if(i==j){
-                    a[i][j]=0;
+                    weight[i][j]=0;
                 }
                 else{
-                    a[i][j]=calculate(list.get(i).getPosition(), list.get(j).getPosition());
+                    weight[i][j]=calculate(list.get(i).getPosition(), list.get(j).getPosition());
                     System.out.println( list.get(i).getPosition().latitude+" "+list.get(i).getPosition().longitude);
-                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
+                    System.out.println(i+" + "+j+" calculate 값 : "+weight[i][j]);
                 }
             }
         }
 
-        for(int v=0;v<a.length;v++){
-            for(int u=0;u<a.length;u++){
-                System.out.print(a[v][u]+" ");
+        for(int v=0;v<weight.length;v++){
+            for(int u=0;u<weight.length;u++){
+                System.out.print(weight[v][u]+" ");
             }
             System.out.println("");
         }
 
+        // -------------------- 서녕아 여기 좀 고쳣어 ------------
+        double[] distance = null;
+        boolean[] visited = null;
+
         int start=0;
-        double[] distance=a[0].clone();
 
-        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+        if(weight.length != 0){
 
-        System.out.println("a.length : "+a.length);
+            System.out.println("weight.length : "+weight.length);
 
-        for(int i=0;i<a.length;i++){
+            distance=weight[start].clone();
+            visited=new boolean[weight.length]; //방문한 곳 기록
+        }
+        else{
+            System.out.println("weight.length : "+weight.length);
+        }
+
+        // -------------------------------------- ------------
+
+        System.out.println("weight.length : "+weight.length);
+
+        for(int i=0;i<weight.length;i++){
             int minIndex=-1;
             double min=10000000;
 
@@ -490,6 +514,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     min=distance[j];
                 }
             }
+            distance=weight[minIndex].clone();
 
             visited[minIndex]=true;
             LatDistance.add(list.get(minIndex));
@@ -497,13 +522,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
-                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
-                    distance[k]=distance[minIndex]+a[minIndex][k];
+                if(!visited[k] && distance[k]>distance[minIndex]+weight[minIndex][k]){
+                    distance[k]=distance[minIndex]+weight[minIndex][k];
                 }
             }
         }
         return LatDistance;
-
     }
 
 
@@ -511,20 +535,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
         double calDistance=0.0;
         double radius=6371; //지구 반지름
-    /*    double toRadian=Math.PI/180.0;
 
-        double deltaLat=Math.toRadians(Math.abs(origin.latitude-destination.latitude));
-        double deltaLog=Math.toRadians(Math.abs(origin.longitude-destination.longitude));
-
-        double sinDeltaLat=Math.sin(deltaLat/2);
-        double sinDeltaLog=Math.sin(deltaLog/2);
-
-        double root=Math.sqrt(sinDeltaLat*sinDeltaLat+ Math.cos(Math.toRadians(origin.latitude))*Math.cos(Math.toRadians(destination.latitude))*sinDeltaLog*sinDeltaLog);
-
-        calDistance=2*radius*Math.asin(root);
-
-        System.out.println("calDistance : "+calDistance);
-*/
         double dLat = Math.toRadians(destination.latitude - origin.latitude);
         double dLon = Math.toRadians(destination.longitude - origin.longitude);
 
@@ -638,9 +649,4 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             }
         });
     }
-
-
-
-
-
 }
