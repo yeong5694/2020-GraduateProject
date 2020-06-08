@@ -448,6 +448,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     }
 
     public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
+
         double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
 
         ArrayList<Marker> LatDistance=new ArrayList<>();
@@ -493,7 +494,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             visited[minIndex]=true;
             LatDistance.add(list.get(minIndex));
 
-            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex).getTitle());
+            System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
                 if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
@@ -501,7 +502,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 }
             }
         }
-
         return LatDistance;
 
     }

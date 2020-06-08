@@ -8,9 +8,9 @@
 <resources>
     <color name="colorPrimary">#A4B8DB</color>
     <color name="colorPrimaryDark">#9BB4E0</color>
-    <color name="colorAccent">#00C9D4</color>
-    <color name="colorSecondary">#feeae6</color>
-    <color name="colorSurface">#fffbfa</color>
+    <color name="colorAccent">#A4B8DB</color>
+    <color name="colorSecondary">#7A9FC9</color>
+    <color name="colorSurface">#7A9FC9</color>
     <color name="colorBackground">#FFFFFF</color>
     <color name="colorError">#c5032b</color>
     <color name="colorPrimaryVariant">#442c2e</color>
