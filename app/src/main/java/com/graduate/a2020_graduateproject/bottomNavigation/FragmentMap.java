@@ -53,6 +53,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Stack;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -159,6 +160,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         System.out.println(fireMarker);
 
                     }
+
+                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerList.get(0).getPosition(), 15));
                     System.out.println("-------------------------------------------------------");
                 }
 
@@ -329,8 +332,10 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerOptions.position(latLng);
                         markerOptions.title(addressOutput);
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-
                         Marker marker=gMap.addMarker(markerOptions);
+
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+
                         marker.showInfoWindow();
 
                         JSONObject json=new JSONObject();
@@ -447,6 +452,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         }
     }
 
+
     public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
 
         double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
@@ -495,6 +501,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     min=distance[j];
                 }
             }
+            distance=a[minIndex].clone();
 
             visited[minIndex]=true;
             LatDistance.add(list.get(minIndex));
@@ -502,7 +509,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
-                if(visited[k])
                 if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
                     distance[k]=distance[minIndex]+a[minIndex][k];
                 }
