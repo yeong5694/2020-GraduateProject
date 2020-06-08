@@ -126,7 +126,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
-        mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
+            mapDataReference.orderByChild("day").equalTo(day).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -237,7 +237,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             @Override
             public void onClick(View v) {
 
-                mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
+               mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
@@ -336,6 +336,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerOptions.position(latLng);
                         markerOptions.title(addressOutput);
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
                         Marker marker=gMap.addMarker(markerOptions);
 
                         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
@@ -649,4 +650,9 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             }
         });
     }
+
+
+
+
+
 }

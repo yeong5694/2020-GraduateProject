@@ -493,7 +493,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         // 템플릿 생성
         FeedTemplate params = FeedTemplate
                 .newBuilder(ContentObject.newBuilder("여행초대코드",
-                        "@drawable/sharing_trips_invite_image",
+                        "https://k.kakaocdn.net/dn/DlloE/btqEHxlvres/vSV93AjysjIqPFdhEj7QBK/img_640x640.jpg",
                         LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                 .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
                         .setDescrption(room_id)

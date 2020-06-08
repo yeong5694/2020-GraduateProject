@@ -207,7 +207,9 @@ public class LoginActivity extends AppCompatActivity {
 
                             kakao_name = profile.getNickname();
 
-                            updateUser(result.getId(), profile.getNickname(), kakaoAccount.getEmail(), profile.getThumbnailImageUrl()); // 파이어베이스에 저장
+                            //updateUser(result.getId(), profile.getNickname(), kakaoAccount.getEmail(), profile.getThumbnailImageUrl()); // 파이어베이스에 저장
+                            updateUser(result.getId(), profile.getNickname(), kakaoAccount.getEmail(), profile.getProfileImageUrl()); // 파이어베이스에 저장
+
                             redirectMainActivity();
 
                         }

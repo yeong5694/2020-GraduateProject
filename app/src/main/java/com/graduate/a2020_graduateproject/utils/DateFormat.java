@@ -7,6 +7,7 @@ import java.util.Locale;
 public class DateFormat {
     public final static String CALENDAR_HEADER_FORMAT = "yyyy년 MM월";
     public final static String DAY_FORMAT = "d";
+    public final static String SCHEDULE_DAY_FORMAT = "d";
 
     public static String getDate(long date, String pattern) {
         try {
@@ -17,5 +18,6 @@ public class DateFormat {
             return " ";
         }
     }
+
 
 }
