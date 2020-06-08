@@ -59,7 +59,7 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
         kakao_thumnail = intent.getExtras().getString("kakao_thumnail");
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
-        Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
 
 
         masterAdapter = new UserAdapter(selected_room_id);
