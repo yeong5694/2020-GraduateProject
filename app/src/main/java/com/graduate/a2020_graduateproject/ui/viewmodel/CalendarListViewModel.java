@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject.ui.viewmodel;
 
 import androidx.lifecycle.ViewModel;
 
+import com.graduate.a2020_graduateproject.Schedule;
 import com.graduate.a2020_graduateproject.data.TSLiveData;
 import com.graduate.a2020_graduateproject.utils.DateFormat;
 import com.graduate.a2020_graduateproject.utils.Keys;
@@ -62,9 +63,13 @@ public class CalendarListViewModel extends ViewModel {
                 }
                 for (int j = 1; j <= max; j++) {
                    // if (true)   //일정이 있는 날짜면
-                   //     ;//구분이 가능한 타입이되 그레고리캘린더로
-
-                    calendarList.add(new GregorianCalendar(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), j));
+                   //     ;//구분이 가능한 타입이되 그레고리캘린더
+                    if(5<=j&&j<=7){ //5~7일 여행이면
+                        calendarList.add(new Schedule(Integer.toString(j))); //일정이 있는 일자 타입
+                    }
+                    else {
+                        calendarList.add(new GregorianCalendar(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), j)); //일자타입
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
