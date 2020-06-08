@@ -61,6 +61,9 @@ public class CalendarListViewModel extends ViewModel {
                     calendarList.add(Keys.EMPTY);
                 }
                 for (int j = 1; j <= max; j++) {
+                   // if (true)   //일정이 있는 날짜면
+                   //     ;//구분이 가능한 타입이되 그레고리캘린더로
+
                     calendarList.add(new GregorianCalendar(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), j));
                 }
             } catch (Exception e) {

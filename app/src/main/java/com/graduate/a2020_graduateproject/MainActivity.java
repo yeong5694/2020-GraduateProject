@@ -6,7 +6,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -312,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if(id == R.id.myCalendar) { // 내비게이션 테스트
 
-            Intent intent = new Intent(MainActivity.this, MyCalendarActivity.class);
+            Intent intent = new Intent(MainActivity.this, MyCalendarMainActivity.class);
             intent.putExtra("kakao_id", kakao_id);
             intent.putExtra("kakao_email", kakao_email);
             intent.putExtra("kakao_name", kakao_name);
