@@ -3,33 +3,20 @@ package com.graduate.a2020_graduateproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
-import androidx.loader.content.CursorLoader;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,16 +28,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Objects;
-
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class SharingGalleryActivity extends AppCompatActivity { //implements GalleryAdapter.OnItemClickListener {
 
@@ -58,34 +36,21 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
     private OutputStream outputStream;
     private Uri image_uri;
-
     private String imagePath;
 
     private Toolbar toolbar;
     private FloatingActionButton uploadButton;
-    private Button firebaseUploadButton;
-    private Button saveImageButton;
-
-//    private RecyclerView recyclerView;
-//    //private RecyclerView.Adapter galleryAdapter;
-//    private RecyclerView.Adapter adapter;
-//    //    private GalleryAdapter adapter;
-//    //private GalleryAdapter galleryAdapter;
-//    private RecyclerView.LayoutManager layoutManager;
-//    private ArrayList<Upload> imageList;
 
     private RecyclerView recyclerView;
     private UploadAdapter uploadAdapter;
     private GridLayoutManager layoutManager;
 
-
-    private FirebaseStorage firebaseStorage;
+    //    private FirebaseStorage firebaseStorage;
     //    private FirebaseStorage storage;
     private FirebaseDatabase database;
     private StorageReference storageReference;
     private DatabaseReference databaseReference;
-//    private ValueEventListener dbListener;
-
+    //    private ValueEventListener dbListener;
     private StorageTask uploadTask;
 
     // 선택한 여행방 정보
@@ -95,7 +60,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_share_gallery);
+        setContentView(R.layout.activity_sharing_gallery);
 
         Intent intent = getIntent();
         selected_room_id = intent.getExtras().getString("selected_room_id");
@@ -104,16 +69,6 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         setTitle("갤러리");
-//
-//        recyclerView = findViewById(R.id.recyclerView);
-//        recyclerView.setHasFixedSize(true); // 리사이클러뷰 기존 성능 강화
-//        layoutManager = new GridLayoutManager(this, 3);
-//        recyclerView.setLayoutManager(layoutManager);
-//
-//        imageList = new ArrayList<>();  // Upload 객체를 담을 ArrayList. 어댑터 쪽으로 전달
-//
-//        adapter = new GalleryAdapter(this, imageList);
-//        recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
 
         recyclerView = findViewById(R.id.recyclerView);
         uploadAdapter = new UploadAdapter();
@@ -127,7 +82,6 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             public void onClick(View v) {
 
                 openFileChooser();  // 저장소(갤러리) 연결해서 이미지 선택
-
             }
         });
 
@@ -137,24 +91,18 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         storageReference = FirebaseStorage.getInstance().getReference("upload_images").child(selected_room_name); // Storage에 upload_images 폴더 만듦
         databaseReference = database.getReference().child("sharing_trips").child("gallery_list").child(selected_room_id);
 
-
-  // 여기 주석 풀면 갤러리에서 선택한 이미지가 현재 파이어베이스 리얼타임 디비에 들어있는 데이터 개수 다음 칸에 보였다가 사라짐..
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Firebase Database의 데이터를 받아오는 곳
-                //imageList.clear();
+                // Firebase Database의 데이터를 받아옴
                 uploadAdapter.clear();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {  // 반복문으로 데이터 리스트 추출
-                    // Firebase로부터 Database로부터 가져온 데이터를 Upload 클래스에 담아주고, 얘를 ArrayList에 담아서 어댑터로 넘겨주는...
-                    //Upload upload = snapshot.getValue(Upload.class);    // 만들었던 Upload 객체에 데이터를 담는다
                     String key = snapshot.getKey();
-
-                    //imageList.add(upload);  // 담은 데이터들을 배열리스트에 넣고 리사이클러뷰로 보낼 준비
+                    System.out.println(key);
 
                     String imageUrl = snapshot.child("imageUrl").getValue().toString();
-                    System.out.println("image key : "+ key + " image Url :" + imageUrl);
+
                     Upload newItem = new Upload(imageUrl, key);
 
                     uploadAdapter.add(newItem);
@@ -162,8 +110,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 }
 
                 // 수정하면 항상 어댑터 쪽에 새로고침을 해줘야 반영이 됨
-                //adapter.notifyDataSetChanged();  // 리스트 저장 및 새로고침
-                uploadAdapter.notifyDataSetChanged();
+                uploadAdapter.notifyDataSetChanged();   // 저장 및 새로고침
             }
 
             @Override
@@ -172,12 +119,6 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 Log.e("SharingGalleryActivity", String.valueOf(databaseError.toException())); // 에러문 출력
             }
         });
-
-        //adapter = new GalleryAdapter(this, imageList);
-        //recyclerView.setAdapter(adapter);   // 리사이클러뷰에 어댑터 연결
-
-
-
     }
     // onCreate() 여기까지 //
 
@@ -193,17 +134,6 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         intent.setType("image/*");  // 이미지 타입의 intent
         intent.setAction(Intent.ACTION_GET_CONTENT); // intent 액션 지정
         startActivityForResult(intent, PICK_IMAGE_REQUEST); // 액티비티를 실행하고 그 액티비티로부터 결과를 수신
-
-
-        /*
-        // 이렇게 하면 여행방 갤러리를 누르면 /Pictures/SharingTrips 경로의 모든 이미지가 새로운 인텐트로 열림
-        Uri targetUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        //String targetDir = Environment.getExternalStorageDirectory().toString() + "/DCIM/Camera";   // 특정 경로!!
-        String targetDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/SharingTrips";
-        targetUri = targetUri.buildUpon().appendQueryParameter("bucketId", String.valueOf(targetDir.toLowerCase().hashCode())).build();
-        Intent intent = new Intent(Intent.ACTION_VIEW, targetUri);
-        startActivity(intent);
-        */
     }
 
     // startActivityForResult()로부터 수신한 결과는 onActivityResult()에 전달
@@ -211,27 +141,12 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        //System.out.println(data.getData());
-        //System.out.println(getPath(data.getData()));
-
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-//            imagePath = getPath(data.getData());
-//            File file = new File(imagePath);
-
-//            Upload upload = new Upload(Uri.fromFile(file).toString());
             image_uri = data.getData();
 
+//            Upload upload = new Upload(image_uri.toString());
 
-            Upload upload = new Upload(image_uri.toString());
-            /////////// 아래두줄 내가 주석해놨어
-            /////////// 여기서 파이어베이스에 사진 업로드 하는건가?
-            /////////// 이제 어댑터는 안건들여도 돼
-//            imageList.add(upload);
-//            adapter.notifyDataSetChanged();
-
-
-//            uploadFile(imagePath);
             if(uploadTask != null && uploadTask.isInProgress()) {
                 Toast.makeText(SharingGalleryActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
             }
@@ -272,55 +187,6 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         }
  */
     }
-    public String getPath(Uri uri){
-        String [] projection = { MediaStore.Images.Media.DATA };
-        CursorLoader cursorLoader = new CursorLoader(this, uri, projection, null, null, null);
-
-        Cursor cursor = cursorLoader.loadInBackground ();
-        int index = cursor.getColumnIndexOrThrow (MediaStore.Images.Media.DATA);
-
-        cursor.moveToFirst();
-
-        return cursor.getString(index);
-    }
-
-/*
-    private void uploadFile(String uri) {
-
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://graduationproject-43709.appspot.com");
-
-        Uri file = Uri.fromFile(new File(uri));
-        StorageReference riversRef = storageRef.child("upload_images/" + selected_room_name + "/" + file.getLastPathSegment());
-        UploadTask uploadTask = riversRef.putFile(file);
-
-        // Register observers to listen for when the download is done or if it fails
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                //@SuppressWarnings("VisibleForTests")
-                //Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Task<Uri> downloadUrl = taskSnapshot.getStorage().getDownloadUrl();
-
-                //Upload upload = new Upload(downloadUrl.toString());
-                //imageList.add(upload);
-                //adapter.notifyDataSetChanged();
-
-                Upload upload = new Upload(downloadUrl.toString());
-                //Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
-//                    String uploadId = databaseReference.push().getKey();
-//                    databaseReference.child(uploadId).setValue(upload);
-                //.getReference("sharing_trips").child("gallery_list").child(selected_room_id);
-                database.getReference("sharing_trips").child("gallery_list").child(selected_room_id).push().setValue(upload);
-            }
-        });
-    }
-*/
 
     ////////
     // Firebase Storage - /upload_images 폴더 아래, '여행방 이름 폴더' 안에 업로드됨
@@ -339,12 +205,19 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             uploadTask = fileReference.putFile(image_uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(SharingGalleryActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
-                    Upload upload = new Upload(taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
-                    //Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
-//                    String uploadId = databaseReference.push().getKey();
-//                    databaseReference.child(uploadId).setValue(upload);
-                    databaseReference.push().setValue(upload);
+
+                    fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Uri downloadUrl = uri;
+
+                            Upload upload = new Upload(downloadUrl.toString());
+                            String uploadId = databaseReference.push().getKey();
+                            databaseReference.child(uploadId).setValue(upload);
+
+                            Toast.makeText(SharingGalleryActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -352,6 +225,25 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                     Toast.makeText(SharingGalleryActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
+
+/* 업로드 잘 되는 코드
+            uploadTask = fileReference.putFile(image_uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(SharingGalleryActivity.this, "Upload successful", Toast.LENGTH_SHORT).show();
+//                    Upload upload = new Upload(taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
+                    Upload upload = new Upload(taskSnapshot.getStorage().getDownloadUrl().toString());
+                    String uploadId = databaseReference.push().getKey();
+                    databaseReference.child(uploadId).setValue(upload);
+//                    databaseReference.push().setValue(upload);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(SharingGalleryActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+*/
         }
         else {
             Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();

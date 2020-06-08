@@ -22,15 +22,26 @@ public class GalleryImageViewerActivity extends AppCompatActivity {
 
         // Get intent data
         Intent intent = getIntent();
+
+        Uri imageUri = Uri.parse(intent.getExtras().getString("clicked image"));
+        System.out.println(intent.getExtras().getString("clicked image"));
+
         // Get Selected Image Id
         /*
         int position = intent.getExtras().getInt("id");
         imageView.setImageResource(position);*/
 
-        Uri image_uri = Uri.parse(intent.getExtras().getString("uri"));
+//        Uri image_uri = Uri.parse(intent.getExtras().getString("uri"));
+
+
 
         Glide.with(this)
-                .load(image_uri)
+                .load(imageUri)
                 .into(imageView);
+/*
+        Glide.with(holder.image)
+                .load(uploadItems.get(position).getImageUrl())
+                .error(R.drawable.kakao_default_profile_image)
+                .into(holder.image);*/
     }
 }
