@@ -62,24 +62,23 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadView
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-/*
-                    int position = getAdapterPosition();
-                    if(position != RecyclerView.NO_POSITION) {
-                        RecyclerView item = uploadItems
-                    }
-*/
+
                     Context context = v.getContext();
                     Log.v("gallery", "context = " + v.getContext());
 
-                    Intent intent = new Intent(context, GalleryImageViewerActivity.class);
+                    Intent intent = new Intent(v.getContext(), GalleryImageViewerActivity.class);
 
-                    intent.putExtra("clicked image", itemView.toString());
-                    Log.v("gallery", "image = " + itemView.toString());
+                    int position = getAdapterPosition();
 
-                    context.startActivity(intent);
+                    if(position != RecyclerView.NO_POSITION) {
+                        intent.putExtra("clicked image", uploadItems.get(position).getImageUrl());
+                        Log.v("gallery", "image url = " + uploadItems.get(position).getImageUrl());
+
+                        context.startActivity(intent);
+                    }
+
                 }
             });
         }
-
     }
 }

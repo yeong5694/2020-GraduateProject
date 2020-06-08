@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,6 +54,8 @@ import java.util.List;
 
 public class Map_realFindRoadActivity extends AppCompatActivity
         implements OnMapReadyCallback {
+
+    private Toolbar toolbar;
 
     private GoogleMap gMap;
     private TextView text_start;
@@ -86,6 +90,10 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_realfindroad_layout);
 
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼
+        setTitle("길찾기");
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -699,5 +707,14 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         return calDistance;
     }
 
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{ // toolbar의 back 키 눌렀을 때 동작
+                finish();
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

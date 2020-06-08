@@ -52,8 +52,6 @@ import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-
-
     private Toolbar toolbar;
 
     private DrawerLayout drawerLayout;
@@ -426,9 +424,6 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
             finish();
 
         }
-        else if(id == R.id.settings) {
-
-        }
         else if(id == R.id.logout) {
 
             onClickLogout();
@@ -442,6 +437,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
