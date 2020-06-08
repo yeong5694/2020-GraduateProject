@@ -37,10 +37,12 @@ import com.kakao.message.template.FeedTemplate;
 import com.kakao.message.template.LinkObject;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
+import com.kakao.network.storage.ImageUploadResponse;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,6 +51,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+
 
     private Toolbar toolbar;
 
@@ -463,6 +467,29 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
     }
     public void createTemplate(String room_id){
+
+//        File imageFile = new File("E:/4학년1학기/캡스톤디자인/제출용/카톡공유이미지");
+//
+//
+//        KakaoLinkService.getInstance()
+//                .uploadImage(this, true, imageFile, new ResponseCallback<ImageUploadResponse>() {
+//                    @Override
+//                    public void onFailure(ErrorResult errorResult) {
+//                        Log.e("KAKAO_API", "이미지 업로드 실패: " + errorResult);
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(ImageUploadResponse result) {
+//                        Log.i("KAKAO_API", "이미지 업로드 성공");
+//
+//                        Log.d("KAKAO_API", "URL: " + result.getOriginal().getUrl());
+//                        String imageUrl = result.getOriginal().getUrl();
+//                        System.out.println("kakao image url :" + imageUrl);
+//
+//                        // TODO: 템플릿 컨텐츠로 이미지 URL 입력
+//                    }
+//                });
+
         // 기본적으로 구현해야 할 것
         Map<String, String> serverCallbackArgs = new HashMap<String, String>();
         serverCallbackArgs.put("user_id", "${current_user_id}");
@@ -470,7 +497,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         // 템플릿 생성
         FeedTemplate params = FeedTemplate
                 .newBuilder(ContentObject.newBuilder("여행초대코드",
-                        "",
+                        "@drawable/sharing_trips_invite_image",
                         LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                 .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
                         .setDescrption(room_id)
