@@ -9,7 +9,24 @@ import java.util.Map;
 public class MapInfoIndex implements Parcelable{
 
         double latitude; //위도
-        double longitude; //경도
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    double longitude; //경도
         String name; //장소이름
         int index;
 
@@ -40,31 +57,7 @@ public class MapInfoIndex implements Parcelable{
                 return new MapInfoIndex[size];
             }
         };
-        /*
-            public double getXpos() {
-                return xpos;
-            }
 
-            public double getYpos() {
-                return ypos;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public void setXpos(double xpos) {
-                this.xpos = xpos;
-            }
-
-            public void setYpos(double ypos) {
-                this.ypos = ypos;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-        */
         @Override
         public int describeContents() {
             return 0;

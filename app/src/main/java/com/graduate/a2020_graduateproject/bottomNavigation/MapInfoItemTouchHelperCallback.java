@@ -8,6 +8,7 @@ public class MapInfoItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private final onItemMoveListener mItemMoveListener;
     boolean mintem = true;
+    boolean mintem2 = true;
 
     public MapInfoItemTouchHelperCallback(onItemMoveListener listener){
         mItemMoveListener = listener;
@@ -24,7 +25,7 @@ public class MapInfoItemTouchHelperCallback extends ItemTouchHelper.Callback {
         int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
         int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
 
-        return makeMovementFlags(dragFlags, 0);
+        return makeMovementFlags(dragFlags, swipeFlags);
     }
 
     @Override
@@ -36,6 +37,8 @@ public class MapInfoItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
 
+        mItemMoveListener.onItemDismiss(viewHolder.getAdapterPosition());
+
     }
 
     @Override
@@ -45,7 +48,17 @@ public class MapInfoItemTouchHelperCallback extends ItemTouchHelper.Callback {
         return mintem;
     }
 
+    @Override
+    public boolean isItemViewSwipeEnabled() {
+
+        //return true;
+        return mintem2;
+    }
+
     public void setMintem(boolean mintem){
         this.mintem = mintem;
+    }
+    public void setMintem2(boolean mintem2){
+        this.mintem2 = mintem2;
     }
 }

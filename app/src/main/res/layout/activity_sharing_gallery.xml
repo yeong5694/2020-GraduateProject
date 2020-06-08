@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".ShareGalleryActivity">
+    tools:context=".SharingGalleryActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
@@ -34,9 +34,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/appbar"
+        android:scrollbars="vertical" />
+    <!--
         android:scrollbarFadeDuration="0"
         android:scrollbarSize="5dp"
-        android:layout_marginTop="36dp" />
+    -->
 
     <!--
     <RelativeLayout

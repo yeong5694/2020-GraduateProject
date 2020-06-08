@@ -28,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.graduate.a2020_graduateproject.memo.memoActivity;
 import com.kakao.kakaolink.v2.KakaoLinkResponse;
 import com.kakao.kakaolink.v2.KakaoLinkService;
 import com.kakao.message.template.ButtonObject;
@@ -36,10 +37,12 @@ import com.kakao.message.template.FeedTemplate;
 import com.kakao.message.template.LinkObject;
 import com.kakao.network.ErrorResult;
 import com.kakao.network.callback.ResponseCallback;
+import com.kakao.network.storage.ImageUploadResponse;
 import com.kakao.usermgmt.UserManagement;
 import com.kakao.usermgmt.callback.LogoutResponseCallback;
 import com.kakao.util.helper.log.Logger;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,6 +51,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+
 
     private Toolbar toolbar;
 
@@ -239,7 +244,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         planRecyclerView = findViewById(R.id.planRecyclerView);
         //planAdapter = new PlanAdapter(selected_room_id);
 
-        planAdapter = new PlanAdapter(selected_room_id);
+        planAdapter = new PlanAdapter(selected_room_id, kakao_id, kakao_email, kakao_thumnail, kakao_name );
 
 
         planLayoutManager = new LinearLayoutManager(this);
@@ -400,9 +405,18 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         }
         else if(id == R.id.memo) {
 
+            Intent intent = new Intent(TripRoomActivity.this, memoActivity.class);
+            intent.putExtra("kakao_id", kakao_id);
+            intent.putExtra("kakao_email", kakao_email);
+            intent.putExtra("kakao_name", kakao_name);
+            intent.putExtra("kakao_thumnail", kakao_thumnail);
+            intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
+            startActivity(intent);
+
         }
         else if(id == R.id.gallery) {
-            Intent intent = new Intent(TripRoomActivity.this, ShareGalleryActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, SharingGalleryActivity.class);
             intent.putExtra("selected_room_name", selected_room_name);
             intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
@@ -453,6 +467,29 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
     }
     public void createTemplate(String room_id){
+
+//        File imageFile = new File("E:/4학년1학기/캡스톤디자인/제출용/카톡공유이미지");
+//
+//
+//        KakaoLinkService.getInstance()
+//                .uploadImage(this, true, imageFile, new ResponseCallback<ImageUploadResponse>() {
+//                    @Override
+//                    public void onFailure(ErrorResult errorResult) {
+//                        Log.e("KAKAO_API", "이미지 업로드 실패: " + errorResult);
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(ImageUploadResponse result) {
+//                        Log.i("KAKAO_API", "이미지 업로드 성공");
+//
+//                        Log.d("KAKAO_API", "URL: " + result.getOriginal().getUrl());
+//                        String imageUrl = result.getOriginal().getUrl();
+//                        System.out.println("kakao image url :" + imageUrl);
+//
+//                        // TODO: 템플릿 컨텐츠로 이미지 URL 입력
+//                    }
+//                });
+
         // 기본적으로 구현해야 할 것
         Map<String, String> serverCallbackArgs = new HashMap<String, String>();
         serverCallbackArgs.put("user_id", "${current_user_id}");
@@ -460,7 +497,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         // 템플릿 생성
         FeedTemplate params = FeedTemplate
                 .newBuilder(ContentObject.newBuilder("여행초대코드",
-                        "",
+                        "@drawable/sharing_trips_invite_image",
                         LinkObject.newBuilder().setWebUrl(KAKAO_BASE_LINK) //
                                 .setMobileWebUrl(KAKAO_BASE_LINK).build()) //
                         .setDescrption(room_id)

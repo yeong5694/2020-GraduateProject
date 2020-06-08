@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -61,18 +62,23 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private TMapPoint tMapStart;
     private TMapPoint tMapDest;
     private ArrayList item;
-    private Drawable firstXImage;
 
     private Spinner spinner;
-    private ArrayAdapter<String> adapter;
+
+    private Spinner spinner_start;
+    private Spinner spinner_dest;
+
+
+    private ArrayList<MapInfoIndex> startInfoList;
+    private ArrayList<MapInfoIndex> destInfoList;
+
 
     private ArrayList<LatLng> clickList;
     ArrayList<TMapPoint> tMapPoints;
 
     private DatabaseReference mapDataReference=null;
     private String Mapkey="";
-
-    private Button button_find;
+    private String DayKey="";
 
     private String selected_room_id;
     @Override
@@ -88,26 +94,29 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         text_start=findViewById(R.id.text_start);
         text_dest=findViewById(R.id.text_dest);
+
+        spinner_start=findViewById(R.id.spinner_start);
+        spinner_dest=findViewById(R.id.spinner_dest);
+
         spinner=findViewById(R.id.spinner);
-        button_find=findViewById(R.id.button_find);
-        button_find.setVisibility(View.GONE);
+
+        startInfoList=new ArrayList<>();
+        destInfoList=new ArrayList<>();
 
         clickList=new ArrayList<>();
         tMapPoints=new ArrayList<>();
 
         Intent intent = getIntent();
         selected_room_id=intent.getExtras().getString("selected_room_id");
-      //  day=intent.getExtras().getString("day");
+
         item=new ArrayList();
         item.add("선택");
-        item.add("마커");
 
 
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
         mapDataReference.addListenerForSingleValueEvent(new ValueEventListener() {
-
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 int count=0;
@@ -119,30 +128,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                for(int i=0;i<count;i++){
                    item.add("DAY "+(i+1));
                }
-
-
-//                DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
-
-  /*              if (mapInfoSnapshot != null) {
-                    System.out.println("firebase에서 받아옴 ");
-                    for (DataSnapshot snapshot : mapInfoSnapshot.getChildren()) {
-
-                        double fireLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
-                        double fireLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
-                        String fireName = snapshot.child("name").getValue().toString();
-
-                        System.out.println("firebase에서 불러온 Nmae : "+fireName);
-
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        LatLng fireLatlng = new LatLng(fireLat, fireLng);
-                        markerOptions.position(fireLatlng);
-                        markerOptions.title(fireName);
-
-                        Marker fireMarker = gMap.addMarker(markerOptions);
-                        markerList.add(fireMarker);
-                    }
-                }
-*/
             }
 
             @Override
@@ -153,25 +138,90 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
 
 
-        adapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, item);
+        final MapBasicAdapter adapter=new MapBasicAdapter(this, android.R.layout.simple_list_item_1, item);
         spinner.setAdapter(adapter);
 
+        startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
+        destInfoList.add(new MapInfoIndex(0,0,"도착지", 0));
 
+
+        final MapStartAdapter startEditAdapter=new MapStartAdapter(this,1, startInfoList);
+        spinner_start.setAdapter(startEditAdapter);
+
+        final MapStartAdapter destEditAdapter=new MapStartAdapter(this,1, destInfoList);
+        spinner_dest.setAdapter(destEditAdapter);
+
+
+        spinner_start.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinner_start.getSelectedItem().toString().equals("출발지")) {
+                    Toast.makeText(getApplicationContext(), "출발지를 선택해주세요!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    MapInfoIndex startMapInfo = startEditAdapter.getItem(position);
+                    double slat = startMapInfo.latitude;
+                    double slng = startMapInfo.longitude;
+
+                    LatLng sLatlng = new LatLng(slat, slng);
+                    MarkerOptions smarkerOption = new MarkerOptions();
+                    smarkerOption.position(sLatlng);
+                    smarkerOption.title(startMapInfo.getName());
+                    Marker startMarker = gMap.addMarker(smarkerOption);
+                    startMarker.showInfoWindow();
+
+                    tMapStart = new TMapPoint(slat, slng);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        spinner_dest.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (spinner_dest.getSelectedItem().toString().equals("도착지")) {
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    MapInfoIndex destMapInfo = startEditAdapter.getItem(position);
+                    double dlat = destMapInfo.latitude;
+                    double dlng = destMapInfo.longitude;
+
+                    LatLng dLatlng = new LatLng(dlat, dlng);
+                    MarkerOptions dmarkerOption = new MarkerOptions();
+                    dmarkerOption.position(dLatlng);
+                    dmarkerOption.title(destMapInfo.getName());
+
+                    Marker destMarker = gMap.addMarker(dmarkerOption);
+                    destMarker.showInfoWindow();
+
+                    tMapDest = new TMapPoint(dlat, dlng);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
 
         AutoCompleteTextView autoCompleteStartTextView=findViewById(R.id.text_start); //
-        MapPlaceAutoSuggestAdapter startAdapter=new MapPlaceAutoSuggestAdapter(this,1);
-        autoCompleteStartTextView.setAdapter(startAdapter);
+        final MapPlaceAutoSuggestAdapter[] startAdapter = {new MapPlaceAutoSuggestAdapter(this, 1)};
+        autoCompleteStartTextView.setAdapter(startAdapter[0]);
 
         AutoCompleteTextView autoCompleteDestTextView=findViewById(R.id.text_dest); //
         MapPlaceAutoSuggestAdapter destAdapter=new MapPlaceAutoSuggestAdapter(this,1);
         autoCompleteDestTextView.setAdapter(destAdapter);
 
+        spinner_start.setVisibility(View.GONE);
+        spinner_dest.setVisibility(View.GONE);
 
         autoCompleteStartTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MapAddressItem mapAddressItem=startAdapter.getItem(position);
+                MapAddressItem mapAddressItem= startAdapter[0].getItem(position);
                 double apos=mapAddressItem.getLatitude();
                 double bpos=mapAddressItem.getLongitude();
 
@@ -210,12 +260,26 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         image_find.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(TextUtils.isEmpty(text_start.getText())){
-                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요", Toast.LENGTH_SHORT).show();
+
+
+                MapInfoIndex empty_start=(MapInfoIndex) spinner_start.getSelectedItem();
+                MapInfoIndex empty_dest=(MapInfoIndex) spinner_dest.getSelectedItem();
+
+
+                if(TextUtils.isEmpty(text_start.getText()) && spinner_start.getVisibility()==View.GONE){
+                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요1", Toast.LENGTH_SHORT).show();
                 }
-                else if(TextUtils.isEmpty(text_dest.getText())){
-                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요", Toast.LENGTH_SHORT).show();
+                else if(text_start.getVisibility()==View.GONE&& empty_start.name.equals("출발지") ){
+                    Toast.makeText(getApplicationContext(), "출발지를 입력해주세요2", Toast.LENGTH_SHORT).show();
                 }
+
+                else if(TextUtils.isEmpty(text_dest.getText()) && spinner_dest.getVisibility()==View.GONE){
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요1", Toast.LENGTH_SHORT).show();
+                }
+                else if(text_dest.getVisibility()==View.GONE && empty_dest.name.equals("도착지") ){
+                    Toast.makeText(getApplicationContext(), "도착지를 입력해주세요2", Toast.LENGTH_SHORT).show();
+                }
+
                 else {
                     gMap.clear();
                     LatLng startLng = new LatLng(tMapStart.getLatitude(), tMapStart.getLongitude());
@@ -238,7 +302,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
-
+/*
         button_find.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -279,23 +343,90 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
-
+*/
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
                 if(spinner.getItemAtPosition(position).equals("선택")){
+
                     autoCompleteDestTextView.setVisibility(View.VISIBLE);
                     autoCompleteStartTextView.setVisibility(View.VISIBLE);
+
+                    spinner_start.setVisibility(View.GONE);
+                    spinner_dest.setVisibility(View.GONE);
+
                     image_find.setVisibility(View.VISIBLE);
 
                 }
+               else{
 
-                if(spinner.getItemAtPosition(position).equals("마커")){
+                    autoCompleteStartTextView.setText("");
+                   autoCompleteDestTextView.setText("");
+
                     autoCompleteDestTextView.setVisibility(View.GONE);
                     autoCompleteStartTextView.setVisibility(View.GONE);
-                    image_find.setVisibility(View.GONE);
-                    button_find.setVisibility(View.VISIBLE);
 
+                    spinner_start.setVisibility(View.VISIBLE);
+                    spinner_dest.setVisibility(View.VISIBLE);
+
+                    String findDay=spinner.getItemAtPosition(position).toString();
+                    System.out.println("findDay : "+findDay);
+
+                    String day=findDay.split(" ")[1].toString();
+                    System.out.println("findDay : "+findDay+" day : "+day);
+
+                    mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
+                            .child("schedule_list");
+                    mapDataReference.orderByChild("day").equalTo(day).addValueEventListener(new ValueEventListener() {
+
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            startInfoList.clear();
+                            destInfoList.clear();
+
+                            startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
+                            destInfoList.add(new MapInfoIndex(0,0,"도착지", 0));
+
+                            int cnt=0;
+                            System.out.println("dataSnapshot.getCHildCount() : "+dataSnapshot.getChildrenCount());
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                cnt+=1;
+                               DayKey = snapshot.getKey();
+                               System.out.println("snapshot daykey : " + DayKey);
+                            }
+
+                            System.out.println("cnt : "+cnt+"DayKey : "+DayKey);
+                            DataSnapshot daySnapshot=dataSnapshot.child(DayKey).child("map_info");
+
+                              if (daySnapshot != null) {
+                                  System.out.println("firebase에서 day 받아옴 ");
+
+                                  for (DataSnapshot snapshot : daySnapshot.getChildren()) {
+                                      System.out.println("snapshot 받아오기");
+
+                                      double dayLat = Double.parseDouble(snapshot.child("latitude").getValue().toString());
+                                      double dayLng = Double.parseDouble(snapshot.child("longitude").getValue().toString());
+                                      String dayName = snapshot.child("name").getValue().toString();
+                                      int dayIndex = Integer.parseInt(snapshot.child("index").getValue().toString());
+
+                                      System.out.println("daySnapShot : " + dayLat + dayLng + dayName + dayIndex);
+                                      MapInfoIndex mapInfo=new MapInfoIndex(dayLat, dayLng, dayName, dayIndex);
+                                      startInfoList.add(mapInfo);
+                                      destInfoList.add(mapInfo);
+
+                                  }
+                                  startEditAdapter.notifyDataSetChanged();
+                                  destEditAdapter.notifyDataSetChanged();
+                              }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
 
@@ -305,10 +436,10 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
         });
 
-
-
-
     }
+
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -480,8 +611,12 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
 
             polylineOptionsT.addAll(points);
-            polylineOptionsT.width(15);
-            polylineOptionsT.color(Color.YELLOW);
+            polylineOptionsT.width(12);
+            polylineOptionsT.color(Color.MAGENTA);
+
+//            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)); //마커 색깔 파란색으로
+            //   HUE_MAGENTA, HUE_VioLet, HUE_ORANGE, HUE_RED, HUE_BLUE, HUE_GREEN, HUE_AZURE, HUE_ROSE, HUE_CYAN, HUE_YELLOW
+
 
             if(polylineOptionsT != null) {
                 System.out.println("poly null아님");
@@ -563,4 +698,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         return calDistance;
     }
+
+
 }
