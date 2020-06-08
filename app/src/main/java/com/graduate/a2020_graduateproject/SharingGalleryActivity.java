@@ -76,7 +76,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
     private RecyclerView recyclerView;
     private UploadAdapter uploadAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private GridLayoutManager layoutManager;
 
 
     private FirebaseStorage firebaseStorage;
@@ -117,7 +117,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
 
         recyclerView = findViewById(R.id.recyclerView);
         uploadAdapter = new UploadAdapter();
-        layoutManager = new LinearLayoutManager(this);
+        layoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(uploadAdapter);
 
@@ -150,11 +150,11 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                     // Firebase로부터 Database로부터 가져온 데이터를 Upload 클래스에 담아주고, 얘를 ArrayList에 담아서 어댑터로 넘겨주는...
                     //Upload upload = snapshot.getValue(Upload.class);    // 만들었던 Upload 객체에 데이터를 담는다
                     String key = snapshot.getKey();
-                    System.out.println(key);
+
                     //imageList.add(upload);  // 담은 데이터들을 배열리스트에 넣고 리사이클러뷰로 보낼 준비
 
                     String imageUrl = snapshot.child("imageUrl").getValue().toString();
-
+                    System.out.println("image key : "+ key + " image Url :" + imageUrl);
                     Upload newItem = new Upload(imageUrl, key);
 
                     uploadAdapter.add(newItem);

@@ -23,7 +23,7 @@ public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
         View v = LayoutInflater.from(
                 parent.getContext()
         ).inflate(R.layout.gallery_image_item, parent, false);
-        return new UploadViewHolder(v);
+        return new UploadViewHolder(v,parent.getContext());
     }
 
     @Override
@@ -33,6 +33,7 @@ public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
         // load()여기에 넣으면 돼
         Glide.with(holder.image).load(uploadItems.get(position).getImageUrl())
                 .error(R.drawable.kakao_default_profile_image).into(holder.image);
+        holder.setImageUrl(uploadItems.get(position).getImageUrl());
 
 
     }

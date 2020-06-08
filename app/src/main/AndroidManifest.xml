@@ -14,17 +14,16 @@
     <application
         android:name=".GlobalApplication"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/sharing_trips_app_icon"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@drawable/sharing_trips_app_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
         tools:targetApi="q">
         <activity android:name=".memo.memoAddActivity" />
-        <activity android:name=".memo.memoActivity" />
-        <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
+        <activity android:name=".memo.memoActivity" /> <!-- 모든 http 주소에 접근 허용하도록 android:usesCleartextTraffic="true" 로 설정하였음 -->
         <!-- Android 10 이상을 타겟팅하는 경우, 기존의 범위 지정 저장소를 사용하려면 android:requestLegacyExternalStorage="true"로 설정 -->
         <!-- Add Provider -->
         <provider
@@ -55,12 +54,10 @@
         <activity android:name=".MyCalendarMainActivity" />
         <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".SharingGalleryActivity" />
-        <activity android:name=".TripRoomActivity" />
-        <!-- 카카오톡 메타데이터 -->
+        <activity android:name=".TripRoomActivity" /> <!-- 카카오톡 메타데이터 -->
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="@string/kakao_app_key" />
-        <!-- 구글 메타데이터 -->
+            android:value="@string/kakao_app_key" /> <!-- 구글 메타데이터 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDiQGIg5FkdX06OfqIb9d-9R1SAsCdmGeg" />
@@ -83,11 +80,8 @@
         <activity android:name=".MapDistanceActivity" />
         <activity android:name=".MapFindRoadActivity" />
         <activity android:name=".TMapActivity" />
-
         <activity android:name=".MapPlaningActivity" />
-        <activity android:name=".Map_realFindRoadActivity"/>
-
-        <!-- 주소 검색 -->
+        <activity android:name=".Map_realFindRoadActivity" /> <!-- 주소 검색 -->
         <service
             android:name=".MapFetchAddressIntentService"
             android:exported="false" /> <!-- set_timerslack_ns write failed: Operation not permitted 오류 해결 -->
