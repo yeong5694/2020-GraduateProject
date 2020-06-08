@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,30 +13,24 @@ import com.graduate.a2020_graduateproject.bottomNavigation.MapInfoViewHolder;
 
 import java.util.ArrayList;
 
-public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
+public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadViewHolder> {
 
     private ArrayList<Upload> uploadItems = new ArrayList<>();
 
-
     @NonNull
     @Override
-    public UploadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(
-                parent.getContext()
-        ).inflate(R.layout.gallery_image_item, parent, false);
-        return new UploadViewHolder(v,parent.getContext());
+    public UploadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { // RecyclerView가 어댑터에 연결된 후 최초로 ViewHolder 생성
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_image_item, parent, false);
+        return new UploadViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UploadViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UploadViewHolder holder, int position) {  // 실제로 각 아이템들에 대한 매칭을 시켜주는 역할
 
-        // 여기서 이미지 띄우면 되는데 imgage url이 "com.google.android~" 여서 안뜨는데 ㅜㅠ 뭐로 바꿔야해? ㅜㅠ
-        // load()여기에 넣으면 돼
-        Glide.with(holder.image).load(uploadItems.get(position).getImageUrl())
-                .error(R.drawable.kakao_default_profile_image).into(holder.image);
-        holder.setImageUrl(uploadItems.get(position).getImageUrl());
-
-
+        Glide.with(holder.image)
+                .load(uploadItems.get(position).getImageUrl())
+                .error(R.drawable.kakao_default_profile_image)
+                .into(holder.image);
     }
 
     @Override
@@ -43,11 +38,45 @@ public class UploadAdapter  extends RecyclerView.Adapter<UploadViewHolder> {
         return uploadItems.size();
     }
 
-    public void clear(){
+    public void clear() {
         uploadItems.clear();
     }
 
-    public void add(Upload upload){
+    public void add(Upload upload) {
         uploadItems.add(upload);
+    }
+
+    public class UploadViewHolder extends RecyclerView.ViewHolder {
+
+        public ImageView image;
+
+        public UploadViewHolder(@NonNull View itemView) {
+            super(itemView);
+
+            image = itemView.findViewById(R.id.image);
+/*
+            // 아이템 클릭 이벤트 처리
+            image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    int position = getAdapterPosition();
+                    if(position != RecyclerView.NO_POSITION) {
+                        RecyclerView item = uploadItems
+                    }
+/*
+                Context context = v.getContext();
+                Log.v("gallery", "context = " + v.getContext());
+
+                Intent intent = new Intent(context, GalleryImageViewerActivity.class);
+
+                intent.putExtra("clicked image", itemView.toString());
+                Log.v("gallery", "image = " + itemView.toString());
+
+                context.startActivity(intent);
+* /
+                }
+            });*/
+        }
     }
 }
