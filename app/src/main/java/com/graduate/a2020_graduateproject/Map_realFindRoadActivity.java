@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,7 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,11 +36,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.graduate.a2020_graduateproject.memo.memoActivity;
+import com.kakao.kakaolink.v2.KakaoLinkResponse;
+import com.kakao.kakaolink.v2.KakaoLinkService;
+import com.kakao.message.template.ButtonObject;
+import com.kakao.message.template.ContentObject;
+import com.kakao.message.template.FeedTemplate;
+import com.kakao.message.template.LinkObject;
+import com.kakao.network.ErrorResult;
+import com.kakao.network.callback.ResponseCallback;
+import com.kakao.usermgmt.UserManagement;
+import com.kakao.usermgmt.callback.LogoutResponseCallback;
+import com.kakao.util.helper.log.Logger;
 import com.skt.Tmap.TMapPoint;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -49,13 +68,26 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Map_realFindRoadActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+        implements OnMapReadyCallback{
 
     private GoogleMap gMap;
     private TextView text_start;
     private TextView text_dest;
+
+
+    // 선택한 여행방 정보
+    private String selected_room_name; // 여행방 이름
+    private String selected_room_id; // 여행방 id
+
+
+
+    private Toolbar toolbar;
+
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
 
     private ImageView image_find;
@@ -80,7 +112,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private String Mapkey="";
     private String DayKey="";
 
-    private String selected_room_id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,7 +143,9 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         item=new ArrayList();
         item.add("선택");
 
-
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        setTitle("길찾기");
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
@@ -698,6 +731,5 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
         return calDistance;
     }
-
 
 }

@@ -473,7 +473,10 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("");
         }
 
-        int start=0;
+      //  int start=markerList.size()-1;
+       // double[] distance=a[0].clone();
+
+      //  System.out.println("distance [] : "+distance.length);
         double[] distance=a[0].clone();
 
         boolean[] visited=new boolean[a.length]; //방문한 곳 기록
@@ -484,7 +487,9 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             int minIndex=-1;
             double min=10000000;
 
+
             for(int j=0;j<distance.length;j++){
+
                 if(!visited[j] && min>distance[j]){
                     minIndex=j;
                     min=distance[j];
@@ -497,6 +502,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
+                if(visited[k])
                 if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
                     distance[k]=distance[minIndex]+a[minIndex][k];
                 }
@@ -511,20 +517,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
         //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
         double calDistance=0.0;
         double radius=6371; //지구 반지름
-    /*    double toRadian=Math.PI/180.0;
 
-        double deltaLat=Math.toRadians(Math.abs(origin.latitude-destination.latitude));
-        double deltaLog=Math.toRadians(Math.abs(origin.longitude-destination.longitude));
-
-        double sinDeltaLat=Math.sin(deltaLat/2);
-        double sinDeltaLog=Math.sin(deltaLog/2);
-
-        double root=Math.sqrt(sinDeltaLat*sinDeltaLat+ Math.cos(Math.toRadians(origin.latitude))*Math.cos(Math.toRadians(destination.latitude))*sinDeltaLog*sinDeltaLog);
-
-        calDistance=2*radius*Math.asin(root);
-
-        System.out.println("calDistance : "+calDistance);
-*/
         double dLat = Math.toRadians(destination.latitude - origin.latitude);
         double dLon = Math.toRadians(destination.longitude - origin.longitude);
 
