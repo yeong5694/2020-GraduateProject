@@ -160,8 +160,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         System.out.println(fireMarker);
 
                     }
+                    if(markerList.size()>0){
+                        gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerList.get(0).getPosition(), 15));
+                    }
+                    else{
 
-                    gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(markerList.get(0).getPosition(), 15));
+                    }
                     System.out.println("-------------------------------------------------------");
                 }
 
@@ -455,53 +459,62 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
     public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
 
-        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+        double weight[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
 
         ArrayList<Marker> LatDistance=new ArrayList<>();
 
         for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
             for(int j=0;j<list.size();j++){
                 if(i==j){
-                    a[i][j]=0;
+                    weight[i][j]=0;
                 }
                 else{
-                    a[i][j]=calculate(list.get(i).getPosition(), list.get(j).getPosition());
+                    weight[i][j]=calculate(list.get(i).getPosition(), list.get(j).getPosition());
                     System.out.println( list.get(i).getPosition().latitude+" "+list.get(i).getPosition().longitude);
-                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
+                    System.out.println(i+" + "+j+" calculate 값 : "+weight[i][j]);
                 }
             }
         }
 
-        for(int v=0;v<a.length;v++){
-            for(int u=0;u<a.length;u++){
-                System.out.print(a[v][u]+" ");
+        for(int v=0;v<weight.length;v++){
+            for(int u=0;u<weight.length;u++){
+                System.out.print(weight[v][u]+" ");
             }
             System.out.println("");
         }
 
-      //  int start=markerList.size()-1;
-       // double[] distance=a[0].clone();
+        // -------------------- 서녕아 여기 좀 고쳣어 ------------
+        double[] distance = null;
+        boolean[] visited = null;
 
-      //  System.out.println("distance [] : "+distance.length);
-        double[] distance=a[0].clone();
+        int start=0;
 
-        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
+        if(weight.length != 0){
 
-        System.out.println("a.length : "+a.length);
+            System.out.println("weight.length : "+weight.length);
 
-        for(int i=0;i<a.length;i++){
+            distance=weight[start].clone();
+            visited=new boolean[weight.length]; //방문한 곳 기록
+        }
+        else{
+            System.out.println("weight.length : "+weight.length);
+        }
+
+        // -------------------------------------- ------------
+
+        System.out.println("weight.length : "+weight.length);
+
+        for(int i=0;i<weight.length;i++){
             int minIndex=-1;
             double min=10000000;
 
-
             for(int j=0;j<distance.length;j++){
-
                 if(!visited[j] && min>distance[j]){
                     minIndex=j;
                     min=distance[j];
                 }
             }
-            distance=a[minIndex].clone();
+            distance=weight[minIndex].clone();
 
             visited[minIndex]=true;
             LatDistance.add(list.get(minIndex));
@@ -509,13 +522,12 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
-                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
-                    distance[k]=distance[minIndex]+a[minIndex][k];
+                if(!visited[k] && distance[k]>distance[minIndex]+weight[minIndex][k]){
+                    distance[k]=distance[minIndex]+weight[minIndex][k];
                 }
             }
         }
         return LatDistance;
-
     }
 
 
