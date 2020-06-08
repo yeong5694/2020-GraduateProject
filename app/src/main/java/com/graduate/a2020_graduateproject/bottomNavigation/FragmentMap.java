@@ -3,6 +3,7 @@ package com.graduate.a2020_graduateproject.bottomNavigation;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Geocoder;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
@@ -71,9 +72,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     //    private ArrayList<Boolean> isClickList;
     private MqttClient mqttClient;
 
-    private  ArrayList<LatLng> currentPlanningList;
-    private ArrayList<Marker> currentMarkerList;
-
     private Button button_update;
     private Button button_polly;
     private Button button_save;
@@ -137,6 +135,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 }
                 markerList.clear();
+
                 DataSnapshot mapInfoSnapshot=dataSnapshot.child(Mapkey).child("map_info");
 
                 if (mapInfoSnapshot != null) {
@@ -231,7 +230,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             @Override
             public void onClick(View v) {
 
-                mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
+               mapDataReference.child(Mapkey).child("map_info").removeValue(); // 파이어베이스에서 map_info 삭제
 
                 DatabaseReference clickRef=mapDataReference.child(Mapkey).child("map_info");
 
@@ -250,7 +249,6 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
                 for(int i=0;i<markerList.size();i++){
                     System.out.println("i  : "+i);
-                    //System.out.println(" click key : "+Mapkey);
 
                     MapInfo=new MapInfoIndex(routeList.get(i).getPosition().latitude,
                             routeList.get(i).getPosition().longitude,
@@ -260,6 +258,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                     //System.out.println("--- MapInfo Firebase로 ----"+routeList.get(i).getTitle());
                     clickRef.push().setValue(MapInfo);
                 }
+
                 System.out.println("-----------------------------------------------------");
 
                 Toast.makeText(getContext(), "수정되었습니다!", Toast.LENGTH_LONG).show();
@@ -270,9 +269,9 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             @Override
             public void onClick(View v) {
                 //ArrayList<LatLng> dijkstraList = new ArrayList<>();
-                ArrayList<Marker> dijkstraList=dijkstra(markerList);
+                ArrayList<Marker> dijkstraArrList=dijkstra(markerList);
 
-                System.out.println("onClick dijstraList.length : " + dijkstraList.size());
+                System.out.println("onClick dijstraList.length : " + dijkstraArrList.size());
 
                 PolylineOptions polylineOptionsDistance;
 
@@ -281,8 +280,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                 polylineOptionsDistance.width(8);
 
                 if(!flag){
-                    for (int i = 0; i < dijkstraList.size(); i++) {
-                        polylineOptionsDistance.add(dijkstraList.get(i).getPosition());
+                    for (int i = 0; i < dijkstraArrList.size(); i++) {
+                        polylineOptionsDistance.add(dijkstraArrList.get(i).getPosition());
                     }
 //                polylineOptionsDistance.addAll(dijkstraList);
 
@@ -356,7 +355,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         }
 
                     }
-                }, 350);
+                }, 500);
 
 
 
@@ -449,43 +448,39 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
     }
 
     public ArrayList<Marker> dijkstra(ArrayList<Marker> list){
-        double weight[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
+
+        double a[][]=new double[list.size()][list.size()]; //가중치 저장할 배열
 
         ArrayList<Marker> LatDistance=new ArrayList<>();
+
         for(int i=0;i<list.size();i++){ //가중치(거리) 계산해서 저장
             for(int j=0;j<list.size();j++){
                 if(i==j){
-                    weight[i][j]=0;
+                    a[i][j]=0;
                 }
                 else{
-                    weight[i][j]=calculate(list.get(i), list.get(j));
+                    a[i][j]=calculate(list.get(i).getPosition(), list.get(j).getPosition());
                     System.out.println( list.get(i).getPosition().latitude+" "+list.get(i).getPosition().longitude);
-                    System.out.println(i+" + "+j+" calculate 값 : "+weight[i][j]);
+                    System.out.println(i+" + "+j+" calculate 값 : "+a[i][j]);
                 }
             }
         }
 
+        for(int v=0;v<a.length;v++){
+            for(int u=0;u<a.length;u++){
+                System.out.print(a[v][u]+" ");
+            }
+            System.out.println("");
+        }
+
         int start=0;
+        double[] distance=a[0].clone();
 
-        // -------------------- 서녕아 여기 좀 고쳣어 ------------
-        double[] distance = null;
-        boolean[] visited = null;
+        boolean[] visited=new boolean[a.length]; //방문한 곳 기록
 
-        if(weight.length != 0){
+        System.out.println("a.length : "+a.length);
 
-            System.out.println("weight.length : "+weight.length);
-
-            distance=weight[start].clone();
-            visited=new boolean[weight.length]; //방문한 곳 기록
-        }
-        else{
-            System.out.println("weight.length : "+weight.length);
-        }
-
-        // -------------------------------------- ------------
-
-
-        for(int i=0;i<weight.length;i++){
+        for(int i=0;i<a.length;i++){
             int minIndex=-1;
             double min=10000000;
 
@@ -502,8 +497,8 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
             System.out.println("minindex = "+minIndex+" list.get(minIndex) = "+list.get(minIndex));
 
             for(int k=0;k<distance.length;k++){
-                if(!visited[k] && distance[k]>distance[minIndex]+weight[minIndex][k]){
-                    distance[k]=distance[minIndex]+weight[minIndex][k];
+                if(!visited[k] && distance[k]>distance[minIndex]+a[minIndex][k]){
+                    distance[k]=distance[minIndex]+a[minIndex][k];
                 }
             }
         }
@@ -511,28 +506,37 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
 
     }
 
-    public double calculate(Marker origin, Marker destination){
-        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
-        double calDistance;
-        double radius=6371; //지구 반지름
-        double toRadian=Math.PI/180.0;
 
-        double deltaLat=Math.abs(origin.getPosition().latitude-destination.getPosition().latitude)*toRadian;
-        double deltaLog=Math.abs(origin.getPosition().longitude-destination.getPosition().longitude)*toRadian;
+    public double calculate(LatLng origin, LatLng destination){
+        //하버사인 공식 이용해서 위도, 경도로 거리 구하기 -> 일반 직선거리 구하는 것이랑 다름
+        double calDistance=0.0;
+        double radius=6371; //지구 반지름
+    /*    double toRadian=Math.PI/180.0;
+
+        double deltaLat=Math.toRadians(Math.abs(origin.latitude-destination.latitude));
+        double deltaLog=Math.toRadians(Math.abs(origin.longitude-destination.longitude));
 
         double sinDeltaLat=Math.sin(deltaLat/2);
         double sinDeltaLog=Math.sin(deltaLog/2);
 
-        double root=Math.sqrt(Math.pow(sinDeltaLat,2)+ Math.cos(origin.getPosition().latitude*toRadian)*Math.cos(destination.getPosition().latitude*toRadian)*Math.pow(sinDeltaLog,2));
+        double root=Math.sqrt(sinDeltaLat*sinDeltaLat+ Math.cos(Math.toRadians(origin.latitude))*Math.cos(Math.toRadians(destination.latitude))*sinDeltaLog*sinDeltaLog);
 
         calDistance=2*radius*Math.asin(root);
 
-        // System.out.println("calDistance : "+calDistance);
+        System.out.println("calDistance : "+calDistance);
+*/
+        double dLat = Math.toRadians(destination.latitude - origin.latitude);
+        double dLon = Math.toRadians(destination.longitude - origin.longitude);
 
-        return calDistance;
+        double lat1 = Math.toRadians(origin.latitude);
+        double lat2 = Math.toRadians(destination.latitude);
+
+        double a = Math.pow(Math.sin(dLat / 2),2) + Math.pow(Math.sin(dLon / 2),2) * Math.cos(lat1) * Math.cos(lat2);
+        calDistance = 2 * Math.asin(Math.sqrt(a));
+        return radius * calDistance;
+
+
     }
-
-
 
     private void connectMqtt() throws  Exception{
 

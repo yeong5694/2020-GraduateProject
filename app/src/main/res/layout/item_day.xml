@@ -26,9 +26,10 @@
             app:layout_constraintDimensionRatio="2:3">
 
             <View
+                android:id="@+id/line"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/lineColor" />
+                android:background="@color/colorPrimaryDark" />
 
             <TextView
                 setDayText="@{model.mCalendar}"

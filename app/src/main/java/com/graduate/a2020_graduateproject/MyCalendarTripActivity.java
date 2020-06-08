@@ -11,11 +11,10 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import com.graduate.a2020_graduateproject.databinding.CalendarListBinding;
 import com.graduate.a2020_graduateproject.ui.adapter.CalendarAdapter;
 import com.graduate.a2020_graduateproject.ui.viewmodel.CalendarListViewModel;
-import com.graduate.a2020_graduateproject.databinding.CalendarListBinding;
 
 import java.util.ArrayList;
 
-public class MyCalendarActivity extends AppCompatActivity {
+public class MyCalendarTripActivity extends AppCompatActivity {
     private CalendarListBinding binding;
     private CalendarAdapter calendarAdapter;
 
