@@ -387,7 +387,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         }
         else if(id == R.id.calendar) {
 
-            Intent intent = new Intent(TripRoomActivity.this, MyCalendarActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, MyCalendarMainActivity.class);
             startActivity(intent);
 
         }

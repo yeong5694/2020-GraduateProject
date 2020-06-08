@@ -52,7 +52,7 @@
         <activity
             android:name=".ChattingRoomActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
-        <activity android:name=".MyCalendarActivity" />
+        <activity android:name=".MyCalendarMainActivity" />
         <activity android:name=".TripRoomFriendsActivity" />
         <activity android:name=".PlaningActivity" />
         <activity android:name=".MyTripRoomListActivity" />
