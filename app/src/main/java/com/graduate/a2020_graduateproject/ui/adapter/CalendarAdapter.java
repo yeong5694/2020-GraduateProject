@@ -13,13 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.graduate.a2020_graduateproject.R;
+import com.graduate.a2020_graduateproject.Schedule;
 import com.graduate.a2020_graduateproject.databinding.CalendarHeaderBinding;
 import com.graduate.a2020_graduateproject.databinding.DayItemBinding;
 import com.graduate.a2020_graduateproject.databinding.EmptyDayBinding;
+import com.graduate.a2020_graduateproject.databinding.ScheduleDayItemBinding;
 import com.graduate.a2020_graduateproject.ui.viewmodel.CalendarHeaderViewModel;
 import com.graduate.a2020_graduateproject.ui.viewmodel.CalendarViewModel;
 import com.graduate.a2020_graduateproject.ui.viewmodel.EmptyViewModel;
 import com.google.gson.Gson;
+import com.graduate.a2020_graduateproject.ui.viewmodel.ScheduleCalendarViewModel;
 
 import java.util.Calendar;
 
@@ -53,14 +56,15 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
     public int getItemViewType(int position) { //뷰타입 나누기
         Object item = getItem(position);
         if (item instanceof Long) {
-            return HEADER_TYPE; //날짜 타입
+            return HEADER_TYPE; // 날짜 타입
         } else if (item instanceof String) {
             return EMPTY_TYPE; // 비어있는 일자 타입
-        } else {
-            return DAY_TYPE; // 일자 타입
-
+        } else if ( item instanceof Schedule){
+            return DAY_TYPE_S; // 스케줄있는 일자 타입
         }
-        //+스케줄있는 일자 타입?
+        else {
+            return DAY_TYPE; // 일자 타입
+        }
     }
 
 
@@ -78,12 +82,12 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
                     DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_day_empty, parent, false);
             return new EmptyViewHolder(binding);
         }else if (viewType == DAY_TYPE_S) { //스케줄 있는 일자 타입
-         /*   DayItemBinding binding =
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_day_schedule, parent, false);
+            ScheduleDayItemBinding binding =
+                    DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_day_schedule, parent, false);
             // 스케줄있는 일자 타입
-            return new DayViewHolder(binding);*/
+            return new ScheduleDayViewHolder(binding);
         }
-        //
+        //일자 타입
         DayItemBinding binding =
                 DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_day, parent, false);// 일자 타입
         return new DayViewHolder(binding);
@@ -113,16 +117,15 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
                 model.setCalendar((Calendar) item);
             }
             holder.setViewModel(model);
-        }//day타입을 하나 더
-        else if (viewType == DAY_TYPE_S) { // 스케줄 있는 일자 타입 꾸미기
-            /*
-            DayViewHolder holder = (DayViewHolder) viewHolder;
+        } else if (viewType == DAY_TYPE_S) { // 스케줄 있는 일자 타입 꾸미기
+
+            ScheduleDayViewHolder holder = (ScheduleDayViewHolder) viewHolder;
             Object item = getItem(position);
             ScheduleCalendarViewModel model = new ScheduleCalendarViewModel();
-            if (item instanceof Calendar) {
-                model.setCalendar((Calendar) item);
+            if (item instanceof Schedule) {
+                model.setSchedule((Schedule) item);
             }
-            holder.setViewModel(model);*/
+            holder.setViewModel(model);
         }
     }
 
@@ -171,11 +174,11 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
         }
     }
 
-    /*
-    private class ScheduleDayViewHolder extends RecyclerView.ViewHolder {// 스케줄있는 요일 타입 ViewHolder
-        private DayItemBinding binding;
 
-        private ScheduleDayViewHolder(@NonNull DayItemBinding binding) {
+    private class ScheduleDayViewHolder extends RecyclerView.ViewHolder {// 스케줄있는 요일 타입 ViewHolder
+        private ScheduleDayItemBinding binding;
+
+        private ScheduleDayViewHolder(@NonNull ScheduleDayItemBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
@@ -185,5 +188,5 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
             binding.executePendingBindings();
         }
     }
-    */
+
 }
