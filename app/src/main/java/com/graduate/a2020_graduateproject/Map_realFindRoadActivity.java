@@ -68,7 +68,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private Spinner spinner_start;
     private Spinner spinner_dest;
 
-    private ArrayAdapter<String> adapter;
 
     private ArrayList<MapInfoIndex> startInfoList;
     private ArrayList<MapInfoIndex> destInfoList;
@@ -80,9 +79,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
     private DatabaseReference mapDataReference=null;
     private String Mapkey="";
     private String DayKey="";
-
-
-    private Button button_find;
 
     private String selected_room_id;
     @Override
@@ -103,9 +99,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         spinner_dest=findViewById(R.id.spinner_dest);
 
         spinner=findViewById(R.id.spinner);
-
-        button_find=findViewById(R.id.button_find);
-        button_find.setVisibility(View.GONE);
 
         startInfoList=new ArrayList<>();
         destInfoList=new ArrayList<>();
@@ -145,7 +138,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
 
 
-        adapter=new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, item);
+        final MapBasicAdapter adapter=new MapBasicAdapter(this, android.R.layout.simple_list_item_1, item);
         spinner.setAdapter(adapter);
 
         startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
@@ -200,6 +193,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
                     MarkerOptions dmarkerOption = new MarkerOptions();
                     dmarkerOption.position(dLatlng);
                     dmarkerOption.title(destMapInfo.getName());
+
                     Marker destMarker = gMap.addMarker(dmarkerOption);
                     destMarker.showInfoWindow();
 
@@ -366,7 +360,8 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
                 }
                else{
-                   autoCompleteStartTextView.setText("");
+
+                    autoCompleteStartTextView.setText("");
                    autoCompleteDestTextView.setText("");
 
                     autoCompleteDestTextView.setVisibility(View.GONE);
@@ -392,7 +387,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
                             startInfoList.add(new MapInfoIndex(0,0,"출발지",0));
                             destInfoList.add(new MapInfoIndex(0,0,"도착지", 0));
-
 
                             int cnt=0;
                             System.out.println("dataSnapshot.getCHildCount() : "+dataSnapshot.getChildrenCount());
@@ -617,8 +611,12 @@ public class Map_realFindRoadActivity extends AppCompatActivity
             }
 
             polylineOptionsT.addAll(points);
-            polylineOptionsT.width(15);
-            polylineOptionsT.color(Color.YELLOW);
+            polylineOptionsT.width(12);
+            polylineOptionsT.color(Color.MAGENTA);
+
+//            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)); //마커 색깔 파란색으로
+            //   HUE_MAGENTA, HUE_VioLet, HUE_ORANGE, HUE_RED, HUE_BLUE, HUE_GREEN, HUE_AZURE, HUE_ROSE, HUE_CYAN, HUE_YELLOW
+
 
             if(polylineOptionsT != null) {
                 System.out.println("poly null아님");

@@ -8,7 +8,7 @@
 <resources>
     <color name="colorPrimary">#A4B8DB</color>
     <color name="colorPrimaryDark">#9BB4E0</color>
-    <color name="colorAccent">#FEDBD0</color>
+    <color name="colorAccent">#00C9D4</color>
     <color name="colorSecondary">#feeae6</color>
     <color name="colorSurface">#fffbfa</color>
     <color name="colorBackground">#FFFFFF</color>

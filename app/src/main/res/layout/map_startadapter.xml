@@ -13,14 +13,13 @@
             android:id="@+id/imageView"
             android:layout_width="26dp"
             android:layout_height="26dp"
-            android:paddingTop="5dp"
-            app:srcCompat="@drawable/ic_place_pink_24dp" />
+            app:srcCompat="@drawable/ic_place_blue_24dp" />
 
         <TextView
             android:id="@+id/address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16dp" />
+            android:textSize="17dp" />
     </LinearLayout>
 
 </LinearLayout>
