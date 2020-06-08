@@ -1,5 +1,7 @@
 package com.graduate.a2020_graduateproject.ui.adapter;
 
+import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -21,12 +23,15 @@ import com.google.gson.Gson;
 
 import java.util.Calendar;
 
+import static com.graduate.a2020_graduateproject.R.*;
+
 
 public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder> {
     private final int HEADER_TYPE = 0;
     private final int EMPTY_TYPE = 1;
     private final int DAY_TYPE = 2;
-
+    //schedule이 있는 day_type
+    private final int DAY_TYPE_S = 3;
 
     public CalendarAdapter() {
         super(new DiffUtil.ItemCallback<Object>() {
@@ -55,6 +60,7 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
             return DAY_TYPE; // 일자 타입
 
         }
+        //+스케줄있는 일자 타입?
     }
 
 
@@ -62,20 +68,27 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == HEADER_TYPE) { // 날짜 타입
-            CalendarHeaderBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_calendar_header, parent, false);
+            CalendarHeaderBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_calendar_header, parent, false);
             StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) binding.getRoot().getLayoutParams();
             params.setFullSpan(true); //Span을 하나로 통합하기
             binding.getRoot().setLayoutParams(params);
             return new HeaderViewHolder(binding);
         } else if (viewType == EMPTY_TYPE) { //비어있는 일자 타입
             EmptyDayBinding binding =
-                    DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_day_empty, parent, false);
+                    DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_day_empty, parent, false);
             return new EmptyViewHolder(binding);
+        }else if (viewType == DAY_TYPE_S) { //스케줄 있는 일자 타입
+         /*   DayItemBinding binding =
+                    DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_day_schedule, parent, false);
+            // 스케줄있는 일자 타입
+            return new DayViewHolder(binding);*/
         }
+        //
         DayItemBinding binding =
-                DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_day, parent, false);// 일자 타입
+                DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), layout.item_day, parent, false);// 일자 타입
         return new DayViewHolder(binding);
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
@@ -100,6 +113,16 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
                 model.setCalendar((Calendar) item);
             }
             holder.setViewModel(model);
+        }//day타입을 하나 더
+        else if (viewType == DAY_TYPE_S) { // 스케줄 있는 일자 타입 꾸미기
+            /*
+            DayViewHolder holder = (DayViewHolder) viewHolder;
+            Object item = getItem(position);
+            ScheduleCalendarViewModel model = new ScheduleCalendarViewModel();
+            if (item instanceof Calendar) {
+                model.setCalendar((Calendar) item);
+            }
+            holder.setViewModel(model);*/
         }
     }
 
@@ -147,4 +170,20 @@ public class CalendarAdapter extends ListAdapter<Object, RecyclerView.ViewHolder
             binding.executePendingBindings();
         }
     }
+
+    /*
+    private class ScheduleDayViewHolder extends RecyclerView.ViewHolder {// 스케줄있는 요일 타입 ViewHolder
+        private DayItemBinding binding;
+
+        private ScheduleDayViewHolder(@NonNull DayItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
+
+        private void setViewModel(ScheduleCalendarViewModel model) {
+            binding.setModel(model);
+            binding.executePendingBindings();
+        }
+    }
+    */
 }
