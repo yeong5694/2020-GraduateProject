@@ -3,12 +3,15 @@ package com.graduate.a2020_graduateproject;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -30,6 +33,9 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.OutputStream;
+
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class SharingGalleryActivity extends AppCompatActivity { //implements GalleryAdapter.OnItemClickListener {
 
@@ -73,7 +79,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         setTitle(selected_room_name + " 갤러리");
 
         recyclerView = findViewById(R.id.recyclerView);
-        uploadAdapter = new UploadAdapter();
+        uploadAdapter = new UploadAdapter(selected_room_id);
         layoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(uploadAdapter);
@@ -83,7 +89,19 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
             @Override
             public void onClick(View v) {
 
-                openFileChooser();  // 저장소(갤러리) 연결해서 이미지 선택
+                // 저장소 접근 권한 체크
+                if(checkPermission()) {
+                    openFileChooser();  // 저장소(갤러리) 연결해서 이미지 선택
+                }
+                // Ask for Permission
+                else {
+                    Toast.makeText(getApplicationContext(), "Grant Permission To Save Image", Toast.LENGTH_SHORT).show();
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(new String[] {WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE}, 111);
+                    }
+                }
+
+                //openFileChooser();  // 저장소(갤러리) 연결해서 이미지 선택
             }
         });
 
@@ -94,34 +112,34 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         databaseReference = database.getReference().child("sharing_trips").child("gallery_list").child(selected_room_id);
 
         databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Firebase Database의 데이터를 받아옴
-                uploadAdapter.clear();
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            // Firebase Database의 데이터를 받아옴
+            uploadAdapter.clear();
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {  // 반복문으로 데이터 리스트 추출
-                    String key = snapshot.getKey();
-                    System.out.println(key);
+            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {  // 반복문으로 데이터 리스트 추출
+                String key = snapshot.getKey();
+                System.out.println(key);
 
-                    String imageUrl = snapshot.child("imageUrl").getValue().toString();
+                String imageUrl = snapshot.child("imageUrl").getValue().toString();
 
-                    Upload newItem = new Upload(imageUrl, key);
+                Upload newItem = new Upload(imageUrl, key);
 
-                    uploadAdapter.add(newItem);
+                uploadAdapter.add(newItem);
 
-                }
-
-                // 수정하면 항상 어댑터 쪽에 새로고침을 해줘야 반영이 됨
-                uploadAdapter.notifyDataSetChanged();   // 저장 및 새로고침
             }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // DB를 가져올 때 에러가 발생할 경우
-                Log.e("SharingGalleryActivity", String.valueOf(databaseError.toException())); // 에러문 출력
-            }
-        });
-    }
+            // 수정하면 항상 어댑터 쪽에 새로고침을 해줘야 반영이 됨
+            uploadAdapter.notifyDataSetChanged();   // 저장 및 새로고침
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            // DB를 가져올 때 에러가 발생할 경우
+            Log.e("SharingGalleryActivity", String.valueOf(databaseError.toException())); // 에러문 출력
+        }
+    });
+}
     // onCreate() 여기까지 //
 
     @Override
@@ -144,6 +162,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         Intent intent = new Intent();
         intent.setType("image/*");  // 이미지 타입의 intent
         intent.setAction(Intent.ACTION_GET_CONTENT); // intent 액션 지정
+//        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         startActivityForResult(intent, PICK_IMAGE_REQUEST); // 액티비티를 실행하고 그 액티비티로부터 결과를 수신
     }
 
@@ -310,7 +329,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
         //bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
         Objects.requireNonNull(fos).close();
     }
-
+*/
     // 외부저장소 접근 권한 체크 - 안드로이드 9 이하일 경우에는 쓰기 권한도 별도의 체크 필요
     private boolean checkPermission() {
         int write = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
@@ -327,7 +346,7 @@ public class SharingGalleryActivity extends AppCompatActivity { //implements Gal
                 Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
             }
         }
-    }*/
+    }
 
 /*
     public void getImageList() {

@@ -326,9 +326,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            intent.putExtra("kakao_thumnail", kakao_thumnail);
 //            startActivity(intent);
 //        }
-        else if(id == R.id.settings) {
-
-        }
         else if(id == R.id.logout) { // 카카오 로그아웃
 
            onClickLogout();
@@ -347,13 +344,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
     }
 
     protected void redirectLoginActivity(){

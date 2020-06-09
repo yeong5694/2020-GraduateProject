@@ -20,11 +20,16 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadView
 
     private ArrayList<Upload> uploadItems = new ArrayList<>();
 
+    private  String selected_room_id;
+
+    public UploadAdapter(String selected_room_id){
+        this.selected_room_id = selected_room_id;
+    }
     @NonNull
     @Override
     public UploadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) { // RecyclerView가 어댑터에 연결된 후 최초로 ViewHolder 생성
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.gallery_image_item, parent, false);
-        return new UploadViewHolder(v);
+        return new UploadViewHolder(v, selected_room_id);
     }
 
     @Override
@@ -45,6 +50,10 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadView
         uploadItems.clear();
     }
 
+    public void remove(int position) {
+        uploadItems.remove(uploadItems.get(position));
+    }
+
     public void add(Upload upload) {
         uploadItems.add(upload);
     }
@@ -52,9 +61,11 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadView
     public class UploadViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView image;
+        public String selected_room_id;
 
-        public UploadViewHolder(@NonNull View itemView) {
+        public UploadViewHolder(@NonNull View itemView, String selected_room_id) {
             super(itemView);
+            this.selected_room_id = selected_room_id;
 
             image = itemView.findViewById(R.id.image);
 
@@ -73,6 +84,8 @@ public class UploadAdapter extends RecyclerView.Adapter<UploadAdapter.UploadView
                     if(position != RecyclerView.NO_POSITION) {
                         intent.putExtra("clicked image", uploadItems.get(position).getImageUrl());
                         Log.v("gallery", "image url = " + uploadItems.get(position).getImageUrl());
+
+                        intent.putExtra("selected room id", selected_room_id);
 
                         context.startActivity(intent);
                     }
