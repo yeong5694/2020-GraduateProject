@@ -86,9 +86,6 @@ public class Map_realFindRoadActivity extends AppCompatActivity
 
     private Toolbar toolbar;
 
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
-
 
     private ImageView image_find;
     private TMapPoint tMapStart;

@@ -52,6 +52,7 @@ import java.util.Map;
 
 public class TripRoomActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    //public static String room_id = "";
     private Toolbar toolbar;
 
     private DrawerLayout drawerLayout;
@@ -64,7 +65,8 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
     private String kakao_name;
     // 선택한 여행방 정보
     private String selected_room_name; // 여행방 이름
-    private String selected_room_id; // 여행방 id
+    private String selected_room_id=""; // 여행방 id
+
 
     View nav_header_view;
     private ImageView profile_image;
@@ -101,6 +103,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
     private DatabaseReference fromRef;
     private DatabaseReference toRef;
+
 
     DatePickerDialog.OnDateSetListener fromDatePicker = new DatePickerDialog.OnDateSetListener() {
         @Override
@@ -170,6 +173,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
 
+       /// room_id = selected_room_id;
         //Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
 
         setTitle(selected_room_name);
@@ -390,9 +394,11 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
         }
         else if(id == R.id.calendar) {
 
-            Intent intent = new Intent(TripRoomActivity.this, MyCalendarMainActivity.class);
+            Intent intent = new Intent(TripRoomActivity.this, MyCalendarTripActivity.class);
+            //intent.putExtra("kakao_id", kakao_id);
+            //intent.putExtra("selected_room_name", selected_room_name);
+            intent.putExtra("selected_room_id", selected_room_id);
             startActivity(intent);
-
         }
 
         else if(id == R.id.planningMap) {
@@ -672,6 +678,7 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
             }
         });
     }
+
 
 
 

@@ -1,8 +1,14 @@
 package com.graduate.a2020_graduateproject.ui.viewmodel;
 
+import android.content.Intent;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
+import com.graduate.a2020_graduateproject.MyCalendarTripActivity;
 import com.graduate.a2020_graduateproject.Schedule;
+import com.graduate.a2020_graduateproject.TripRoomActivity;
 import com.graduate.a2020_graduateproject.data.TSLiveData;
 import com.graduate.a2020_graduateproject.utils.DateFormat;
 import com.graduate.a2020_graduateproject.utils.Keys;
@@ -11,13 +17,25 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+
+
 public class CalendarListViewModel extends ViewModel {
     private long mCurrentTime;
 
     public TSLiveData<String> mTitle = new TSLiveData<>();
     public TSLiveData<ArrayList<Object>> mCalendarList = new TSLiveData<>(new ArrayList<>());
+    public static String room_id="";
 
     public int mCenterPosition;
+
+    int trip_day_from;
+    int trip_day_to;
+
+    public CalendarListViewModel(){
+        trip_day_to = MyCalendarTripActivity.changed_to_day;
+        trip_day_from = MyCalendarTripActivity.changed_from_day;
+
+    }
 
     public void setTitle(int position) {
         try {
@@ -43,8 +61,9 @@ public class CalendarListViewModel extends ViewModel {
 
     public void setCalendarList(GregorianCalendar cal) {
 
-
+        Log.e("search:",room_id);
         setTitle(cal.getTimeInMillis());
+
 
         ArrayList<Object> calendarList = new ArrayList<>();
         for (int i = -300; i < 300; i++) {
@@ -62,9 +81,8 @@ public class CalendarListViewModel extends ViewModel {
                     calendarList.add(Keys.EMPTY);
                 }
                 for (int j = 1; j <= max; j++) {
-                   // if (true)   //일정이 있는 날짜면
-                   //     ;//구분이 가능한 타입이되 그레고리캘린더
-                    if(5<=j&&j<=7){ //5~7일 여행이면
+
+                    if(trip_day_from<=j&&j<=trip_day_to){ //trip_day_from~trip_day_to 일자 캘린더 색상 변환
                         calendarList.add(new Schedule(Integer.toString(j))); //일정이 있는 일자 타입
                     }
                     else {

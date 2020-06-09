@@ -66,36 +66,6 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
         masterAdapter.setMaster(false);
         masterListView = findViewById(R.id.master_listView);
         masterListView.setAdapter(masterAdapter);
-        masterRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                .child(selected_room_id).child("master_id");
-        masterRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                masterAdapter.clear();
-
-                master_id = dataSnapshot.getValue().toString();
-                Log.e("TripRoomFriendsActivity", "master_id: "+ master_id);
-
-                // 권한 검사
-                if(master_id.equals(kakao_id.toString())){
-                    Log.e("TripRoomFriendsActivity", "kakao_id: "+ kakao_id);
-                    //masterAdapter.setMaster(true);
-                    userAdapter.setMaster(true);
-                }
-                else{
-                    masterAdapter.setMaster(false);
-                    userAdapter.setMaster(false);
-                }
-
-                getUser(master_id, 2);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
 
         userAdapter = new UserAdapter(selected_room_id);
         // master 인지 체크
@@ -104,33 +74,70 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
         userListView = findViewById(R.id.friend_listView);
         userListView.setAdapter(userAdapter);
 
-        userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
-                .child(selected_room_id).child("invited_user_list");
-        userRef.addValueEventListener(new ValueEventListener() {
+
+        masterRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                .child(selected_room_id).child("master_id");
+        masterRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                userAdapter.clear();
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-
-                    // snapshot 내에 있는 데이터만큼 반복합니다.
-                    String key = snapshot.getKey();
-                    Log.e("TripRoomFriendsActivity", "key: "+key); // 채팅 id
+                System.out.println("master 변경 -- masterAdapter clear");
+                masterAdapter.clear();
 
 
-                    String send_id =  snapshot.child("id").getValue().toString();
+                master_id = dataSnapshot.getValue().toString();
+                Log.e("TripRoomFriendsActivity", "master_id: "+ master_id);
 
-                    getUser(send_id, 1); // id 가 send_id 인 user 찾음
-
-
-
-
+                // 권한 검사
+                if(master_id.equals(kakao_id.toString())){ // 로그인한 사용자가 master인 경우
+                    Log.e("TripRoomFriendsActivity", "kakao_id: "+ kakao_id);
+                    System.out.println("로그인한 사용자가 마스터");
+                    masterAdapter.setMaster(false);
+                    userAdapter.setMaster(true);
+                }
+                else{ // 로그인한 사용자가 invited user인 경우
+                    System.out.println("로그인한 사용자가 초대된 유저");
+                    masterAdapter.setMaster(false);
+                    userAdapter.setMaster(false);
                 }
 
+                getUser(master_id, 2);
 
-                userAdapter.notifyDataSetChanged();
-                userListView.setSelection(userAdapter.getCount()-1);
+                userRef = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list")
+                        .child(selected_room_id).child("invited_user_list");
+                userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                        System.out.println("invited user list 변경 -- userAdapter clear");
+                        userAdapter.clear();
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                            // snapshot 내에 있는 데이터만큼 반복합니다.
+                            String key = snapshot.getKey();
+                            Log.e("TripRoomFriendsActivity", "invite user id: "+key); // 채팅 id
+
+
+                            String send_id =  snapshot.child("id").getValue().toString();
+
+                            getUser(send_id, 1); // id 가 send_id 인 user 찾음
+
+
+
+
+                        }
+
+
+                        //userAdapter.notifyDataSetChanged();
+                        //userListView.setSelection(userAdapter.getCount()-1);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             }
 
             @Override
@@ -138,6 +145,10 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
 
             }
         });
+
+
+
+
 
 
 
@@ -158,12 +169,13 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
 
                     // snapshot 내에 있는 데이터만큼 반복합니다.
                     String key = snapshot.getKey();
-                    Log.e("TripRoomFriendsActivity", "get user key: "+key); // 채팅 id
+                    Log.e("TripRoomFriendsActivity", "get user key: "+key); // user id
 
+                    /// 왜 pull이 안될까 ㅜㅠ
 
                     if(find_id.equals(key)){
 
-                        Log.e("TripRoomFriendsActivity", "find id equals key true: " + key); // 채팅 id
+                        Log.e("TripRoomFriendsActivity", "find id equals key true: " + key); // user id
 
                         String id =  snapshot.child("id").getValue().toString();
                         String name = snapshot.child("name").getValue().toString();
@@ -173,10 +185,12 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
                         findUser = new User(id,name,email,thumbnail);
 
                         if(findUser != null && i == 1){ // 초대된 사람
+                            System.out.println("userAdapter add :"+ findUser.getName());
                             userAdapter.add(findUser);
                             userAdapter.notifyDataSetChanged();
                         }
                         else if(findUser != null && i == 2){ // 방장
+                            System.out.println("masterAdapter add:" + findUser.getName());
                             masterAdapter.add(findUser);
                             masterAdapter.notifyDataSetChanged();
                         }
