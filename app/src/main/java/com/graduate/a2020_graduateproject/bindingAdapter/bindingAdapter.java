@@ -41,8 +41,9 @@ public class bindingAdapter {
     public static void setScheduleDayText(TextView view, Schedule schedule) {
         try {
             if (schedule != null) {
-                long day = Long.parseLong(schedule.getDay());
-                view.setText(DateFormat.getDate(day,DateFormat.SCHEDULE_DAY_FORMAT));
+
+
+                view.setText(schedule.getDay());
             }
         } catch (Exception e) {
             e.printStackTrace();
