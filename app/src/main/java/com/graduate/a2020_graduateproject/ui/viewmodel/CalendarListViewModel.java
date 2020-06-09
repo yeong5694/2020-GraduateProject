@@ -2,6 +2,7 @@ package com.graduate.a2020_graduateproject.ui.viewmodel;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 
 import com.graduate.a2020_graduateproject.Schedule;
@@ -32,12 +33,53 @@ public class CalendarListViewModel extends ViewModel {
 
     public int mCenterPosition;
 
-    private DatabaseReference tripFromReference;
-    private DatabaseReference tripToReference;
+    private DatabaseReference tripIdReference  =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id);
 
-//    public CalendarListViewModel(){
-//        this.selected_room_id = selec1tedRoomId;
-//    }
+//    private DatabaseReference tripFromReference  =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id).child("/from/");
+//    private DatabaseReference tripToReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id).child("/to/");
+
+    //일정 날짜 변수
+    int trip_year_from;
+    int trip_month_from;
+    int trip_day_from;
+    int trip_year_to;
+    int trip_month_to;
+    int trip_day_to;
+
+    String trip_from;
+    String trip_to;
+
+    public CalendarListViewModel(){
+
+        tripIdReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) { //1번 돌아감
+                    trip_from = snapshot.child("from").getValue().toString();
+                    trip_to = snapshot.child("to").getValue().toString();
+                }
+
+                trip_year_from=Integer.parseInt(trip_from.substring(0,4));
+                trip_month_from=Integer.parseInt(trip_from.substring(6,8));
+                trip_day_from=Integer.parseInt(trip_from.substring(10,12));
+                trip_year_to=Integer.parseInt(trip_to.substring(0,4));
+                trip_month_to=Integer.parseInt(trip_to.substring(6,8));
+                trip_day_to=Integer.parseInt(trip_to.substring(10,12));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { //실패
+                trip_year_from = 0;
+                trip_month_from=0;
+                trip_day_from=0;
+                trip_year_to=0;
+                trip_month_to=0;
+                trip_day_to=0;
+            }
+        });
+    }
+
     public void setTitle(int position) {
         try {
             Object item = mCalendarList.getValue().get(position);
@@ -61,10 +103,9 @@ public class CalendarListViewModel extends ViewModel {
     }
 
     public void setCalendarList(GregorianCalendar cal) {
-
-        //selected_room_id = TripRoomActivity.room_id;
-        Log.e("search",room_id);
+        //Log.e("search",room_id);
         setTitle(cal.getTimeInMillis());
+
 
         ArrayList<Object> calendarList = new ArrayList<>();
         for (int i = -300; i < 300; i++) {
@@ -97,6 +138,5 @@ public class CalendarListViewModel extends ViewModel {
         }
         mCalendarList.setValue(calendarList);
     }
-
 
 }
