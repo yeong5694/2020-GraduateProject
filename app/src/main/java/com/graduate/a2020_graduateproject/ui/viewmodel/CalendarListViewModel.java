@@ -1,8 +1,11 @@
 package com.graduate.a2020_graduateproject.ui.viewmodel;
 
+import android.util.Log;
+
 import androidx.lifecycle.ViewModel;
 
 import com.graduate.a2020_graduateproject.Schedule;
+import com.graduate.a2020_graduateproject.TripRoomActivity;
 import com.graduate.a2020_graduateproject.data.TSLiveData;
 import com.graduate.a2020_graduateproject.utils.DateFormat;
 import com.graduate.a2020_graduateproject.utils.Keys;
@@ -11,14 +14,30 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.kakao.network.ErrorResult;
+
+
 public class CalendarListViewModel extends ViewModel {
     private long mCurrentTime;
 
     public TSLiveData<String> mTitle = new TSLiveData<>();
     public TSLiveData<ArrayList<Object>> mCalendarList = new TSLiveData<>(new ArrayList<>());
+    public static String room_id="";
 
     public int mCenterPosition;
 
+    private DatabaseReference tripFromReference;
+    private DatabaseReference tripToReference;
+
+//    public CalendarListViewModel(){
+//        this.selected_room_id = selec1tedRoomId;
+//    }
     public void setTitle(int position) {
         try {
             Object item = mCalendarList.getValue().get(position);
@@ -43,7 +62,8 @@ public class CalendarListViewModel extends ViewModel {
 
     public void setCalendarList(GregorianCalendar cal) {
 
-
+        //selected_room_id = TripRoomActivity.room_id;
+        Log.e("search",room_id);
         setTitle(cal.getTimeInMillis());
 
         ArrayList<Object> calendarList = new ArrayList<>();
@@ -77,5 +97,6 @@ public class CalendarListViewModel extends ViewModel {
         }
         mCalendarList.setValue(calendarList);
     }
+
 
 }
