@@ -2,10 +2,12 @@ package com.graduate.a2020_graduateproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -35,6 +37,9 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
     private UserAdapter masterAdapter;
     private DatabaseReference masterRef;
 
+    private Toolbar toolbar;
+
+
     private User findUser = null;
 
     private String master_id;
@@ -60,6 +65,11 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
         selected_room_id = intent.getExtras().getString("selected_room_id");
         selected_room_name = intent.getExtras().getString("selected_room_name");
         //Toast.makeText(getApplicationContext(), selected_room_id, Toast.LENGTH_LONG).show();
+
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼
+        setTitle("같이가는 친구");
 
 
         masterAdapter = new UserAdapter(selected_room_id);
@@ -199,5 +209,16 @@ public class TripRoomFriendsActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{ // toolbar의 back 키 눌렀을 때 동작
+                finish();
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
