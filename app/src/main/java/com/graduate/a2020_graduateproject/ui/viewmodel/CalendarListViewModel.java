@@ -33,7 +33,7 @@ public class CalendarListViewModel extends ViewModel {
 
     public int mCenterPosition;
 
-    private DatabaseReference tripIdReference  =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id);
+    private DatabaseReference tripIdReference ;
 
 //    private DatabaseReference tripFromReference  =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id).child("/from/");
 //    private DatabaseReference tripToReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id).child("/to/");
@@ -50,14 +50,21 @@ public class CalendarListViewModel extends ViewModel {
     String trip_to;
 
     public CalendarListViewModel(){
-
+        tripIdReference  =FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(room_id);
         tripIdReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.e("cc:","."+room_id+".");
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    if(snapshot.getKey().equals("from")){
+                        trip_from = snapshot.getValue().toString();
+                        Log.e("cc:","from."+trip_from+".");
+                    }
+                    if(snapshot.getKey().equals("to")){
+                        trip_to = snapshot.getValue().toString();
+                        Log.e("cc:","to."+trip_to+".");
+                    }
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) { //1번 돌아감
-                    trip_from = snapshot.child("from").getValue().toString();
-                    trip_to = snapshot.child("to").getValue().toString();
                 }
 
                 trip_year_from=Integer.parseInt(trip_from.substring(0,4));
@@ -66,6 +73,8 @@ public class CalendarListViewModel extends ViewModel {
                 trip_year_to=Integer.parseInt(trip_to.substring(0,4));
                 trip_month_to=Integer.parseInt(trip_to.substring(6,8));
                 trip_day_to=Integer.parseInt(trip_to.substring(10,12));
+
+
             }
 
             @Override
@@ -103,11 +112,13 @@ public class CalendarListViewModel extends ViewModel {
     }
 
     public void setCalendarList(GregorianCalendar cal) {
-        //Log.e("search",room_id);
+        Log.e("search:",room_id);
         setTitle(cal.getTimeInMillis());
 
 
         ArrayList<Object> calendarList = new ArrayList<>();
+        //Log.e("cal", String.valueOf(cal.get(Calendar.YEAR)));
+        //Log.e("cal", String.valueOf(cal.get(Calendar.MONTH)));
         for (int i = -300; i < 300; i++) {
             try {
                 GregorianCalendar calendar = new GregorianCalendar(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + i, 1, 0, 0, 0);
@@ -125,6 +136,8 @@ public class CalendarListViewModel extends ViewModel {
                 for (int j = 1; j <= max; j++) {
                    // if (true)   //일정이 있는 날짜면
                    //     ;//구분이 가능한 타입이되 그레고리캘린더
+
+
                     if(5<=j&&j<=7){ //5~7일 여행이면
                         calendarList.add(new Schedule(Integer.toString(j))); //일정이 있는 일자 타입
                     }
