@@ -336,6 +336,7 @@ public class FragmentMap extends Fragment implements OnMapReadyCallback  {
                         markerOptions.position(latLng);
                         markerOptions.title(addressOutput);
                         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
                         Marker marker=gMap.addMarker(markerOptions);
 
                         gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));

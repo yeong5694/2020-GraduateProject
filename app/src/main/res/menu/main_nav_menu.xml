@@ -12,15 +12,12 @@
 
     <item android:title="APP">
         <menu>
-            <item android:title="설정"
-                android:id="@+id/settings"
-                android:icon="@drawable/baseline_settings_black_18dp"/>
             <item android:title="로그아웃"
                 android:id="@+id/logout"
                 android:icon="@drawable/baseline_power_settings_new_black_18dp"/>
             <item android:title="앱 탈퇴"
                 android:id="@+id/withdraw"
-                android:icon="@drawable/baseline_power_settings_new_black_18dp"/>
+                android:icon="@drawable/baseline_exit_to_app_black_18dp"/>
         </menu>
     </item>
 

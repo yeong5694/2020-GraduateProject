@@ -117,6 +117,10 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_realfindroad_layout);
 
+        toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true); // 뒤로가기 버튼
+        setTitle("길찾기");
 
         //// 지도 Fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -143,9 +147,7 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         item=new ArrayList();
         item.add("선택");
 
-        toolbar = findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
-        setTitle("길찾기");
+
 
         mapDataReference = FirebaseDatabase.getInstance().getReference("sharing_trips/tripRoom_list").child(selected_room_id)
                 .child("schedule_list");
@@ -732,4 +734,14 @@ public class Map_realFindRoadActivity extends AppCompatActivity
         return calDistance;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:{ // toolbar의 back 키 눌렀을 때 동작
+                finish();
+                return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

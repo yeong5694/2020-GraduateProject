@@ -29,10 +29,9 @@
         <item android:title="갤러리"
             android:id="@+id/gallery"
             android:icon="@drawable/baseline_photo_black_18dp"/>
-        <item
+        <item android:title="방 나가기"
             android:id="@+id/exit"
-            android:icon="@drawable/baseline_keyboard_backspace_black_18dp"
-            android:title="방 나가기" />
+            android:icon="@drawable/baseline_keyboard_backspace_black_18dp"/>
     </group>
 
     <item android:title="APP">
