@@ -444,14 +444,6 @@ public class TripRoomActivity extends AppCompatActivity implements NavigationVie
 
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
     public String encrypt_room_id(String selected_room_id){
 
         // selected_room_id 암호화

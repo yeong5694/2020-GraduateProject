@@ -24,5 +24,84 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
+<!--
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:layout_alignParentBottom="true"
+        android:weightSum="2" >
+-->
+<!--
+        <ImageButton
+            android:id="@+id/saveImage_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/baseline_save_alt_black_18dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
+        <ImageButton
+            android:id="@+id/deleteImage_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/baseline_delete_black_18dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+-->
+<!--
+        <Button
+            android:id="@+id/saveImage_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="2dp"
+            app:icon="@drawable/baseline_save_alt_white_18dp"
+            android:text="save image"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+       <Button
+            android:id="@+id/deleteImage_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+           android:layout_marginRight="2dp"
+            app:icon="@drawable/baseline_delete_white_18dp"
+            android:text="delete image"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+    </LinearLayout>
+-->
+<!--
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/saveImage_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:clickable="true"
+        android:src="@drawable/baseline_save_alt_white_18dp"
+        app:backgroundTint="@color/colorPrimary"
+        app:fabSize="normal"
+        app:rippleColor="@color/colorPrimaryDark" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/deleteImage_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:clickable="true"
+        android:src="@drawable/baseline_delete_white_18dp"
+        app:backgroundTint="@color/colorPrimary"
+        app:fabSize="normal"
+        app:rippleColor="@color/colorPrimaryDark" />
+-->
 </RelativeLayout>
